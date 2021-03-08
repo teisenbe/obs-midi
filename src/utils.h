@@ -35,6 +35,18 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 typedef void (*PauseRecordingFunction)(bool);
 typedef bool (*RecordingPausedFunction)();
 enum class Pairs { Scene, Source, Item, Transition, Audio, Media, Filter, String, Integer, Boolean, Range };
+enum class Alignment {
+	Top_Left = OBS_ALIGN_LEFT | OBS_ALIGN_TOP,
+	Top_Center = OBS_ALIGN_TOP | OBS_ALIGN_CENTER,
+	Top_Right = OBS_ALIGN_TOP | OBS_ALIGN_RIGHT,
+	Center_Left = OBS_ALIGN_CENTER | OBS_ALIGN_LEFT,
+	Center = OBS_ALIGN_CENTER,
+	Center_Right = OBS_ALIGN_CENTER | OBS_ALIGN_RIGHT,
+	Bottom_Left = OBS_ALIGN_BOTTOM | OBS_ALIGN_LEFT,
+	Bottom_Center = OBS_ALIGN_BOTTOM | OBS_ALIGN_CENTER,
+	Bottom_Right = OBS_ALIGN_BOTTOM | OBS_ALIGN_RIGHT
+};
+
 enum class Speed { Slow, Medium, Fast };
 class ActionsClass : public QObject {
 	Q_OBJECT
