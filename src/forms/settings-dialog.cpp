@@ -40,14 +40,12 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	hide_all_pairs();
 	connect_ui_signals();
 	starting = false;
-	
 }
 void PluginWindow::configure_table()
 {
 	ui->table_mapping->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
 	ui->table_mapping->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 	ui->table_mapping->insertColumn(10);
-	
 }
 void PluginWindow::set_title_window()
 {
@@ -140,7 +138,8 @@ void PluginWindow::on_check_enabled_state_changed(int state)
 		int devicePort = GetDeviceManager()->get_input_port_number(selectedDeviceName.c_str());
 		int deviceOutPort = GetDeviceManager()->get_output_port_number(selectedOutDeviceName.c_str());
 		if (device == NULL) {
-			device = (ui->bidirectional->isChecked()) ? GetDeviceManager()->register_midi_device(devicePort, deviceOutPort):GetDeviceManager()->register_midi_device(devicePort);
+			device = (ui->bidirectional->isChecked()) ? GetDeviceManager()->register_midi_device(devicePort, deviceOutPort)
+								  : GetDeviceManager()->register_midi_device(devicePort);
 		}
 		device->open_midi_input_port();
 		device->open_midi_output_port();
@@ -540,6 +539,10 @@ void PluginWindow::obs_actions_select(const QString &action)
 			ui->sb_int_override->setEnabled(false);
 
 			break;
+		case ActionsClass::Actions::Set_Source_Rotation:
+			show_pair(Pairs::Scene);
+			show_pair(Pairs::Source);
+			break;
 		default:
 			hide_all_pairs();
 			break;
@@ -574,7 +577,6 @@ int PluginWindow::find_mapping_location(const MidiMessage &message)
 			} else {
 				return i;
 			}
-			
 		}
 	}
 	return -1;
@@ -583,9 +585,7 @@ void PluginWindow::add_new_mapping()
 {
 	ui->btn_Listen_many->setChecked(false);
 	ui->btn_Listen_one->setChecked(false);
-	if ((!map_exists() && verify_mapping() && ui->sb_channel->value() != 0)
-		||( (map_exists() && ui->check_use_value->isChecked())))
-		{
+	if ((!map_exists() && verify_mapping() && ui->sb_channel->value() != 0) || ((map_exists() && ui->check_use_value->isChecked()))) {
 		int row = ui->table_mapping->rowCount();
 		ui->table_mapping->insertRow(row);
 		// don't delete it, because the table takes ownership of the items
@@ -733,7 +733,8 @@ void PluginWindow::load_table()
 		}
 	}
 }
-void PluginWindow::removeHook(MidiHook *hook) {
+void PluginWindow::removeHook(MidiHook *hook)
+{
 	int row = ui->table_mapping->selectedItems().at(0)->row();
 	auto devicemanager = GetDeviceManager();
 	auto dev = devicemanager->get_midi_device(ui->mapping_lbl_device_name->text());
@@ -756,13 +757,12 @@ void PluginWindow::delete_mapping()
 			if ((hooks.at(i)->channel == ui->sb_channel->value()) && (hooks.at(i)->norc == ui->sb_norc->value()) &&
 			    (hooks.at(i)->message_type == ui->cb_mtype->currentText())) {
 				if (hooks.at(i)->value_as_filter) {
-					if (hooks.at(i)->value == ui->slider_value->value()){
+					if (hooks.at(i)->value == ui->slider_value->value()) {
 						removeHook(hooks.at(i));
 					}
 				} else {
 					removeHook(hooks.at(i));
 				}
-				
 			}
 		}
 		this->ui->table_mapping->resizeColumnsToContents();

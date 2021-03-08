@@ -564,7 +564,15 @@ void OBSController::SetSyncOffset()
 	obs_source_set_sync_offset(source, midi_value);
 }
 void OBSController::SetSourcePosition() {}
-void OBSController::SetSourceRotation() {}
+void OBSController::SetSourceRotation() {
+	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+	uint32_t current = obs_sceneitem_get_alignment(item);
+	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
+	obs_sceneitem_set_rot(item, Utils::mapper360(midi_value));
+	
+
+}
 void OBSController::SetSourceScale() {}
 void OBSController::SetGainFilter() {}
 void OBSController::SetOpacity() {}
@@ -638,3 +646,4 @@ void OBSController::prev_media()
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_previous(source);
 }
+

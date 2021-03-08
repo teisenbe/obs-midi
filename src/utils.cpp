@@ -41,6 +41,14 @@ float Utils::mapper(int x)
 	float out_max = 1;
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+float Utils::mapper360(int x)
+{
+	float in_min = 0;
+	float in_max = 127;
+	float out_min = 0;
+	float out_max = 360;
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 int Utils::mapper2(double x)
 {
 	double in_min = 0;
