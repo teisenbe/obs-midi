@@ -39,6 +39,7 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	configure_table();
 	hide_all_pairs();
 	connect_ui_signals();
+
 	starting = false;
 }
 void PluginWindow::configure_table()
@@ -76,6 +77,8 @@ void PluginWindow::setup_actions()
 {
 	ui->cb_obs_output_action->clear();
 	ui->cb_obs_output_action->addItems(Utils::TranslateActions());
+	ui->cb_obs_output_action->setCurrentIndex(1);
+	ui->cb_obs_output_action->setCurrentIndex(0);
 }
 void PluginWindow::ToggleShowHide()
 {
@@ -739,8 +742,11 @@ void PluginWindow::set_cell_colors(const QColor &color, QTableWidgetItem *item)
 void PluginWindow::tab_changed(int tab)
 {
 	reset_to_defaults();
-	if (tab == 1)
+	if (tab == 1) {
+		ui->cb_obs_output_action->setCurrentIndex(1);
+		ui->cb_obs_output_action->setCurrentIndex(0);
 		ui->mapping_lbl_device_name->setText(ui->list_midi_dev->currentItem()->text());
+	}
 	clear_table();
 	load_table();
 	this->ui->table_mapping->resizeColumnsToContents();
