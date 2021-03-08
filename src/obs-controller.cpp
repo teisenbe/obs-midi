@@ -199,7 +199,7 @@ void OBSController::SetPreviewScene()
 	if (!scene) {
 		blog(LOG_DEBUG, "specified scene doesn't exist");
 	}
-	obs_source_t * source = obs_scene_get_source(scene);
+	obs_source_t *source = obs_scene_get_source(scene);
 	obs_frontend_set_current_preview_scene(source);
 }
 void OBSController::DisablePreview()
@@ -262,15 +262,15 @@ void OBSController::TransitionToProgram()
 {
 	if (state::transitioning)
 		return;
-	state()._CurrentTransitionDuration=obs_frontend_get_transition_duration();
+	state()._CurrentTransitionDuration = obs_frontend_get_transition_duration();
 	obs_source_t *transition = obs_frontend_get_current_transition();
 	QString scenename;
 	/**
 	 * If Transition from hook is not Current Transition, and if it is not an empty Value, then set current transition
 	 */
-	if ((hook->transition != "Current Transition")&& !hook->transition.isEmpty()&&!hook->transition.isNull()) {
+	if ((hook->transition != "Current Transition") && !hook->transition.isEmpty() && !hook->transition.isNull()) {
 		Utils::SetTransitionByName(hook->transition);
-		state()._TransitionWasCalled=true;
+		state()._TransitionWasCalled = true;
 	}
 	if ((hook->scene != "Preview Scene") && !hook->scene.isEmpty() && !hook->scene.isNull()) {
 		state()._TransitionWasCalled = true;
@@ -279,16 +279,15 @@ void OBSController::TransitionToProgram()
 		obs_source_t *source = obs_frontend_get_current_scene();
 		hook->scene = QString(obs_source_get_name(source));
 		state()._TransitionWasCalled = true;
-
 	}
-	if (hook->int_override && *hook->int_override >0) {
+	if (hook->int_override && *hook->int_override > 0) {
 		obs_frontend_set_transition_duration(*hook->int_override);
-		state()._TransitionWasCalled=true;
+		state()._TransitionWasCalled = true;
 	}
-	(obs_frontend_preview_program_mode_active()) ? obs_frontend_preview_program_trigger_transition(): SetCurrentScene();
-	
-	state()._CurrentTransition=QString(obs_source_get_name(transition));
-	
+	(obs_frontend_preview_program_mode_active()) ? obs_frontend_preview_program_trigger_transition() : SetCurrentScene();
+
+	state()._CurrentTransition = QString(obs_source_get_name(transition));
+
 	obs_source_release(transition);
 }
 /**
@@ -310,11 +309,11 @@ void OBSController::SetSourceVisibility()
 	obs_sceneitem_set_visible(Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source), midi_value);
 }
 /**
-*
-* Toggles the source's visibility
-* seems to stop audio from playing as well
-* 
-*/
+ *
+ * Toggles the source's visibility
+ * seems to stop audio from playing as well
+ *
+ */
 void OBSController::ToggleSourceVisibility()
 {
 	auto scene = Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source);
@@ -323,7 +322,7 @@ void OBSController::ToggleSourceVisibility()
 	} else {
 		obs_sceneitem_set_visible(scene, true);
 	}
-} 
+}
 /**
  * Inverts the mute status of a specified source.
  */
@@ -564,7 +563,15 @@ void OBSController::SetSyncOffset()
 	obs_source_set_sync_offset(source, midi_value);
 }
 void OBSController::SetSourcePosition() {}
-void OBSController::SetSourceRotation() {}
+void OBSController::SetSourceRotation()
+{
+	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+	uint32_t current = obs_sceneitem_get_alignment(item);
+	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
+	float rotation = Utils::map_to_range((hook->range_min) ? *hook->range_min : 0, (hook->range_max) ? *hook->range_max : 360, midi_value);
+	obs_sceneitem_set_rot(item, rotation);
+}
 void OBSController::SetSourceScale() {}
 void OBSController::SetGainFilter() {}
 void OBSController::SetOpacity() {}

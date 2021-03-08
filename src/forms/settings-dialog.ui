@@ -253,8 +253,8 @@
       <attribute name="title">
        <string>Configure - </string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_27">
-       <item row="5" column="0" alignment="Qt::AlignTop">
+      <layout class="QGridLayout" name="gridLayout_30">
+       <item row="1" column="0">
         <widget class="QFrame" name="wid_midi">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -625,64 +625,7 @@
          </layout>
         </widget>
        </item>
-       <item row="5" column="2" alignment="Qt::AlignVCenter">
-        <widget class="QWidget" name="widget_7" native="true">
-         <property name="maximumSize">
-          <size>
-           <width>200</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_28">
-          <item row="2" column="0">
-           <widget class="QPushButton" name="btn_delete">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Delete Mapping</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="btn_add">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Add Mapping</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_optional">
-            <property name="text">
-             <string>* optional</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="5" column="1" alignment="Qt::AlignTop">
+       <item row="1" column="1">
         <widget class="QFrame" name="wid_Action">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -711,7 +654,7 @@
          <property name="lineWidth">
           <number>3</number>
          </property>
-         <layout class="QGridLayout" name="gridLayout_23" rowstretch="1,1,1,1,1,1,1,1,1,1,1,1,0,0">
+         <layout class="QGridLayout" name="gridLayout_23" rowstretch="1,1,1,1,1,1,1,1,1,1,1,1,0,0,0">
           <property name="leftMargin">
            <number>1</number>
           </property>
@@ -724,12 +667,12 @@
           <property name="bottomMargin">
            <number>1</number>
           </property>
-          <item row="7" column="0" colspan="2">
-           <widget class="QWidget" name="w_media" native="true">
+          <item row="9" column="0" colspan="2">
+           <widget class="QWidget" name="w_item" native="true">
             <property name="enabled">
              <bool>true</bool>
             </property>
-            <layout class="QGridLayout" name="gridLayout_24" columnstretch="1,3">
+            <layout class="QGridLayout" name="gridLayout_26" columnstretch="1,3">
              <property name="leftMargin">
               <number>1</number>
              </property>
@@ -743,7 +686,7 @@
               <number>1</number>
              </property>
              <item row="0" column="0">
-              <widget class="QLabel" name="label_obs_output_media_source">
+              <widget class="QLabel" name="label_obs_output_item">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -763,12 +706,12 @@
                 </size>
                </property>
                <property name="text">
-                <string>Media Source</string>
+                <string>Item</string>
                </property>
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="cb_obs_output_media_source">
+              <widget class="QComboBox" name="cb_obs_output_item">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -856,77 +799,6 @@
                 <size>
                  <width>16777215</width>
                  <height>25</height>
-                </size>
-               </property>
-               <property name="sizeAdjustPolicy">
-                <enum>QComboBox::AdjustToContents</enum>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="9" column="0" colspan="2">
-           <widget class="QWidget" name="w_item" native="true">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_26" columnstretch="1,3">
-             <property name="leftMargin">
-              <number>1</number>
-             </property>
-             <property name="topMargin">
-              <number>1</number>
-             </property>
-             <property name="rightMargin">
-              <number>1</number>
-             </property>
-             <property name="bottomMargin">
-              <number>1</number>
-             </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_obs_output_item">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>15</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>50</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Item</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="cb_obs_output_item">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>200</width>
-                 <height>25</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>50</height>
                 </size>
                </property>
                <property name="sizeAdjustPolicy">
@@ -1076,84 +948,6 @@
             </layout>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0" colspan="2">
-           <widget class="QWidget" name="w_source" native="true">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_20" columnstretch="1,3">
-             <property name="leftMargin">
-              <number>1</number>
-             </property>
-             <property name="topMargin">
-              <number>1</number>
-             </property>
-             <property name="rightMargin">
-              <number>1</number>
-             </property>
-             <property name="bottomMargin">
-              <number>1</number>
-             </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_obs_output_source">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>15</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>50</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Source</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="cb_obs_output_source">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>200</width>
-                 <height>25</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>50</height>
-                </size>
-               </property>
-               <property name="sizeAdjustPolicy">
-                <enum>QComboBox::AdjustToContents</enum>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
           <item row="12" column="0" colspan="2">
            <widget class="QWidget" name="w_filter" native="true">
             <property name="enabled">
@@ -1276,6 +1070,77 @@
             </layout>
            </widget>
           </item>
+          <item row="6" column="0" colspan="2">
+           <widget class="QWidget" name="w_source" native="true">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_20" columnstretch="1,3">
+             <property name="leftMargin">
+              <number>1</number>
+             </property>
+             <property name="topMargin">
+              <number>1</number>
+             </property>
+             <property name="rightMargin">
+              <number>1</number>
+             </property>
+             <property name="bottomMargin">
+              <number>1</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_obs_output_source">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>15</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Source</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_obs_output_source">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>200</width>
+                 <height>25</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToContents</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
           <item row="10" column="0" rowspan="2" colspan="2">
            <widget class="QWidget" name="w_transition" native="true">
             <property name="enabled">
@@ -1346,6 +1211,222 @@
              </item>
             </layout>
            </widget>
+          </item>
+          <item row="7" column="0" colspan="2">
+           <widget class="QWidget" name="w_media" native="true">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_24" columnstretch="1,3">
+             <property name="leftMargin">
+              <number>1</number>
+             </property>
+             <property name="topMargin">
+              <number>1</number>
+             </property>
+             <property name="rightMargin">
+              <number>1</number>
+             </property>
+             <property name="bottomMargin">
+              <number>1</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_obs_output_media_source">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>15</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Media Source</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_obs_output_media_source">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>200</width>
+                 <height>25</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToContents</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="0">
+           <widget class="QWidget" name="widget_range" native="true">
+            <layout class="QGridLayout" name="gridLayout_27" columnstretch="1,2,1,2">
+             <property name="leftMargin">
+              <number>1</number>
+             </property>
+             <property name="topMargin">
+              <number>1</number>
+             </property>
+             <property name="rightMargin">
+              <number>1</number>
+             </property>
+             <property name="bottomMargin">
+              <number>1</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_min">
+               <property name="text">
+                <string>Min</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="sb_min">
+               <property name="minimum">
+                <number>-5000</number>
+               </property>
+               <property name="maximum">
+                <number>5000</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="label_max">
+               <property name="text">
+                <string>Max</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="QSpinBox" name="sb_max">
+               <property name="minimum">
+                <number>-5000</number>
+               </property>
+               <property name="maximum">
+                <number>5000</number>
+               </property>
+               <property name="value">
+                <number>360</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QWidget" name="widget_7" native="true">
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_28">
+          <item row="2" column="0">
+           <widget class="QPushButton" name="btn_add">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>200</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Add Mapping</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="btn_delete">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>200</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Delete Mapping</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_optional">
+            <property name="text">
+             <string>* optional</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="0">
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -1498,6 +1579,21 @@
          <column>
           <property name="text">
            <string>Media Source</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Duration</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Min</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Max</string>
           </property>
          </column>
         </widget>
