@@ -322,6 +322,12 @@ void PluginWindow::show_pair(Pairs Pair)
 		ui->check_int_override->show();
 		ui->check_int_override->setEnabled(false);
 		break;
+	case Pairs::Range:
+		ui->sb_min->show();
+		ui->label_min->show();
+		ui->sb_max->show();
+		ui->label_max->show();
+		break;
 	}
 }
 void PluginWindow::hide_pair(Pairs Pair)
@@ -385,6 +391,12 @@ void PluginWindow::hide_pair(Pairs Pair)
 		ui->sb_int_override->hide();
 		ui->label_Int_override->hide();
 		break;
+	case Pairs::Range:
+		ui->sb_min->hide();
+		ui->label_min->hide();
+		ui->sb_max->hide();
+		ui->label_max->hide();
+		break;
 	}
 }
 void PluginWindow::hide_all_pairs()
@@ -399,6 +411,7 @@ void PluginWindow::hide_all_pairs()
 	hide_pair(Pairs::String);
 	hide_pair(Pairs::Integer);
 	hide_pair(Pairs::Boolean);
+	hide_pair(Pairs::Range);
 }
 void PluginWindow::reset_to_defaults()
 {
@@ -542,6 +555,8 @@ void PluginWindow::obs_actions_select(const QString &action)
 		case ActionsClass::Actions::Set_Source_Rotation:
 			show_pair(Pairs::Scene);
 			show_pair(Pairs::Source);
+			show_pair(Pairs::Range);
+			set_min_max_range_defaults(0, 360);
 			break;
 		default:
 			hide_all_pairs();
@@ -551,6 +566,11 @@ void PluginWindow::obs_actions_select(const QString &action)
 }
 void PluginWindow::set_edit_mode() {}
 void PluginWindow::save_edit() {}
+void PluginWindow::set_min_max_range_defaults(int min, int max)
+{
+	ui->sb_min->setValue(min);
+	ui->sb_max->setValue(max);
+}
 
 bool PluginWindow::map_exists()
 {
@@ -601,6 +621,8 @@ void PluginWindow::add_new_mapping()
 		QTableWidgetItem *audioitem = new QTableWidgetItem(ui->cb_obs_output_audio_source->currentText());
 		QTableWidgetItem *mediaitem = new QTableWidgetItem(ui->cb_obs_output_media_source->currentText());
 		QTableWidgetItem *int_override = new QTableWidgetItem(QString::number(ui->sb_int_override->value()));
+		QTableWidgetItem *min = new QTableWidgetItem(QString::number(ui->sb_min->value()));
+		QTableWidgetItem *max = new QTableWidgetItem(QString::number(ui->sb_max->value()));
 		ui->table_mapping->setItem(row, 0, channelitem);
 		ui->table_mapping->setItem(row, 1, mtypeitem);
 		ui->table_mapping->setItem(row, 2, norcitem);
@@ -613,6 +635,9 @@ void PluginWindow::add_new_mapping()
 		ui->table_mapping->setItem(row, 9, audioitem);
 		ui->table_mapping->setItem(row, 10, mediaitem);
 		ui->table_mapping->setItem(row, 11, int_override);
+		ui->table_mapping->setItem(row, 12, min);
+		ui->table_mapping->setItem(row, 13, max);
+
 		set_all_cell_colors(row);
 		MidiHook *newmh = new MidiHook();
 		newmh->channel = ui->sb_channel->value();
@@ -629,7 +654,10 @@ void PluginWindow::add_new_mapping()
 		newmh->audio_source = ui->cb_obs_output_audio_source->currentText();
 		newmh->media_source = ui->cb_obs_output_media_source->currentText();
 		newmh->int_override.emplace() << (ui->check_int_override->isChecked()) ? ui->sb_int_override->value() : -1;
+		newmh->range_min.emplace(ui->sb_min->value());
+		newmh->range_max.emplace(ui->sb_max->value());
 		GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->add_MidiHook(newmh);
+
 		GetConfig().get()->Save();
 		ui->table_mapping->selectRow(row);
 		this->ui->table_mapping->resizeColumnsToContents();

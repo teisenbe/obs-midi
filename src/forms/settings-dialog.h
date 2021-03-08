@@ -36,6 +36,7 @@ private slots:
 	void obs_actions_select(const QString &action);
 	void set_edit_mode();
 	void save_edit();
+	void set_min_max_range_defaults(int min, int max);
 	void reset_to_defaults();
 	void on_scene_change(const QString &newscene);
 	void on_source_change(const QString &newsource);
