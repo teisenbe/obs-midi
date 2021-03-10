@@ -35,7 +35,8 @@ using namespace std;
 MidiAgent::MidiAgent(const int &in_port, std::optional<int> out_port)
 {
 	set_input_port(in_port);
-	if(out_port)set_output_port(out_port.value());
+	if (out_port)
+		set_output_port(out_port.value());
 	this->setParent(GetDeviceManager().get());
 	set_callbacks();
 }
@@ -112,27 +113,9 @@ void MidiAgent::Load(const char *incoming_data)
 	size_t hooksCount = obs_data_array_count(hooksData);
 	for (size_t i = 0; i < hooksCount; i++) {
 		obs_data_t *hookData = obs_data_array_item(hooksData, i);
-		MidiHook *mh = new MidiHook();
-		mh->message_type = obs_data_get_string(hookData, "message_type");
-		mh->norc = obs_data_get_int(hookData, "norc");
-		mh->channel = obs_data_get_int(hookData, "channel");
-		mh->action = obs_data_get_string(hookData, "action");
-		mh->value_as_filter = obs_data_get_bool(hookData, "value_as_filter");
-		mh->value = obs_data_get_int(hookData, "value");
-		mh->scene = obs_data_get_string(hookData, "scene");
-		mh->source = obs_data_get_string(hookData, "source");
-		mh->filter = obs_data_get_string(hookData, "filter");
-		mh->transition = obs_data_get_string(hookData, "transition");
-		mh->item = obs_data_get_string(hookData, "item");
-		mh->audio_source = obs_data_get_string(hookData, "audio_source");
-		mh->media_source = obs_data_get_string(hookData, "media_source");
-		mh->duration = obs_data_get_int(hookData, "duration");
-		mh->scene_collection = obs_data_get_string(hookData, "scene_collection");
-		mh->profile = obs_data_get_string(hookData, "profile");
-		mh->string_override = obs_data_get_string(hookData, "string_override");
-		mh->bool_override = obs_data_get_bool(hookData, "bool_override");
-		mh->int_override = obs_data_get_int(hookData, "int_override");
-		add_MidiHook(mh);
+		MidiHook *mh = new MidiHook(obs_data_get_json(hookData));
+
+		add_MidiHook(std::move(mh));
 		obs_data_release(hookData);
 	}
 	obs_data_array_release(hooksData);
@@ -220,7 +203,7 @@ void MidiAgent::close_midi_output_port()
 	}
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <returns></returns>
 const QString &MidiAgent::get_midi_input_name()
@@ -228,7 +211,7 @@ const QString &MidiAgent::get_midi_input_name()
 	return midi_input_name;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <returns></returns>
 const QString &MidiAgent::get_midi_output_name()
@@ -236,7 +219,7 @@ const QString &MidiAgent::get_midi_output_name()
 	return midi_output_name;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <param name="oname"></param>
 void MidiAgent::set_midi_output_name(const QString &oname)
@@ -244,7 +227,7 @@ void MidiAgent::set_midi_output_name(const QString &oname)
 	midi_output_name = oname;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <param name="state"></param>
 /// <returns></returns>
@@ -262,7 +245,7 @@ bool MidiAgent::set_bidirectional(const bool &state)
 	return state;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <returns></returns>
 int MidiAgent::GetPort() const
@@ -270,7 +253,7 @@ int MidiAgent::GetPort() const
 	return input_port;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <returns></returns>
 bool MidiAgent::isEnabled() const
@@ -278,7 +261,7 @@ bool MidiAgent::isEnabled() const
 	return enabled;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <returns></returns>
 bool MidiAgent::isBidirectional() const
@@ -286,7 +269,7 @@ bool MidiAgent::isBidirectional() const
 	return bidirectional;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <returns></returns>
 bool MidiAgent::isConnected() const
@@ -314,9 +297,10 @@ void MidiAgent::HandleInput(const rtmidi::message &message, void *userData)
 	x->device_name = self->get_midi_input_name();
 	emit self->broadcast_midi_message((MidiMessage)*x);
 	/** check if hook exists for this note or cc norc and launch it **/
-	OBSController *obsc = new OBSController(self->get_midi_hook_if_exists(x), x->value);
+
+	self->exe_midi_hook_if_exists(x);
+
 	delete x;
-	delete obsc;
 }
 /// <summary>
 /// Callback function to handle midi errors
@@ -348,15 +332,33 @@ MidiHook *MidiAgent::get_midi_hook_if_exists(MidiMessage *message)
 {
 	for (auto midiHook : this->midiHooks) {
 		if (midiHook->message_type == message->message_type && midiHook->norc == message->NORC && midiHook->channel == message->channel) {
-			if (midiHook->value_as_filter && message->value == midiHook->value) {
+			if (midiHook->value_as_filter) {
+				if (message->value == midiHook->value)
 					return midiHook;
-			} 
-			if(!midiHook->value_as_filter) {
+			} else
 				return midiHook;
-			}
 		}
 	}
 	return nullptr;
+}
+/// <summary>
+/// Executes a MidiHook* if Message Type, NORC and Channel are found
+/// </summary>
+/// <param name="message">MidiMessage</param>
+/// <returns>MidiHook*</returns>
+void MidiAgent::exe_midi_hook_if_exists(MidiMessage *message)
+{
+	for (auto midiHook : this->midiHooks) {
+		if (midiHook->message_type == message->message_type && midiHook->norc == message->NORC && midiHook->channel == message->channel) {
+			if (midiHook->value_as_filter) {
+				if (message->value == *midiHook->value)
+					midiHook->EXE(message->value);
+			} else {
+
+				midiHook->EXE(message->value);
+			}
+		}
+	}
 }
 void MidiAgent::add_MidiHook(MidiHook *hook)
 {
@@ -394,6 +396,7 @@ void MidiAgent::remove_MidiHook(MidiHook *hook)
 	// Remove a MidiHook
 	if (midiHooks.contains(hook)) {
 		midiHooks.removeOne(hook);
+		delete (hook);
 	}
 }
 /// <summary>
@@ -646,7 +649,7 @@ void MidiAgent::handle_obs_event(const RpcEvent &event)
 		case ActionsClass::obs_event_type::SwitchScenes:
 			Macro::swap_buttons(this, message, state::previous_scene_norc, hook->norc);
 			state::previous_scene_norc = hook->norc;
-			blog(LOG_DEBUG,"Switch Scenes %s",obs_data_get_string(event.additionalFields(),"scene-name"));
+			blog(LOG_DEBUG, "Switch Scenes %s", obs_data_get_string(event.additionalFields(), "scene-name"));
 			break;
 		case ActionsClass::obs_event_type::PreviewSceneChanged:
 			Macro::swap_buttons(this, message, state::previous_preview_scene_norc, hook->norc);
@@ -685,7 +688,6 @@ void MidiAgent::handle_obs_event(const RpcEvent &event)
 			state::previous_scene_norc = hook->norc;
 			blog(LOG_DEBUG, "Scene Changed");
 			break;
-
 		}
 
 		delete (message);
@@ -796,10 +798,12 @@ void MidiAgent::set_current_volumes()
 
 		RpcEvent *event = new RpcEvent(QString("SourceVolumeChanged"), NULL, NULL, additional);
 		MidiHook *hook = get_midi_hook_if_exists((RpcEvent)*event);
-		blog(LOG_DEBUG, "Get Volume %s is %i", volumelist.at(i).toStdString().c_str(), Utils::mapper2(vol));
-		Macro::set_volume(this, hook->get_message_from_hook(), vol);
 		obs_source_release(source);
 		obs_data_release(additional);
+		if (hook == nullptr)
+			return;
+		blog(LOG_DEBUG, "Get Volume %s is %i", volumelist.at(i).toStdString().c_str(), Utils::mapper2(vol));
+		Macro::set_volume(this, hook->get_message_from_hook(), vol);
 	}
 }
 /// <summary>
@@ -809,5 +813,5 @@ void MidiAgent::set_current_volumes()
 void MidiAgent::startup()
 {
 	// set_current_scene();
-	//set_current_volumes();
+	set_current_volumes();
 }

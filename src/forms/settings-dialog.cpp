@@ -46,7 +46,8 @@ void PluginWindow::configure_table()
 {
 	ui->table_mapping->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
 	ui->table_mapping->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
-	ui->table_mapping->insertColumn(10);
+	ui->table_mapping->setSortingEnabled(true);
+
 }
 void PluginWindow::set_title_window()
 {
@@ -560,6 +561,14 @@ void PluginWindow::obs_actions_select(const QString &action)
 			show_pair(Pairs::Source);
 			show_pair(Pairs::Range);
 			set_min_max_range_defaults(0, 360);
+			set_range_text("Min", "Max");
+			break;
+		case ActionsClass::Actions::Set_Source_Scale:
+			show_pair(Pairs::Scene);
+			show_pair(Pairs::Source);
+			show_pair(Pairs::Range);
+			set_min_max_range_defaults(10, 10);
+			set_range_text("Max X", "Max Y");
 			break;
 		default:
 			hide_all_pairs();
@@ -574,7 +583,11 @@ void PluginWindow::set_min_max_range_defaults(int min, int max)
 	ui->sb_min->setValue(min);
 	ui->sb_max->setValue(max);
 }
-
+void PluginWindow::set_range_text(QString left, QString right)
+{
+	ui->label_min->setText(left);
+	ui->label_max->setText(right);
+}
 bool PluginWindow::map_exists()
 {
 	auto devicemanager = GetDeviceManager();
@@ -647,7 +660,7 @@ void PluginWindow::add_new_mapping()
 		newmh->message_type = ui->cb_mtype->currentText();
 		newmh->norc = ui->sb_norc->value();
 		newmh->value_as_filter = ui->check_use_value->isChecked();
-		newmh->value = (ui->check_use_value->isChecked()) ? ui->slider_value->value() : -1;
+		newmh->value.emplace((ui->check_use_value->isChecked()) ? ui->slider_value->value() : NULL);
 		newmh->action = ui->cb_obs_output_action->currentText();
 		newmh->scene = ui->cb_obs_output_scene->currentText();
 		newmh->source = ui->cb_obs_output_source->currentText();
@@ -656,15 +669,15 @@ void PluginWindow::add_new_mapping()
 		newmh->item = ui->cb_obs_output_item->currentText();
 		newmh->audio_source = ui->cb_obs_output_audio_source->currentText();
 		newmh->media_source = ui->cb_obs_output_media_source->currentText();
-		newmh->int_override.emplace() << (ui->check_int_override->isChecked()) ? ui->sb_int_override->value() : -1;
+		newmh->int_override.emplace((ui->check_int_override->isChecked()) ? ui->sb_int_override->value() : NULL);
 		newmh->range_min.emplace(ui->sb_min->value());
 		newmh->range_max.emplace(ui->sb_max->value());
-		GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->add_MidiHook(newmh);
+		newmh->setAction();
+		GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->add_MidiHook(std::move(newmh));
 
 		GetConfig().get()->Save();
 		ui->table_mapping->selectRow(row);
 		this->ui->table_mapping->resizeColumnsToContents();
-
 	} else {
 		if (ui->sb_channel->value()) {
 			Utils::alert_popup("Can Not Map Channel 0. \nPlease Click Listen One or Listen Many to listen for MIDI Event to map");
@@ -687,7 +700,7 @@ void PluginWindow::add_new_mapping()
 		}
 	}
 }
-void PluginWindow::add_row_from_hook(MidiHook *hook)
+void PluginWindow::add_row_from_hook(const MidiHook *hook)
 {
 	int row = ui->table_mapping->rowCount();
 	ui->table_mapping->insertRow(row);
@@ -705,7 +718,8 @@ void PluginWindow::add_row_from_hook(MidiHook *hook)
 	QTableWidgetItem *audioitem = new QTableWidgetItem(hook->audio_source);
 	QTableWidgetItem *mediaitem = new QTableWidgetItem(hook->media_source);
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
-
+	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
+	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
 	ui->table_mapping->setItem(row, 0, channelitem);
 	ui->table_mapping->setItem(row, 1, mtypeitem);
 	ui->table_mapping->setItem(row, 2, norcitem);
@@ -718,6 +732,8 @@ void PluginWindow::add_row_from_hook(MidiHook *hook)
 	ui->table_mapping->setItem(row, 9, audioitem);
 	ui->table_mapping->setItem(row, 10, mediaitem);
 	ui->table_mapping->setItem(row, 11, ioveritem);
+	ui->table_mapping->setItem(row, 12, min);
+	ui->table_mapping->setItem(row, 13, max);
 	set_all_cell_colors(row);
 }
 void PluginWindow::set_all_cell_colors(int row)
@@ -725,7 +741,7 @@ void PluginWindow::set_all_cell_colors(int row)
 	QColor midic(0, 170, 255);
 	QColor actc(170, 0, 255);
 
-	for (int col = 0; col <= 11; col++) {
+	for (int col = 0; col <= 13; col++) {
 		auto rc = ui->table_mapping->item(row, col);
 		(col < 3) ? set_cell_colors(midic, rc) : set_cell_colors(actc, rc);
 	}
@@ -800,6 +816,7 @@ void PluginWindow::delete_mapping()
 			}
 		}
 		this->ui->table_mapping->resizeColumnsToContents();
+		UNUSED_PARAMETER(row);
 	}
 }
 void PluginWindow::edit_mapping()
@@ -815,7 +832,7 @@ void PluginWindow::edit_mapping()
 		ui->cb_mtype->setCurrentText(sitems.at(1)->text());
 		ui->sb_norc->setValue(sitems.at(2)->text().toInt());
 		ui->check_use_value->setChecked(dv.at(row)->value_as_filter);
-		ui->slider_value->setValue((dv.at(row)->value_as_filter) ? dv.at(row)->value : 0);
+		ui->slider_value->setValue((dv.at(row)->value_as_filter) ? *dv.at(row)->value : 0);
 		// rebuild actions
 		ui->cb_obs_output_action->setCurrentText(sitems.at(3)->text());
 		ui->cb_obs_output_scene->setCurrentText(sitems.at(4)->text());

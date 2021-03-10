@@ -236,46 +236,48 @@ QStringList get_filter_names(const QString &Source);
 QStringList get_transition_names();
 QString untranslate(const QString &tstring);
 QStringList get_browser_sources();
-const QList<ActionsClass::Actions> AllActions_raw = {ActionsClass::Actions::Do_Transition,
-						     ActionsClass::Actions::Set_Volume,
-						     ActionsClass::Actions::Toggle_Mute,
-						     ActionsClass::Actions::Set_Preview_Scene,
-						     ActionsClass::Actions::Disable_Source_Filter,
-						     ActionsClass::Actions::Enable_Source_Filter,
-						     ActionsClass::Actions::Move_T_Bar,
-						     ActionsClass::Actions::Next_Media,
-						     ActionsClass::Actions::Pause_Recording,
-						     ActionsClass::Actions::Play_Pause_Media,
-						     ActionsClass::Actions::Previous_Media,
-						     ActionsClass::Actions::Reload_Browser_Source,
-						     ActionsClass::Actions::Reset_Scene_Item,
-						     ActionsClass::Actions::Restart_Media,
-						     ActionsClass::Actions::Resume_Recording,
-						     ActionsClass::Actions::Save_Replay_Buffer,
-						     ActionsClass::Actions::Set_Current_Transition,
-						     ActionsClass::Actions::Set_Scene_Transition_Override,
-						     ActionsClass::Actions::Start_Recording,
-						     ActionsClass::Actions::Start_Replay_Buffer,
-						     ActionsClass::Actions::Start_Streaming,
-						     ActionsClass::Actions::Stop_Media,
-						     ActionsClass::Actions::Stop_Recording,
-						     ActionsClass::Actions::Stop_Replay_Buffer,
-						     ActionsClass::Actions::Stop_Streaming,
-						     ActionsClass::Actions::Studio_Mode,
-						     ActionsClass::Actions::Take_Screenshot,
-						     ActionsClass::Actions::Take_Source_Screenshot,
-						     ActionsClass::Actions::Toggle_Source_Filter,
-						     ActionsClass::Actions::Toggle_Source_Visibility,
-						     ActionsClass::Actions::Toggle_Start_Stop_Recording,
-						     ActionsClass::Actions::Toggle_Start_Stop_Replay_Buffer,
-						     ActionsClass::Actions::Toggle_Start_Stop_Streaming,
-						     ActionsClass::Actions::Unpause_Recording,
-						     ActionsClass::Actions::Set_Source_Rotation};
+const QList<ActionsClass::Actions> AllActions_raw = {
+	ActionsClass::Actions::Do_Transition,
+	ActionsClass::Actions::Set_Volume,
+	ActionsClass::Actions::Toggle_Mute,
+	ActionsClass::Actions::Set_Preview_Scene,
+	ActionsClass::Actions::Disable_Source_Filter,
+	ActionsClass::Actions::Enable_Source_Filter,
+	ActionsClass::Actions::Move_T_Bar,
+	ActionsClass::Actions::Next_Media,
+	ActionsClass::Actions::Pause_Recording,
+	ActionsClass::Actions::Play_Pause_Media,
+	ActionsClass::Actions::Previous_Media,
+	ActionsClass::Actions::Reload_Browser_Source,
+	ActionsClass::Actions::Reset_Scene_Item,
+	ActionsClass::Actions::Restart_Media,
+	ActionsClass::Actions::Resume_Recording,
+	ActionsClass::Actions::Save_Replay_Buffer,
+	ActionsClass::Actions::Set_Current_Transition,
+	ActionsClass::Actions::Set_Scene_Transition_Override,
+	ActionsClass::Actions::Start_Recording,
+	ActionsClass::Actions::Start_Replay_Buffer,
+	ActionsClass::Actions::Start_Streaming,
+	ActionsClass::Actions::Stop_Media,
+	ActionsClass::Actions::Stop_Recording,
+	ActionsClass::Actions::Stop_Replay_Buffer,
+	ActionsClass::Actions::Stop_Streaming,
+	ActionsClass::Actions::Studio_Mode,
+	ActionsClass::Actions::Take_Screenshot,
+	ActionsClass::Actions::Take_Source_Screenshot,
+	ActionsClass::Actions::Toggle_Source_Filter,
+	ActionsClass::Actions::Toggle_Source_Visibility,
+	ActionsClass::Actions::Toggle_Start_Stop_Recording,
+	ActionsClass::Actions::Toggle_Start_Stop_Replay_Buffer,
+	ActionsClass::Actions::Toggle_Start_Stop_Streaming,
+	ActionsClass::Actions::Unpause_Recording,
+	ActionsClass::Actions::Set_Source_Rotation,
+	ActionsClass::Actions::Set_Source_Scale,
+};
 const QList<ActionsClass::Actions> not_ready_actions{
 	ActionsClass::Actions::Set_Current_Scene_Collection,
 	ActionsClass::Actions::Reset_Stats,
 	ActionsClass::Actions::Set_Current_Profile,
-	ActionsClass::Actions::Set_Source_Scale,
 	ActionsClass::Actions::Set_Source_Position,
 	ActionsClass::Actions::Set_Source_Filter_Visibility,
 	ActionsClass::Actions::Set_Source_Name,
@@ -314,16 +316,22 @@ public:
 	int channel = 0;
 	int NORC = 0;
 	int value = 0;
-	inline bool isNote() { return (message_type == "Note On" || message_type == "Note Off") ? true : false; };
+	inline bool isNote() { return (message_type == "Note On" || message_type == "Note Off"); };
 	MidiMessage get() { return (MidiMessage) * this; }
 } MidiMessage;
 Q_DECLARE_METATYPE(MidiMessage);
+
 /*
  * Midi Hook Class
  */
 class MidiHook : public QObject {
 	Q_OBJECT
 public:
+	MidiHook();
+	MidiHook(const QString &jsonString);
+	MidiMessage *get_message_from_hook();
+	QString GetData();
+
 	int channel = -1;     // midi channel
 	QString message_type; // Message Type
 	int norc = -1;        // Note or Control
@@ -335,7 +343,7 @@ public:
 	QString item;
 	QString audio_source;
 	QString media_source;
-	int duration = -1;
+	std::optional<int> duration;
 	QString scene_collection;
 	QString profile;
 	QString string_override;
@@ -344,86 +352,14 @@ public:
 	std::optional<int> range_min;
 	std::optional<int> range_max;
 	bool value_as_filter = false;
-	int value = -1;
-	MidiMessage *get_message_from_hook() const
-	{
-		MidiMessage *message = new MidiMessage();
-		message->channel = this->channel;
-		message->message_type = this->message_type;
-		message->NORC = this->norc;
-		return std::move(message);
-	}
-	MidiHook(){};
-	MidiHook(const QString &jsonString)
-	{
-		obs_data_t *data = obs_data_create_from_json(jsonString.toStdString().c_str());
-		channel = obs_data_get_int(data, "channel");
-		message_type = obs_data_get_string(data, "message_type");
-		norc = obs_data_get_int(data, "norc");
-		action = obs_data_get_string(data, "action");
-		scene = obs_data_get_string(data, "scene");
-		source = obs_data_get_string(data, "source");
-		filter = obs_data_get_string(data, "filter");
-		transition = obs_data_get_string(data, "transition");
-		item = obs_data_get_string(data, "item");
-		audio_source = obs_data_get_string(data, "audio_source");
-		media_source = obs_data_get_string(data, "media_source");
-		duration = obs_data_get_int(data, "duration");
-		scene_collection = obs_data_get_string(data, "scene_collection");
-		profile = obs_data_get_string(data, "profile");
-		string_override = obs_data_get_string(data, "string_override");
-		bool_override.emplace(obs_data_get_bool(data, "bool_override"));
-		int_override.emplace(obs_data_get_int(data, "int_override"));
-		int_override.emplace(obs_data_get_int(data, "range_min"));
-		int_override.emplace(obs_data_get_int(data, "range_max"));
-		value_as_filter = obs_data_get_bool(data, "value_as_filter");
-		value = obs_data_get_int(data, "value");
-	}
-	QString GetData()
-	{
-		blog(LOG_DEBUG, "MH::GetData");
-		obs_data_t *data = obs_data_create();
-		obs_data_set_int(data, "channel", channel);
-		obs_data_set_string(data, "message_type", message_type.toStdString().c_str());
-		obs_data_set_int(data, "norc", norc);
-		obs_data_set_string(data, "action", action.toStdString().c_str());
-		if (!scene.isEmpty())
-			obs_data_set_string(data, "scene", scene.toStdString().c_str());
-		if (!source.isEmpty())
-			obs_data_set_string(data, "source", source.toStdString().c_str());
-		if (!filter.isEmpty())
-			obs_data_set_string(data, "filter", filter.toStdString().c_str());
-		if (!transition.isEmpty())
-			obs_data_set_string(data, "transition", transition.toStdString().c_str());
-		if (!item.isEmpty())
-			obs_data_set_string(data, "item", item.toStdString().c_str());
-		if (!audio_source.isEmpty())
-			obs_data_set_string(data, "audio_source", audio_source.toStdString().c_str());
-		if (!media_source.isEmpty())
-			obs_data_set_string(data, "media_source", media_source.toStdString().c_str());
-		if (duration != -1)
-			obs_data_set_int(data, "duration", duration);
-		if (!scene_collection.isEmpty())
-			obs_data_set_string(data, "scene_collection", scene_collection.toStdString().c_str());
-		if (!profile.isEmpty())
-			obs_data_set_string(data, "profile", profile.toStdString().c_str());
-		if (!string_override.isEmpty())
-			obs_data_set_string(data, "string_override", string_override.toStdString().c_str());
-		if (bool_override)
-			obs_data_set_bool(data, "bool_override", *bool_override);
-		if (int_override)
-			obs_data_set_int(data, "int_override", *int_override);
-		if (range_min)
-			obs_data_set_int(data, "range_min", *range_min);
-		if (range_max)
-			obs_data_set_int(data, "range_max", *range_max);
-		if (value_as_filter)
-			obs_data_set_int(data, "value", value);
-		obs_data_set_bool(data, "value_as_filter", value_as_filter);
-		QString hookdata(obs_data_get_json(data));
-		blog(LOG_DEBUG, "Midi Hook JSON = %s", hookdata.toStdString().c_str());
-		obs_data_release(data);
-		blog(LOG_DEBUG, "Midi Hook JSON post release = %s", hookdata.toStdString().c_str());
-		return hookdata;
-	}
+	std::optional<int> value;
+	/// <summary>
+	/// Function pointer to execute action
+	/// </summary>
+	typedef void (*obsc)(MidiHook *, int);
+	obsc obsControlFunction;
+	void EXE(int midiVal);
+	void setAction();
+
+	
 };

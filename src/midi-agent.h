@@ -65,6 +65,7 @@ public:
 	void set_callbacks();
 	QVector<MidiHook *> GetMidiHooks();
 	void set_midi_hooks(QVector<MidiHook *>);
+	void exe_midi_hook_if_exists(MidiMessage *message);
 	void add_MidiHook(MidiHook *hook);
 	void remove_MidiHook(MidiHook *hook);
 	void clear_MidiHooks();
