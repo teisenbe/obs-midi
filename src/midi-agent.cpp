@@ -80,6 +80,7 @@ MidiAgent::~MidiAgent()
 	clear_MidiHooks();
 	close_both_midi_ports();
 	midiin.cancel_callback();
+	//close_both_midi_ports();
 }
 /// <summary>
 /// Checks wether a device is attached and in the device list;
@@ -198,7 +199,6 @@ void MidiAgent::close_midi_input_port()
 void MidiAgent::close_midi_output_port()
 {
 	if (midiout.is_port_open()) {
-		Macro::reset_midi(this);
 		midiout.close_port();
 	}
 }
