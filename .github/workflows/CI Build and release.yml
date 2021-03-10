@@ -28,7 +28,7 @@ jobs:
         with:
           path: ${{ github.workspace }}/
       - run: |
-          echo "${{ steps.version.outputs.version }}" 
+          echo "${{ steps.version.outputs.version }}"
   windows:
     name: 'Windows 64-bit'
     runs-on: [windows-latest]
@@ -110,7 +110,7 @@ jobs:
           echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
       - name: 'Restore QT from Cache: QT'
         uses: actions/cache@v2
-        env: 
+        env:
           CACHE_NAME: 'deps-cache-qt'
         id: deps-cache-qt
         with:
@@ -124,7 +124,7 @@ jobs:
       - name: 'Restore OBSDeps from Cache:'
         uses: actions/cache@v2
         id: deps-cache-deps
-        env: 
+        env:
           CACHE_NAME: 'deps-cache-deps'
         with:
           path: ${{ github.workspace }}\cmbuild\deps
@@ -387,7 +387,7 @@ jobs:
           echo ::set-env name=OBS_GIT_TAG::$(git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --tags --sort='v:refname' https://github.com/obsproject/obs-studio.git '*.*.*'|tail -n 1|cut -d /  -f 3)
       - name: 'Restore obs-studio Cache v ${{ env.OBS_GIT_TAG }}'
         uses: actions/cache@v2
-        env: 
+        env:
           CACHE_NAME: 'macos-obs-studio'
         id: macos-obs-studio
         with:
@@ -431,7 +431,7 @@ jobs:
           echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
       - name: 'Restore Homebrew Cellar Cache'
         uses: actions/cache@v2
-        env: 
+        env:
           CACHE_NAME: 'obs-homebrew-cache'
         id: homebrew-cache
         with:
@@ -442,7 +442,6 @@ jobs:
             /usr/local/Cellar/speexdsp
             /usr/local/Cellar/fdk-aac
             /usr/local/Cellar/xcnotary
-            
           key: ${{ runner.os }}-${{ env.CACHE_NAME }}-${{ env.hbc }}
       - name: 'Install prerequisites (Homebrew)'
         if: steps.homebrew-cache.outputs.cache-hit != 'true'
@@ -456,7 +455,7 @@ jobs:
           chmod 777 /tmp/obsdeps
       - name: 'Restore /tmp/obsdeps Cache'
         uses: actions/cache@v2
-        env: 
+        env:
           CACHE_NAME: 'macos-obs-deps-cache'
         id: macos-deps
         with:
@@ -474,7 +473,6 @@ jobs:
         shell: bash
         working-directory: ${{ github.workspace }}/obs-studio
         run: |
-          
           [ -d build ] ||mkdir build
           cd build
           rm -rf ./*
@@ -518,7 +516,7 @@ jobs:
         if: success()
         working-directory: ${{ github.workspace }}/obs-midi
         shell: bash
-        run: | 
+        run: |
           install_name_tool -change /tmp/obsdeps/lib/QtWidgets.framework/Versions/5/QtWidgets @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets ./build/obs-midi.so
           install_name_tool -change /tmp/obsdeps/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui ./build/obs-midi.so
           install_name_tool -change /tmp/obsdeps/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore ./build/obs-midi.so
