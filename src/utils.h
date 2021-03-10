@@ -27,9 +27,9 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <util/config-file.h>
 #pragma once
 #if __has_include(<obs-frontend-api.h>)
-#include "rtmidi17/rtmidi17.hpp"
+#include "libremidi/libremidi.hpp"
 #else
-#include "rtmidi17/rtmidi17.hpp"
+#include "libremidi/libremidi.hpp"
 #endif
 #include "obs-midi.h"
 typedef void (*PauseRecordingFunction)(bool);
