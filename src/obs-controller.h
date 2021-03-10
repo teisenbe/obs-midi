@@ -30,77 +30,61 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "utils.h"
 #include "obs-midi.h"
 
+namespace OBSController {
 
-class OBSController : public QObject
-{
-	Q_OBJECT
-	// BUTTON ACTIONS
-
-public:
-	OBSController(MidiHook *incoming_midi_hook, int incoming_midi_value);
-	~OBSController() override;
-
-private:
 	/**
-	* Variables
-	*/
-	MidiHook *hook;
-	int midi_value;
-
-private:
-	/**
-	* Actions
-	*/
-	void SetCurrentScene();
-	void SetPreviewScene();
-	void DisablePreview();
-	void EnablePreview();
-	void SetCurrentSceneCollection();
-	void ResetSceneItem();
-	void TransitionToProgram();
-	void SetCurrentTransition();
-	void SetTransitionDuration();  // can also be used with cc
-	void SetSourceVisibility();    // doesn't exist??
-	void ToggleSourceVisibility(); //doesn't exist?
-	void ToggleMute();
-	void SetMute();
-	void StartStopStreaming();
-	void StartStreaming();
-	void StopStreaming();
-	void StartStopRecording();
-	void StartRecording();
-	void StopRecording();
-	void PauseRecording();
-	void ResumeRecording();
-	void StartStopReplayBuffer();
-	void StartReplayBuffer();
-	void StopReplayBuffer();
-	void SaveReplayBuffer();
-	void SetCurrentProfile();
-	void SetTextGDIPlusText();
-	void SetBrowserSourceURL();
-	void ReloadBrowserSource();
-	void TakeScreenshot();
-	void TakeSourceScreenshot();
-	void EnableSourceFilter();
-	void DisableSourceFilter();
-	void ToggleSourceFilter();
+	 * Actions
+	 */
+	void SetCurrentScene(MidiHook *hook, int midiVal);
+	void SetPreviewScene(MidiHook *hook, int midiVal);
+	void DisablePreview(MidiHook *hook, int midiVal);
+	void EnablePreview(MidiHook *hook, int midiVal);
+	void SetCurrentSceneCollection(MidiHook *hook, int midiVal);
+	void ResetSceneItem(MidiHook *hook, int midiVal);
+	void TransitionToProgram(MidiHook *hook, int midiVal);
+	void SetCurrentTransition(MidiHook *hook, int midiVal);
+	void SetTransitionDuration(MidiHook *hook, int midiVal);  // can also be used with cc
+	void SetSourceVisibility(MidiHook *hook, int midiVal);    // doesn't exist??
+	void ToggleSourceVisibility(MidiHook *hook, int midiVal); // doesn't exist?
+	void ToggleMute(MidiHook *hook, int midiVal);
+	void SetMute(MidiHook *hook, int midiVal);
+	void StartStopStreaming(MidiHook *hook, int midiVal);
+	void StartStreaming(MidiHook *hook, int midiVal);
+	void StopStreaming(MidiHook *hook, int midiVal);
+	void StartStopRecording(MidiHook *hook, int midiVal);
+	void StartRecording(MidiHook *hook, int midiVal);
+	void StopRecording(MidiHook *hook, int midiVal);
+	void PauseRecording(MidiHook *hook, int midiVal);
+	void ResumeRecording(MidiHook *hook, int midiVal);
+	void StartStopReplayBuffer(MidiHook *hook, int midiVal);
+	void StartReplayBuffer(MidiHook *hook, int midiVal);
+	void StopReplayBuffer(MidiHook *hook, int midiVal);
+	void SaveReplayBuffer(MidiHook *hook, int midiVal);
+	void SetCurrentProfile(MidiHook *hook, int midiVal);
+	void SetTextGDIPlusText(MidiHook *hook, int midiVal);
+	void SetBrowserSourceURL(MidiHook *hook, int midiVal);
+	void ReloadBrowserSource(MidiHook *hook, int midiVal);
+	void TakeScreenshot(MidiHook *hook, int midiVal);
+	void TakeSourceScreenshot(MidiHook *hook, int midiVal);
+	void EnableSourceFilter(MidiHook *hook, int midiVal);
+	void DisableSourceFilter(MidiHook *hook, int midiVal);
+	void ToggleSourceFilter(MidiHook *hook, int midiVal);
 
 	// CC ACTIONS
-	void SetVolume();
-	void SetSyncOffset();
-	void SetSourcePosition();
-	void SetSourceRotation();
-	void SetSourceScale();
-	void SetGainFilter();
-	void SetOpacity();
-	void move_t_bar();
-	void play_pause_media_source();
-	void toggle_studio_mode();
-	void reset_stats();
-	void restart_media();
-	void stop_media();
-	void play_media();
-	void next_media();
-	void prev_media();
+	void SetVolume(MidiHook *hook, int midiVal);
+	void SetSyncOffset(MidiHook *hook, int midiVal);
+	void SetSourcePosition(MidiHook *hook, int midiVal);
+	void SetSourceRotation(MidiHook *hook, int midiVal);
+	void SetSourceScale(MidiHook *hook, int midiVal);
+	void SetGainFilter(MidiHook *hook, int midiVal);
+	void SetOpacity(MidiHook *hook, int midiVal);
+	void move_t_bar(MidiHook *hook, int midiVal);
+	void play_pause_media_source(MidiHook *hook, int midiVal);
+	void toggle_studio_mode(MidiHook *hook, int midiVal);
+	void reset_stats(MidiHook *hook, int midiVal);
+	void restart_media(MidiHook *hook, int midiVal);
+	void stop_media(MidiHook *hook, int midiVal);
+	void play_media(MidiHook *hook, int midiVal);
+	void next_media(MidiHook *hook, int midiVal);
+	void prev_media(MidiHook *hook, int midiVal);
 };

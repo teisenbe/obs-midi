@@ -16,173 +16,10 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 ////////////////////
 // BUTTON ACTIONS //
 ////////////////////
-OBSController::OBSController(MidiHook *incoming_hook, int incoming_midi_value)
-{
-	if (incoming_hook == nullptr)
-		return;
-	hook = incoming_hook;
-	midi_value = incoming_midi_value;
-	/*
-	 *
-	 * Connect All Actions to handle_obs_event on midi agent
-	 *
-	 */
-	switch (ActionsClass::string_to_action(Utils::untranslate(hook->action))) {
-	case ActionsClass::Actions::Set_Current_Scene:
-		this->SetCurrentScene();
-		break;
-	case ActionsClass::Actions::Reset_Scene_Item:
-		this->ResetSceneItem();
-		break;
-	case ActionsClass::Actions::Toggle_Mute:
-		this->ToggleMute();
-		break;
-	case ActionsClass::Actions::Do_Transition:
-		this->TransitionToProgram();
-		break;
-	case ActionsClass::Actions::Set_Current_Transition:
-		this->SetCurrentTransition();
-		break;
-	case ActionsClass::Actions::Set_Mute:
-		this->SetMute();
-		break;
-	case ActionsClass::Actions::Toggle_Start_Stop_Streaming:
-		this->StartStopStreaming();
-		break;
-	case ActionsClass::Actions::Set_Preview_Scene:
-		this->SetPreviewScene();
-		break;
-	case ActionsClass::Actions::Set_Current_Scene_Collection:
-		this->SetCurrentSceneCollection();
-		break;
-	case ActionsClass::Actions::Set_Transition_Duration:
-		this->SetTransitionDuration();
-		break;
-	case ActionsClass::Actions::Start_Streaming:
-		this->StartStreaming();
-		break;
-	case ActionsClass::Actions::Stop_Streaming:
-		this->StopStreaming();
-		break;
-	case ActionsClass::Actions::Start_Recording:
-		this->StartRecording();
-		break;
-	case ActionsClass::Actions::Stop_Recording:
-		this->StopRecording();
-		break;
-	case ActionsClass::Actions::Start_Replay_Buffer:
-		this->StartReplayBuffer();
-		break;
-	case ActionsClass::Actions::Stop_Replay_Buffer:
-		this->StopReplayBuffer();
-		break;
-	case ActionsClass::Actions::Set_Volume:
-		this->SetVolume();
-		break;
-	case ActionsClass::Actions::Take_Source_Screenshot:
-		this->TakeSourceScreenshot();
-		break;
-	case ActionsClass::Actions::Pause_Recording:
-		this->PauseRecording();
-		break;
-	case ActionsClass::Actions::Enable_Source_Filter:
-		this->EnableSourceFilter();
-		break;
-	case ActionsClass::Actions::Disable_Source_Filter:
-		this->DisableSourceFilter();
-		break;
-	case ActionsClass::Actions::Toggle_Start_Stop_Recording:
-		this->StartStopRecording();
-		break;
-	case ActionsClass::Actions::Toggle_Start_Stop_Replay_Buffer:
-		this->StartStopReplayBuffer();
-		break;
-	case ActionsClass::Actions::Resume_Recording:
-		this->ResumeRecording();
-		break;
-	case ActionsClass::Actions::Save_Replay_Buffer:
-		this->SaveReplayBuffer();
-		break;
-	case ActionsClass::Actions::Set_Current_Profile:
-		this->SetCurrentProfile();
-		break;
-	case ActionsClass::Actions::Toggle_Source_Filter:
-		this->ToggleSourceFilter();
-		break;
-	case ActionsClass::Actions::Set_Text_GDIPlus_Text:
-		this->SetTextGDIPlusText();
-		break;
-	case ActionsClass::Actions::Set_Browser_Source_URL:
-		this->SetBrowserSourceURL();
-		break;
-	case ActionsClass::Actions::Reload_Browser_Source:
-		this->ReloadBrowserSource();
-		break;
-	case ActionsClass::Actions::Set_Sync_Offset:
-		this->SetSyncOffset();
-		break;
-	case ActionsClass::Actions::Set_Source_Rotation:
-		this->SetSourceRotation();
-		break;
-	case ActionsClass::Actions::Set_Source_Position:
-		this->SetSourcePosition();
-		break;
-	case ActionsClass::Actions::Set_Gain_Filter:
-		this->SetGainFilter();
-		break;
-	case ActionsClass::Actions::Set_Opacity:
-		this->SetOpacity();
-		break;
-	case ActionsClass::Actions::Set_Source_Scale:
-		this->SetSourceScale();
-		break;
-	case ActionsClass::Actions::Move_T_Bar:
-		this->move_t_bar();
-		break;
-	case ActionsClass::Actions::Play_Pause_Media:
-		this->play_pause_media_source();
-		break;
-	case ActionsClass::Actions::Studio_Mode:
-		this->toggle_studio_mode();
-		break;
-	case ActionsClass::Actions::Reset_Stats:
-		this->reset_stats();
-		break;
-	case ActionsClass::Actions::Restart_Media:
-		this->restart_media();
-		break;
-	case ActionsClass::Actions::Stop_Media:
-		this->stop_media();
-		break;
-	case ActionsClass::Actions::Previous_Media:
-		this->prev_media();
-		break;
-	case ActionsClass::Actions::Next_Media:
-		this->next_media();
-		break;
-	case ActionsClass::Actions::Toggle_Source_Visibility:
-		this->ToggleSourceVisibility();
-		break;
-	case ActionsClass::Actions::Take_Screenshot:
-		this->TakeScreenshot();
-		break;
-	case ActionsClass::Actions::Disable_Preview:
-		this->DisablePreview();
-		break;
-	case ActionsClass::Actions::Enable_Preview:
-		this->EnablePreview();
-		break;
-	default:
-		blog(LOG_DEBUG, "Action %s Does not exist", incoming_hook->action.toStdString().c_str());
-		break;
-	};
-	this->deleteLater();
-}
-OBSController::~OBSController() = default;
-/**
+/*
  * Sets the currently active scene
  */
-void OBSController::SetCurrentScene()
+void OBSController::SetCurrentScene(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
 	obs_frontend_set_current_scene(source);
@@ -190,7 +27,7 @@ void OBSController::SetCurrentScene()
 /**
  * Sets the scene in preview. Must be in Studio mode or will throw error
  */
-void OBSController::SetPreviewScene()
+void OBSController::SetPreviewScene(MidiHook *hook, int midiVal)
 {
 	if (!obs_frontend_preview_program_mode_active()) {
 		blog(LOG_INFO, "Can Not Set Preview scene -- studio mode not enabled");
@@ -202,7 +39,7 @@ void OBSController::SetPreviewScene()
 	obs_source_t *source = obs_scene_get_source(scene);
 	obs_frontend_set_current_preview_scene(source);
 }
-void OBSController::DisablePreview()
+void OBSController::DisablePreview(MidiHook *hook, int midiVal)
 {
 	obs_queue_task(
 		OBS_TASK_UI,
@@ -214,8 +51,7 @@ void OBSController::DisablePreview()
 		},
 		nullptr, true);
 }
-void OBSController::EnablePreview()
-{
+void OBSController::EnablePreview(MidiHook *hook, int midiVal){
 	obs_queue_task(
 		OBS_TASK_UI,
 		[](void *param) {
@@ -227,16 +63,15 @@ void OBSController::EnablePreview()
 /**
  * Change the active scene collection.
  */
-void OBSController::SetCurrentSceneCollection()
+void OBSController::SetCurrentSceneCollection(MidiHook *hook, int midiVal)
 {
-	// TODO : Check if specified profile exists and if changing is allowed
 	// TODO : Check if specified profile exists and if changing is allowed
 	obs_frontend_set_current_scene_collection(hook->scene_collection.toUtf8());
 }
 /**
  * Reset a scene item.
  */
-void OBSController::ResetSceneItem()
+void OBSController::ResetSceneItem(MidiHook *hook, int midiVal)
 {
 	OBSScene scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
 	if (!scene) {
@@ -258,7 +93,7 @@ void OBSController::ResetSceneItem()
  * Transitions the currently previewed scene to the main output using specified transition.
  * transitionDuration is optional. (milliseconds)
  */
-void OBSController::TransitionToProgram()
+void OBSController::TransitionToProgram(MidiHook *hook, int midiVal)
 {
 	if (state::transitioning)
 		return;
@@ -284,7 +119,7 @@ void OBSController::TransitionToProgram()
 		obs_frontend_set_transition_duration(*hook->int_override);
 		state()._TransitionWasCalled = true;
 	}
-	(obs_frontend_preview_program_mode_active()) ? obs_frontend_preview_program_trigger_transition() : SetCurrentScene();
+	(obs_frontend_preview_program_mode_active()) ? obs_frontend_preview_program_trigger_transition() : SetCurrentScene(hook, midiVal);
 
 	state()._CurrentTransition = QString(obs_source_get_name(transition));
 
@@ -293,20 +128,20 @@ void OBSController::TransitionToProgram()
 /**
  * Set the active transition.
  */
-void OBSController::SetCurrentTransition()
+void OBSController::SetCurrentTransition(MidiHook *hook, int midiVal)
 {
 	Utils::SetTransitionByName(hook->transition);
 }
 /**
  * Set the duration of the currently active transition
  */
-void OBSController::SetTransitionDuration()
+void OBSController::SetTransitionDuration(MidiHook *hook, int midiVal)
 {
-	obs_frontend_set_transition_duration(hook->duration);
+	obs_frontend_set_transition_duration(*hook->duration);
 }
-void OBSController::SetSourceVisibility()
+void OBSController::SetSourceVisibility(MidiHook *hook, int midiVal)
 {
-	obs_sceneitem_set_visible(Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source), midi_value);
+	obs_sceneitem_set_visible(Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source), midiVal);
 }
 /**
  *
@@ -314,7 +149,7 @@ void OBSController::SetSourceVisibility()
  * seems to stop audio from playing as well
  *
  */
-void OBSController::ToggleSourceVisibility()
+void OBSController::ToggleSourceVisibility(MidiHook *hook, int midiVal)
 {
 	auto scene = Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source);
 	if (obs_sceneitem_visible(scene)) {
@@ -326,7 +161,7 @@ void OBSController::ToggleSourceVisibility()
 /**
  * Inverts the mute status of a specified source.
  */
-void OBSController::ToggleMute()
+void OBSController::ToggleMute(MidiHook *hook, int midiVal)
 {
 	if (hook->audio_source.isEmpty()) {
 		throw("sourceName is empty");
@@ -340,7 +175,7 @@ void OBSController::ToggleMute()
 /**
  * Sets the mute status of a specified source.
  */
-void OBSController::SetMute()
+void OBSController::SetMute(MidiHook *hook, int midiVal)
 {
 	if (hook->source.isEmpty()) {
 		throw("sourceName is empty");
@@ -349,12 +184,12 @@ void OBSController::SetMute()
 	if (!source) {
 		throw("specified source doesn't exist");
 	}
-	obs_source_set_muted(source, midi_value);
+	obs_source_set_muted(source, midiVal);
 }
 /**
  * Toggle streaming on or off.
  */
-void OBSController::StartStopStreaming()
+void OBSController::StartStopStreaming(MidiHook *hook, int midiVal)
 {
 	if (obs_frontend_streaming_active())
 		obs_frontend_streaming_stop();
@@ -364,7 +199,7 @@ void OBSController::StartStopStreaming()
 /**
  * Start streaming.
  */
-void OBSController::StartStreaming()
+void OBSController::StartStreaming(MidiHook *hook, int midiVal)
 {
 	if (!obs_frontend_streaming_active()) {
 		obs_frontend_streaming_start();
@@ -373,7 +208,7 @@ void OBSController::StartStreaming()
 /**
  * Stop streaming.
  */
-void OBSController::StopStreaming()
+void OBSController::StopStreaming(MidiHook *hook, int midiVal)
 {
 	if (obs_frontend_streaming_active()) {
 		obs_frontend_streaming_stop();
@@ -382,14 +217,14 @@ void OBSController::StopStreaming()
 /**
  * Toggle recording on or off.
  */
-void OBSController::StartStopRecording()
+void OBSController::StartStopRecording(MidiHook *hook, int midiVal)
 {
 	(obs_frontend_recording_active() ? obs_frontend_recording_stop() : obs_frontend_recording_start());
 }
 /**
  * Start recording.
  */
-void OBSController::StartRecording()
+void OBSController::StartRecording(MidiHook *hook, int midiVal)
 {
 	if (!obs_frontend_recording_active()) {
 		obs_frontend_recording_start();
@@ -398,7 +233,7 @@ void OBSController::StartRecording()
 /**
  * Stop recording.
  */
-void OBSController::StopRecording()
+void OBSController::StopRecording(MidiHook *hook, int midiVal)
 {
 	if (obs_frontend_recording_active()) {
 		obs_frontend_recording_stop();
@@ -407,7 +242,7 @@ void OBSController::StopRecording()
 /**
  * Pause the current recording.
  */
-void OBSController::PauseRecording()
+void OBSController::PauseRecording(MidiHook *hook, int midiVal)
 {
 	if (obs_frontend_recording_active()) {
 		obs_frontend_recording_pause(true);
@@ -416,7 +251,7 @@ void OBSController::PauseRecording()
 /**
  * Resume/unpause the current recording (if paused).
  */
-void OBSController::ResumeRecording()
+void OBSController::ResumeRecording(MidiHook *hook, int midiVal)
 {
 	if (obs_frontend_recording_active()) {
 		obs_frontend_recording_pause(false);
@@ -425,7 +260,7 @@ void OBSController::ResumeRecording()
 /**
  * Toggle the Replay Buffer on/off.
  */
-void OBSController::StartStopReplayBuffer()
+void OBSController::StartStopReplayBuffer(MidiHook *hook, int midiVal)
 {
 	if (!Utils::ReplayBufferEnabled()) {
 		Utils::alert_popup("replay buffer disabled in settings");
@@ -443,7 +278,7 @@ void OBSController::StartStopReplayBuffer()
  * Setting this hotkey is mandatory, even when triggering saves only
  * through obs-midi.
  */
-void OBSController::StartReplayBuffer()
+void OBSController::StartReplayBuffer(MidiHook *hook, int midiVal)
 {
 	if (!Utils::ReplayBufferEnabled()) {
 		Utils::alert_popup("replay buffer disabled in settings");
@@ -456,7 +291,7 @@ void OBSController::StartReplayBuffer()
 /**
  * Stop recording into the Replay Buffer.
  */
-void OBSController::StopReplayBuffer()
+void OBSController::StopReplayBuffer(MidiHook *hook, int midiVal)
 {
 	if (!Utils::ReplayBufferEnabled()) {
 		Utils::alert_popup("replay buffer disabled in settings");
@@ -471,7 +306,7 @@ void OBSController::StopReplayBuffer()
  * basically the same as triggering the "Save Replay Buffer" hotkey.
  * Will return an `error` if the Replay Buffer is not active.
  */
-void OBSController::SaveReplayBuffer()
+void OBSController::SaveReplayBuffer(MidiHook *hook, int midiVal)
 {
 	if (!Utils::ReplayBufferEnabled()) {
 		Utils::alert_popup("replay buffer disabled in settings");
@@ -487,7 +322,7 @@ void OBSController::SaveReplayBuffer()
 	proc_handler_call(ph, "save", &cd);
 	calldata_free(&cd);
 }
-void OBSController::SetCurrentProfile()
+void OBSController::SetCurrentProfile(MidiHook *hook, int midiVal)
 {
 	if (hook->profile.isEmpty()) {
 		throw("profile name is empty");
@@ -495,8 +330,8 @@ void OBSController::SetCurrentProfile()
 	// TODO : check if profile exists
 	obs_frontend_set_current_profile(hook->profile.toUtf8());
 }
-void OBSController::SetTextGDIPlusText() {}
-void OBSController::SetBrowserSourceURL()
+void OBSController::SetTextGDIPlusText(MidiHook *hook, int midiVal) {}
+void OBSController::SetBrowserSourceURL(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
 	QString sourceId = obs_source_get_id(source);
@@ -507,7 +342,7 @@ void OBSController::SetBrowserSourceURL()
 	obs_data_set_string(settings, "url", hook->string_override.toUtf8());
 	obs_source_update(source, settings);
 }
-void OBSController::ReloadBrowserSource()
+void OBSController::ReloadBrowserSource(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
 	obs_properties_t *sourceProperties = obs_source_properties(source);
@@ -515,28 +350,28 @@ void OBSController::ReloadBrowserSource()
 	obs_property_button_clicked(property, source); // This returns a boolean but we ignore it because the browser plugin always returns `false`.
 	obs_properties_destroy(sourceProperties);
 }
-void OBSController::TakeScreenshot()
+void OBSController::TakeScreenshot(MidiHook *hook, int midiVal)
 {
 	obs_frontend_take_screenshot();
 }
-void OBSController::TakeSourceScreenshot()
+void OBSController::TakeSourceScreenshot(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
 	obs_frontend_take_source_screenshot(source);
 }
-void OBSController::EnableSourceFilter()
+void OBSController::EnableSourceFilter(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
 	OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
 	obs_source_set_enabled(filter, true);
 }
-void OBSController::DisableSourceFilter()
+void OBSController::DisableSourceFilter(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
 	OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
 	obs_source_set_enabled(filter, false);
 }
-void OBSController::ToggleSourceFilter()
+void OBSController::ToggleSourceFilter(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
 	OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
@@ -549,40 +384,52 @@ void OBSController::ToggleSourceFilter()
 ////////////////
 // CC ACTIONS //
 ////////////////
-void OBSController::SetVolume()
+void OBSController::SetVolume(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease obsSource = obs_get_source_by_name(hook->audio_source.toUtf8());
-	obs_source_set_volume(obsSource, pow(Utils::mapper(midi_value), 3.0));
+	obs_source_set_volume(obsSource, pow(Utils::mapper(midiVal), 3.0));
 }
 /**
  * Set the audio sync offset of a specified source.
  */
-void OBSController::SetSyncOffset()
+void OBSController::SetSyncOffset(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	obs_source_set_sync_offset(source, midi_value);
+	obs_source_set_sync_offset(source, midiVal);
 }
-void OBSController::SetSourcePosition() {}
-void OBSController::SetSourceRotation()
+void OBSController::SetSourcePosition(MidiHook *hook, int midiVal) {}
+void OBSController::SetSourceRotation(MidiHook *hook, int midiVal)
 {
 	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
 	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
 	uint32_t current = obs_sceneitem_get_alignment(item);
 	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
-	float rotation = Utils::map_to_range((hook->range_min) ? *hook->range_min : 0, (hook->range_max) ? *hook->range_max : 360, midi_value);
+	float rotation = Utils::map_to_range((hook->range_min) ? *hook->range_min : 0, (hook->range_max) ? *hook->range_max : 360, midiVal);
 	obs_sceneitem_set_rot(item, rotation);
 }
-void OBSController::SetSourceScale() {}
-void OBSController::SetGainFilter() {}
-void OBSController::SetOpacity() {}
-void OBSController::move_t_bar()
+void OBSController::SetSourceScale(MidiHook *hook, int midiVal)
+{
+	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+	uint32_t current = obs_sceneitem_get_alignment(item);
+	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
+	obs_sceneitem_set_bounds_type(item, obs_bounds_type::OBS_BOUNDS_NONE);
+	vec2 *scale= new vec2();
+	vec2_set(scale, Utils::map_to_range(0, (hook->range_min) ? *hook->range_min : 1, midiVal),
+		 Utils::map_to_range(0, (hook->range_max) ? *hook->range_max : 1, midiVal));
+	obs_sceneitem_set_scale(item, scale);
+	delete (scale);
+}
+void OBSController::SetGainFilter(MidiHook *hook, int midiVal) {}
+void OBSController::SetOpacity(MidiHook *hook, int midiVal) {}
+void OBSController::move_t_bar(MidiHook *hook, int midiVal)
 {
 	if (obs_frontend_preview_program_mode_active()) {
-		obs_frontend_set_tbar_position(Utils::t_bar_mapper(midi_value));
+		obs_frontend_set_tbar_position(Utils::t_bar_mapper(midiVal));
 		obs_frontend_release_tbar();
 	}
 }
-void OBSController::play_pause_media_source()
+void OBSController::play_pause_media_source(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	switch (obs_source_media_get_state(source)) {
@@ -608,7 +455,7 @@ void OBSController::play_pause_media_source()
 	}
 }
 // TODO:: Fix this
-void OBSController::toggle_studio_mode()
+void OBSController::toggle_studio_mode(MidiHook *hook, int midiVal)
 {
 	obs_queue_task(
 		OBS_TASK_UI,
@@ -619,28 +466,28 @@ void OBSController::toggle_studio_mode()
 		},
 		nullptr, true);
 }
-void OBSController::reset_stats() {}
-void OBSController::restart_media()
+void OBSController::reset_stats(MidiHook *hook, int midiVal) {}
+void OBSController::restart_media(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_restart(source);
 }
-void OBSController::play_media()
+void OBSController::play_media(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_play_pause(source, false);
 }
-void OBSController::stop_media()
+void OBSController::stop_media(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_stop(source);
 }
-void OBSController::next_media()
+void OBSController::next_media(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_next(source);
 }
-void OBSController::prev_media()
+void OBSController::prev_media(MidiHook *hook, int midiVal)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_previous(source);

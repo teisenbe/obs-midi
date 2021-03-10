@@ -37,11 +37,12 @@ private slots:
 	void set_edit_mode();
 	void save_edit();
 	void set_min_max_range_defaults(int min, int max);
+	void set_range_text(QString left, QString right);
 	void reset_to_defaults();
 	void on_scene_change(const QString &newscene);
 	void on_source_change(const QString &newsource);
 	void add_new_mapping();
-	void add_row_from_hook(MidiHook *hook);
+	void add_row_from_hook(const MidiHook *hook);
 	void set_all_cell_colors(int row);
 	void tab_changed(int i);
 	void clear_table();

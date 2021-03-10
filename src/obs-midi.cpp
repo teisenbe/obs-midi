@@ -5,11 +5,10 @@
 #include <obs-module.h>
 #if __has_include(<obs-frontend-api.h>)
 #include <obs-frontend-api.h>
-#include "rtmidi17/rtmidi17.hpp"
 #else
 #include <obs-frontend-api/obs-frontend-api.h>
-#include "rtmidi17/rtmidi17.hpp"
 #endif
+#include "libremidi/libremidi.hpp"
 #include <obs-data.h>
 #include <string>
 #include <map>

@@ -22,12 +22,11 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <QtCore/QString>
 #include <QtCore/QSharedPointer>
 
+#include <libremidi/libremidi.hpp>
 #if __has_include(<obs-frontend-api.h>)
 #include <obs-frontend-api.h>
-#include "rtmidi17/rtmidi17.hpp"
 #else
 #include <obs-frontend-api/obs-frontend-api.h>
-#include "rtmidi17/rtmidi17.hpp"
 #endif
 #include "rpc/RpcEvent.h"
 #include "utils.h"
@@ -59,12 +58,13 @@ public:
 	bool isBidirectional() const;
 	bool set_bidirectional(const bool &state);
 	void set_enabled(const bool &state);
-	static void HandleInput(const rtmidi::message &message, void *userData);
-	static void HandleError(const rtmidi::midi_error &error, const std::string_view &error_message, void *userData);
-	void HandleError(const rtmidi::driver_error &error_type, const std::string_view &error_message, void *userData);
+	static void HandleInput(const libremidi::message &message, void *userData);
+	static void HandleError(const libremidi::midi_error &error, const std::string_view &error_message, void *userData);
+	void HandleError(const libremidi::driver_error &error_type, const std::string_view &error_message, void *userData);
 	void set_callbacks();
 	QVector<MidiHook *> GetMidiHooks();
 	void set_midi_hooks(QVector<MidiHook *>);
+	void exe_midi_hook_if_exists(MidiMessage *message);
 	void add_MidiHook(MidiHook *hook);
 	void remove_MidiHook(MidiHook *hook);
 	void clear_MidiHooks();
@@ -84,8 +84,8 @@ signals:
 
 private:
 	bool loading = true;
-	rtmidi::midi_in midiin;
-	rtmidi::midi_out midiout;
+	libremidi::midi_in midiin;
+	libremidi::midi_out midiout;
 	QString midi_input_name;
 	QString midi_output_name;
 	bool sending{};
