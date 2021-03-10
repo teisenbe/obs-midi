@@ -147,11 +147,11 @@ void MidiAgent::open_midi_input_port()
 	if (!midiin.is_port_open()) {
 		try {
 			midiin.open_port(input_port);
-		} catch (const rtmidi::midi_exception &error) {
+		} catch (const libremidi::midi_exception &error) {
 			blog(LOG_DEBUG, "Midi Error %s", error.what());
-		} catch (const rtmidi::driver_error &error) {
+		} catch (const libremidi::driver_error &error) {
 			blog(LOG_DEBUG, "Midi Driver Error %s", error.what());
-		} catch (const rtmidi::system_error &error) {
+		} catch (const libremidi::system_error &error) {
 			blog(LOG_DEBUG, "Midi system Error %s", error.what());
 		}
 		blog(LOG_INFO, "MIDI device connected In: [%d] %s", input_port, midi_input_name.toStdString().c_str());
@@ -165,11 +165,11 @@ void MidiAgent::open_midi_output_port()
 	if (!midiout.is_port_open()) {
 		try {
 			midiout.open_port(output_port);
-		} catch (const rtmidi::midi_exception &error) {
+		} catch (const libremidi::midi_exception &error) {
 			blog(LOG_DEBUG, "Midi Error %s", error.what());
-		} catch (const rtmidi::driver_error &error) {
+		} catch (const libremidi::driver_error &error) {
 			blog(LOG_DEBUG, "Midi Driver Error %s", error.what());
-		} catch (const rtmidi::system_error &error) {
+		} catch (const libremidi::system_error &error) {
 			blog(LOG_DEBUG, "Midi system Error %s", error.what());
 		}
 	}
@@ -283,7 +283,7 @@ bool MidiAgent::isConnected() const
 /// </summary>
 /// <param name="message"></param>
 /// <param name="userData"></param>
-void MidiAgent::HandleInput(const rtmidi::message &message, void *userData)
+void MidiAgent::HandleInput(const libremidi::message &message, void *userData)
 {
 	MidiAgent *self = static_cast<MidiAgent *>(userData);
 	if (!self->enabled) {
@@ -308,7 +308,7 @@ void MidiAgent::HandleInput(const rtmidi::message &message, void *userData)
 /// <param name="error_type"></param>
 /// <param name="error_message"></param>
 /// <param name="userData"></param>
-void MidiAgent::HandleError(const rtmidi::midi_error &error_type, const std::string_view &error_message, void *userData)
+void MidiAgent::HandleError(const libremidi::midi_error &error_type, const std::string_view &error_message, void *userData)
 {
 	blog(LOG_ERROR, "Midi Error: %s", error_message.data());
 	UNUSED_PARAMETER(error_type);
@@ -764,7 +764,7 @@ void MidiAgent::rename_source(const RpcEvent &event)
 void MidiAgent::send_message_to_midi_device(const MidiMessage &message)
 {
 	if (message.message_type != "none") {
-		std::unique_ptr<rtmidi::message> hello = std::make_unique<rtmidi::message>();
+		std::unique_ptr<libremidi::message> hello = std::make_unique<libremidi::message>();
 		if (message.message_type == "Control Change") {
 			this->midiout.send_message(hello->control_change(message.channel, message.NORC, message.value));
 		} else if (message.message_type == "Note On") {

@@ -18,9 +18,9 @@ endif()
 # THE GOOD STUFF #
 ##################
 # RTMIDI
-add_subdirectory(src/RtMidi17)
-set(obs-midi_DEPS RtMidi17)
-include_directories(src/RtMidi17)
+add_subdirectory(src/libremidi)
+set(obs-midi_DEPS libremidi)
+include_directories(src/libremidi)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
 include_directories(${CMAKE_PACKAGE_PREFIX})
 

@@ -1,6 +1,6 @@
 /*
-obs-websocket
-Copyright (C) 2016-2019	Stéphane Lepin <stephane.lepin@gmail.com>
+obs-midi
+Copyright (C) 2020-2021	Chris Yarger <cpyarger@gmail.com>
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -12,6 +12,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>
 */
+#pragma once
+
 #include <QtCore/QString>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QPushButton>
@@ -25,12 +27,9 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <obs.hpp>
 #include <obs-module.h>
 #include <util/config-file.h>
-#pragma once
-#if __has_include(<obs-frontend-api.h>)
-#include "rtmidi17/rtmidi17.hpp"
-#else
-#include "rtmidi17/rtmidi17.hpp"
-#endif
+
+#include "libremidi/libremidi.hpp"
+
 #include "obs-midi.h"
 typedef void (*PauseRecordingFunction)(bool);
 typedef bool (*RecordingPausedFunction)();
@@ -184,7 +183,7 @@ int mapper2(double x);
 int t_bar_mapper(int x);
 bool is_number(const QString &s);
 bool isJSon(const QString &val);
-QString get_midi_message_type(const rtmidi::message &message);
+QString get_midi_message_type(const libremidi::message &message);
 QStringList GetMediaSourceNames();
 QStringList GetAudioSourceNames();
 QString nsToTimestamp(uint64_t ns);
@@ -225,9 +224,9 @@ bool inrange(int low, int high, int x);
 QStringList GetTransitionsList();
 QStringList GetSceneItemsList(const QString &scene);
 bool inrange(int low, int high, int x);
-QString mtype_to_string(rtmidi::message_type);
-int get_midi_note_or_control(const rtmidi::message &mess);
-int get_midi_value(const rtmidi::message &mess);
+QString mtype_to_string(libremidi::message_type);
+int get_midi_note_or_control(const libremidi::message &mess);
+int get_midi_value(const libremidi::message &mess);
 QSpinBox *GetTransitionDurationControl();
 QStringList TranslateActions();
 QStringList get_scene_names();
@@ -304,7 +303,7 @@ QString translate_action(ActionsClass::Actions action);
 typedef struct MidiMessage {
 public:
 	MidiMessage() = default;
-	void set_message(const rtmidi::message &message)
+	void set_message(const libremidi::message &message)
 	{
 		this->channel = message.get_channel();
 		this->message_type = Utils::get_midi_message_type(message);

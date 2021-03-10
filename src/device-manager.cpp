@@ -55,9 +55,9 @@ void DeviceManager::Unload()
 QStringList DeviceManager::get_input_ports_list()
 {
 	QStringList ports;
-	unsigned int portCount = rtmidi::midi_in().get_port_count();
+	unsigned int portCount = libremidi::midi_in().get_port_count();
 	for (unsigned int i = 0; i < portCount; ++i) {
-		ports.append(QString::fromStdString(rtmidi::midi_in().get_port_name(i)));
+		ports.append(QString::fromStdString(libremidi::midi_in().get_port_name(i)));
 	}
 	return ports;
 }
@@ -67,9 +67,9 @@ QStringList DeviceManager::get_input_ports_list()
 QStringList DeviceManager::get_output_ports_list()
 {
 	QStringList outports;
-	unsigned int portCount = rtmidi::midi_out().get_port_count();
+	unsigned int portCount = libremidi::midi_out().get_port_count();
 	for (unsigned int i = 0; i < portCount; ++i) {
-		outports.append(QString::fromStdString(rtmidi::midi_out().get_port_name(i)));
+		outports.append(QString::fromStdString(libremidi::midi_out().get_port_name(i)));
 	}
 	return outports;
 }
