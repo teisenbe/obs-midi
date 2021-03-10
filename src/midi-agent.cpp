@@ -78,7 +78,7 @@ MidiAgent::~MidiAgent()
 {
 	this->disconnect();
 	clear_MidiHooks();
-	close_both_midi_ports();
+	//close_both_midi_ports();
 	midiin.cancel_callback();
 	//close_both_midi_ports();
 }
@@ -297,9 +297,7 @@ void MidiAgent::HandleInput(const libremidi::message &message, void *userData)
 	x->device_name = self->get_midi_input_name();
 	emit self->broadcast_midi_message((MidiMessage)*x);
 	/** check if hook exists for this note or cc norc and launch it **/
-
 	self->exe_midi_hook_if_exists(x);
-
 	delete x;
 }
 /// <summary>
