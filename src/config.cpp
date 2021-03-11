@@ -18,6 +18,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include "config.h"
 
+#include "obs-module.h"
+
 #define PARAM_DEVICES "MidiDevices"
 
 #define QT_TO_UTF8(str) str.toUtf8().constData()

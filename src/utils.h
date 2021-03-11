@@ -16,21 +16,13 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include <QtCore/QString>
 #include <QtWidgets/QSpinBox>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QLayout>
 #include <QtWidgets/QListWidget>
-#include <QtWidgets/QSystemTrayIcon>
-#include <QtWidgets/QMessageBox>
-#include <cstdio>
+
 #include <iostream>
-#include <vector>
 #include <obs.hpp>
-#include <obs-module.h>
-#include <util/config-file.h>
-
-#include "libremidi/libremidi.hpp"
-
 #include "obs-midi.h"
+
 typedef void (*PauseRecordingFunction)(bool);
 typedef bool (*RecordingPausedFunction)();
 enum class Pairs { Scene, Source, Item, Transition, Audio, Media, Filter, String, Integer, Boolean, Range };
@@ -183,7 +175,6 @@ int mapper2(double x);
 int t_bar_mapper(int x);
 bool is_number(const QString &s);
 bool isJSon(const QString &val);
-QString get_midi_message_type(const libremidi::message &message);
 QStringList GetMediaSourceNames();
 QStringList GetAudioSourceNames();
 QString nsToTimestamp(uint64_t ns);
@@ -224,9 +215,6 @@ bool inrange(int low, int high, int x);
 QStringList GetTransitionsList();
 QStringList GetSceneItemsList(const QString &scene);
 bool inrange(int low, int high, int x);
-QString mtype_to_string(libremidi::message_type);
-int get_midi_note_or_control(const libremidi::message &mess);
-int get_midi_value(const libremidi::message &mess);
 QSpinBox *GetTransitionDurationControl();
 QStringList TranslateActions();
 QStringList get_scene_names();
@@ -298,67 +286,4 @@ const QList<ActionsClass::Actions> not_ready_actions{
 };
 void alert_popup(const QString &message);
 QString translate_action(ActionsClass::Actions action);
-};
-/*Midi Message Structure*/
-typedef struct MidiMessage {
-public:
-	MidiMessage() = default;
-	void set_message(const libremidi::message &message)
-	{
-		this->channel = message.get_channel();
-		this->message_type = Utils::get_midi_message_type(message);
-		this->NORC = Utils::get_midi_note_or_control(message);
-		this->value = Utils::get_midi_value(message);
-	}
-	QString device_name;
-	QString message_type = "none";
-	int channel = 0;
-	int NORC = 0;
-	int value = 0;
-	inline bool isNote() { return (message_type == "Note On" || message_type == "Note Off"); };
-	MidiMessage get() { return (MidiMessage) * this; }
-} MidiMessage;
-Q_DECLARE_METATYPE(MidiMessage);
-
-/*
- * Midi Hook Class
- */
-class MidiHook : public QObject {
-	Q_OBJECT
-public:
-	MidiHook();
-	MidiHook(const QString &jsonString);
-	MidiMessage *get_message_from_hook();
-	QString GetData();
-
-	int channel = -1;     // midi channel
-	QString message_type; // Message Type
-	int norc = -1;        // Note or Control
-	QString action;
-	QString scene;
-	QString source;
-	QString filter;
-	QString transition;
-	QString item;
-	QString audio_source;
-	QString media_source;
-	std::optional<int> duration;
-	QString scene_collection;
-	QString profile;
-	QString string_override;
-	std::optional<bool> bool_override;
-	std::optional<int> int_override;
-	std::optional<int> range_min;
-	std::optional<int> range_max;
-	bool value_as_filter = false;
-	std::optional<int> value;
-	/// <summary>
-	/// Function pointer to execute action
-	/// </summary>
-	typedef void (*obsc)(MidiHook *, int);
-	obsc obsControlFunction;
-	void EXE(int midiVal);
-	void setAction();
-
-	
 };

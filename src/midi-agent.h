@@ -91,8 +91,6 @@ private:
 	bool sending{};
 	int input_port = -1;
 	int output_port = -1;
-	int lastscenebtn{};
-	int last_preview_scene_norc{};
 	bool enabled = false;
 	bool connected = false;
 	bool bidirectional = false;

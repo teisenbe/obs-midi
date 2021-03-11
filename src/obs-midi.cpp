@@ -10,9 +10,6 @@
 #endif
 #include "libremidi/libremidi.hpp"
 #include <obs-data.h>
-#include <string>
-#include <map>
-#include <iostream>
 #include <utility>
 
 #include "obs-midi.h"
@@ -20,8 +17,7 @@
 #include "src/forms/settings-dialog.h"
 #include "config.h"
 #include "device-manager.h"
-#include "utils.h"
-#include "midi-agent.h"
+
 #include "events.h"
 using namespace std;
 

@@ -1,8 +1,6 @@
 #pragma once
-#include "obs-midi.h"
 #include "utils.h"
 #include "midi-agent.h"
-#include <QObject>
 #include <QTimer>
 /**
  *
