@@ -42,7 +42,7 @@ enum class Speed { Slow, Medium, Fast };
 class ActionsClass : public QObject {
 	Q_OBJECT
 public:
-	enum class Actions {
+	enum Actions {
 		Disable_Preview,
 		Disable_Source_Filter,
 		Do_Transition,
@@ -105,65 +105,10 @@ public:
 		Unpause_Recording
 	};
 	Q_ENUM(Actions)
-	enum class obs_event_type {
-		SourceDestroyed,
-		SourceRemoved,
-		SceneChanged,
-		SceneListChanged,
-		SceneCollectionChanged,
-		SceneCollectionListChanged,
-		TransitionChange,
-		TransitionListChanged,
-		ProfileChanged,
-		ProfileListChanged,
-		StreamStarting,
-		StreamStarted,
-		StreamStopping,
-		StreamStopped,
-		RecordingStarting,
-		RecordingStarted,
-		RecordingStopping,
-		RecordingStopped,
-		RecordingPaused,
-		RecordingResumed,
-		ReplayStarting,
-		ReplayStarted,
-		ReplayStopping,
-		ReplayStopped,
-		StudioModeSwitched,
-		PreviewSceneChanged,
-		Exiting,
-		FinishedLoading,
-		FrontendEventHandler,
-		TransitionBegin,
-		TransitionEnd,
-		TransitionVideoEnd,
-		SourceCreated,
-		SourceDestroy,
-		SourceVolumeChanged,
-		SourceMuteStateChanged,
-		SourceAudioSyncOffsetChanged,
-		SourceAudioMixersChanged,
-		SourceRenamed,
-		SourceFilterAdded,
-		SourceFilterRemoved,
-		SourceFilterVisibilityChanged,
-		SourceFilterOrderChanged,
-		SceneReordered,
-		SceneItemAdd,
-		SceneItemDeleted,
-		SceneItemVisibilityChanged,
-		SceneItemLockChanged,
-		SceneItemTransform,
-		SceneItemSelected,
-		SceneItemDeselected,
-		SwitchScenes
-	};
-	Q_ENUM(obs_event_type)
+	
 	static QString action_to_string(const Actions &enumval);
 	static Actions string_to_action(const QString &string);
-	static QString event_to_string(const obs_event_type &enumval);
-	static obs_event_type string_to_event(const QString &string);
+
 };
 typedef void (*PauseRecordingFunction)(bool);
 typedef bool (*RecordingPausedFunction)();

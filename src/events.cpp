@@ -208,6 +208,14 @@ void Events::FrontendEventHandler(enum obs_frontend_event event, void *private_d
 		break;
 	}
 }
+QString Events::event_to_string(const event_type &enumval)
+{
+	return QVariant::fromValue(enumval).toString();
+}
+Events::event_type Events::string_to_event(const QString &action)
+{
+	return QVariant(action).value<event_type>();
+}
 void Events::broadcastUpdate(const char *updateType, obs_data_t *additionalFields = nullptr)
 {
 	std::optional<uint64_t> streamTime;
@@ -384,7 +392,7 @@ void Events::FinishedLoading()
     hookTransitionPlaybackEvents();
     startup();
     started=true;
-	broadcastUpdate("FinishedLoading");
+	broadcastUpdate("LoadingFinished");
 }
 /**
  * The scene list has been modified.

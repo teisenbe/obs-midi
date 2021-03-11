@@ -38,10 +38,8 @@ public:
 	/// <summary>
 	/// Function pointer to execute action
 	/// </summary>
-	typedef void (*obsc)(MidiHook*, int);
+	typedef void (*obsc)(MidiHook*);
 	obsc obsControlFunction;
-	void EXE(int midiVal);
+	void EXE();
 	void setAction();
-
-
 };

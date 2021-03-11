@@ -39,9 +39,9 @@ MidiMessage *MidiHook::get_message_from_hook()
 	message->value = *this->value;
 	return std::move(message);
 }
-void MidiHook::EXE(int MidiVal)
+void MidiHook::EXE()
 {
-	(*obsControlFunction)(this, MidiVal);
+	(*obsControlFunction)(this);
 }
 QString MidiHook::GetData()
 {
@@ -93,149 +93,148 @@ QString MidiHook::GetData()
 void MidiHook::setAction()
 {
 	switch (ActionsClass::string_to_action(Utils::untranslate(action))) {
-	case ActionsClass::Actions::Set_Current_Scene:
-		obsControlFunction = OBSController::SetCurrentScene;
+	case ActionsClass::Set_Current_Scene:
 		break;
-	case ActionsClass::Actions::Reset_Scene_Item:
-		obsControlFunction = OBSController::ResetSceneItem;
+	case ActionsClass::Reset_Scene_Item:
+		obsControlFunction = ResetSceneItem;
 		break;
-	case ActionsClass::Actions::Toggle_Mute:
-		obsControlFunction = OBSController::ToggleMute;
+	case ActionsClass::Toggle_Mute:
+		obsControlFunction = ToggleMute;
 		break;
-	case ActionsClass::Actions::Do_Transition:
-		obsControlFunction = OBSController::TransitionToProgram;
+	case ActionsClass::Do_Transition:
+		obsControlFunction = TransitionToProgram;
 		break;
-	case ActionsClass::Actions::Set_Current_Transition:
-		obsControlFunction = OBSController::SetCurrentTransition;
+	case ActionsClass::Set_Current_Transition:
+		obsControlFunction = SetCurrentTransition;
 		break;
-	case ActionsClass::Actions::Set_Mute:
-		obsControlFunction = OBSController::SetMute;
+	case ActionsClass::Set_Mute:
+		obsControlFunction = SetMute;
 		break;
-	case ActionsClass::Actions::Toggle_Start_Stop_Streaming:
-		obsControlFunction = OBSController::StartStopStreaming;
+	case ActionsClass::Toggle_Start_Stop_Streaming:
+		obsControlFunction = StartStopStreaming;
 		break;
-	case ActionsClass::Actions::Set_Preview_Scene:
-		obsControlFunction = OBSController::SetPreviewScene;
+	case ActionsClass::Set_Preview_Scene:
+		obsControlFunction = SetPreviewScene;
 		break;
-	case ActionsClass::Actions::Set_Current_Scene_Collection:
-		obsControlFunction = OBSController::SetCurrentSceneCollection;
+	case ActionsClass::Set_Current_Scene_Collection:
+		obsControlFunction = SetCurrentSceneCollection;
 		break;
-	case ActionsClass::Actions::Set_Transition_Duration:
-		obsControlFunction = OBSController::SetTransitionDuration;
+	case ActionsClass::Set_Transition_Duration:
+		obsControlFunction = SetTransitionDuration;
 		break;
-	case ActionsClass::Actions::Start_Streaming:
-		obsControlFunction = OBSController::StartStreaming;
+	case ActionsClass::Start_Streaming:
+		obsControlFunction = StartStreaming;
 		break;
-	case ActionsClass::Actions::Stop_Streaming:
-		obsControlFunction = OBSController::StopStreaming;
+	case ActionsClass::Stop_Streaming:
+		obsControlFunction = StopStreaming;
 		break;
-	case ActionsClass::Actions::Start_Recording:
-		obsControlFunction = OBSController::StartRecording;
+	case ActionsClass::Start_Recording:
+		obsControlFunction = StartRecording;
 		break;
-	case ActionsClass::Actions::Stop_Recording:
-		obsControlFunction = OBSController::StopRecording;
+	case ActionsClass::Stop_Recording:
+		obsControlFunction = StopRecording;
 		break;
-	case ActionsClass::Actions::Start_Replay_Buffer:
-		obsControlFunction = OBSController::StartReplayBuffer;
+	case ActionsClass::Start_Replay_Buffer:
+		obsControlFunction = StartReplayBuffer;
 		break;
-	case ActionsClass::Actions::Stop_Replay_Buffer:
-		obsControlFunction = OBSController::StopReplayBuffer;
+	case ActionsClass::Stop_Replay_Buffer:
+		obsControlFunction = StopReplayBuffer;
 		break;
-	case ActionsClass::Actions::Set_Volume:
-		obsControlFunction = OBSController::SetVolume;
+	case ActionsClass::Set_Volume:
+		obsControlFunction = SetVolume;
 		break;
-	case ActionsClass::Actions::Take_Source_Screenshot:
-		obsControlFunction = OBSController::TakeSourceScreenshot;
+	case ActionsClass::Take_Source_Screenshot:
+		obsControlFunction = TakeSourceScreenshot;
 		break;
-	case ActionsClass::Actions::Pause_Recording:
-		obsControlFunction = OBSController::PauseRecording;
+	case ActionsClass::Pause_Recording:
+		obsControlFunction = PauseRecording;
 		break;
-	case ActionsClass::Actions::Enable_Source_Filter:
-		obsControlFunction = OBSController::EnableSourceFilter;
+	case ActionsClass::Enable_Source_Filter:
+		obsControlFunction = EnableSourceFilter;
 		break;
-	case ActionsClass::Actions::Disable_Source_Filter:
-		obsControlFunction = OBSController::DisableSourceFilter;
+	case ActionsClass::Disable_Source_Filter:
+		obsControlFunction = DisableSourceFilter;
 		break;
-	case ActionsClass::Actions::Toggle_Start_Stop_Recording:
-		obsControlFunction = OBSController::StartStopRecording;
+	case ActionsClass::Toggle_Start_Stop_Recording:
+		obsControlFunction = StartStopRecording;
 		break;
-	case ActionsClass::Actions::Toggle_Start_Stop_Replay_Buffer:
-		obsControlFunction = OBSController::StartStopReplayBuffer;
+	case ActionsClass::Toggle_Start_Stop_Replay_Buffer:
+		obsControlFunction = StartStopReplayBuffer;
 		break;
-	case ActionsClass::Actions::Resume_Recording:
-		obsControlFunction = OBSController::ResumeRecording;
+	case ActionsClass::Resume_Recording:
+		obsControlFunction = ResumeRecording;
 		break;
-	case ActionsClass::Actions::Save_Replay_Buffer:
-		obsControlFunction = OBSController::SaveReplayBuffer;
+	case ActionsClass::Save_Replay_Buffer:
+		obsControlFunction = SaveReplayBuffer;
 		break;
-	case ActionsClass::Actions::Set_Current_Profile:
-		obsControlFunction = OBSController::SetCurrentProfile;
+	case ActionsClass::Set_Current_Profile:
+		obsControlFunction = SetCurrentProfile;
 		break;
-	case ActionsClass::Actions::Toggle_Source_Filter:
-		obsControlFunction = OBSController::ToggleSourceFilter;
+	case ActionsClass::Toggle_Source_Filter:
+		obsControlFunction = ToggleSourceFilter;
 		break;
-	case ActionsClass::Actions::Set_Text_GDIPlus_Text:
-		obsControlFunction = OBSController::SetTextGDIPlusText;
+	case ActionsClass::Set_Text_GDIPlus_Text:
+		obsControlFunction = SetTextGDIPlusText;
 		break;
-	case ActionsClass::Actions::Set_Browser_Source_URL:
-		obsControlFunction = OBSController::SetBrowserSourceURL;
+	case ActionsClass::Set_Browser_Source_URL:
+		obsControlFunction = SetBrowserSourceURL;
 		break;
-	case ActionsClass::Actions::Reload_Browser_Source:
-		obsControlFunction = OBSController::ReloadBrowserSource;
+	case ActionsClass::Reload_Browser_Source:
+		obsControlFunction = ReloadBrowserSource;
 		break;
-	case ActionsClass::Actions::Set_Sync_Offset:
-		obsControlFunction = OBSController::SetSyncOffset;
+	case ActionsClass::Set_Sync_Offset:
+		obsControlFunction = SetSyncOffset;
 		break;
-	case ActionsClass::Actions::Set_Source_Rotation:
-		obsControlFunction = OBSController::SetSourceRotation;
+	case ActionsClass::Set_Source_Rotation:
+		obsControlFunction = SetSourceRotation;
 		break;
-	case ActionsClass::Actions::Set_Source_Position:
-		obsControlFunction = OBSController::SetSourcePosition;
+	case ActionsClass::Set_Source_Position:
+		obsControlFunction = SetSourcePosition;
 		break;
-	case ActionsClass::Actions::Set_Gain_Filter:
-		obsControlFunction = OBSController::SetGainFilter;
+	case ActionsClass::Set_Gain_Filter:
+		obsControlFunction = SetGainFilter;
 		break;
-	case ActionsClass::Actions::Set_Opacity:
-		obsControlFunction = OBSController::SetOpacity;
+	case ActionsClass::Set_Opacity:
+		obsControlFunction = SetOpacity;
 		break;
-	case ActionsClass::Actions::Set_Source_Scale:
-		obsControlFunction = OBSController::SetSourceScale;
+	case ActionsClass::Set_Source_Scale:
+		obsControlFunction = SetSourceScale;
 		break;
-	case ActionsClass::Actions::Move_T_Bar:
-		obsControlFunction = OBSController::move_t_bar;
+	case ActionsClass::Move_T_Bar:
+		obsControlFunction = move_t_bar;
 		break;
-	case ActionsClass::Actions::Play_Pause_Media:
-		obsControlFunction = OBSController::play_pause_media_source;
+	case ActionsClass::Play_Pause_Media:
+		obsControlFunction = play_pause_media_source;
 		break;
-	case ActionsClass::Actions::Studio_Mode:
-		obsControlFunction = OBSController::toggle_studio_mode;
+	case ActionsClass::Studio_Mode:
+		obsControlFunction = toggle_studio_mode;
 		break;
-	case ActionsClass::Actions::Reset_Stats:
-		obsControlFunction = OBSController::reset_stats;
+	case ActionsClass::Reset_Stats:
+		obsControlFunction = reset_stats;
 		break;
-	case ActionsClass::Actions::Restart_Media:
-		obsControlFunction = OBSController::restart_media;
+	case ActionsClass::Restart_Media:
+		obsControlFunction = restart_media;
 		break;
-	case ActionsClass::Actions::Stop_Media:
-		obsControlFunction = OBSController::stop_media;
+	case ActionsClass::Stop_Media:
+		obsControlFunction = stop_media;
 		break;
-	case ActionsClass::Actions::Previous_Media:
-		obsControlFunction = OBSController::prev_media;
+	case ActionsClass::Previous_Media:
+		obsControlFunction = prev_media;
 		break;
-	case ActionsClass::Actions::Next_Media:
-		obsControlFunction = OBSController::next_media;
+	case ActionsClass::Next_Media:
+		obsControlFunction = next_media;
 		break;
-	case ActionsClass::Actions::Toggle_Source_Visibility:
-		obsControlFunction = OBSController::ToggleSourceVisibility;
+	case ActionsClass::Toggle_Source_Visibility:
+		obsControlFunction = ToggleSourceVisibility;
 		break;
-	case ActionsClass::Actions::Take_Screenshot:
-		obsControlFunction = OBSController::TakeScreenshot;
+	case ActionsClass::Take_Screenshot:
+		obsControlFunction = TakeScreenshot;
 		break;
-	case ActionsClass::Actions::Disable_Preview:
-		obsControlFunction = OBSController::DisablePreview;
+	case ActionsClass::Disable_Preview:
+		obsControlFunction = DisablePreview;
 		break;
-	case ActionsClass::Actions::Enable_Preview:
-		obsControlFunction = OBSController::EnablePreview;
+	case ActionsClass::Enable_Preview:
+		obsControlFunction = EnablePreview;
 		break;
 	default:
 		blog(LOG_DEBUG, "Action Does not exist");

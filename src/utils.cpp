@@ -925,14 +925,7 @@ ActionsClass::Actions ActionsClass::string_to_action(const QString &action)
 {
 	return QVariant(action).value<ActionsClass::Actions>();
 }
-QString ActionsClass::event_to_string(const ActionsClass::obs_event_type &enumval)
-{
-	return QVariant::fromValue(enumval).toString();
-}
-ActionsClass::obs_event_type ActionsClass::string_to_event(const QString &action)
-{
-	return QVariant(action).value<ActionsClass::obs_event_type>();
-}
+
 QStringList Utils::TranslateActions()
 {
 	QStringList temp;

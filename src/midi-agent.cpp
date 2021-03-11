@@ -350,10 +350,10 @@ void MidiAgent::exe_midi_hook_if_exists(MidiMessage *message)
 		if (midiHook->message_type == message->message_type && midiHook->norc == message->NORC && midiHook->channel == message->channel) {
 			if (midiHook->value_as_filter) {
 				if (message->value == *midiHook->value)
-					midiHook->EXE(message->value);
+					midiHook->EXE();
 			} else {
-
-				midiHook->EXE(message->value);
+				midiHook->value.emplace(message->value);
+				midiHook->EXE();
 			}
 		}
 	}
@@ -640,48 +640,48 @@ void MidiAgent::handle_obs_event(const RpcEvent &event)
 	/// <param name="event"></param>
 	if (hook != NULL) {
 		MidiMessage *message = hook->get_message_from_hook();
-		switch (ActionsClass::string_to_event(event.updateType())) {
-		case ActionsClass::obs_event_type::SourceVolumeChanged:
+		switch (Events::string_to_event(event.updateType())) {
+		case Events::event_type::SourceVolumeChanged:
 			Macro::set_volume(this, message, obs_data_get_double(event.additionalFields(), "volume"));
 			break;
-		case ActionsClass::obs_event_type::SwitchScenes:
+		case Events::event_type::SwitchScenes:
 			Macro::swap_buttons(this, message, state::previous_scene_norc, hook->norc);
 			state::previous_scene_norc = hook->norc;
 			blog(LOG_DEBUG, "Switch Scenes %s", obs_data_get_string(event.additionalFields(), "scene-name"));
 			break;
-		case ActionsClass::obs_event_type::PreviewSceneChanged:
+		case Events::event_type::PreviewSceneChanged:
 			Macro::swap_buttons(this, message, state::previous_preview_scene_norc, hook->norc);
 			state::previous_preview_scene_norc = hook->norc;
 			blog(LOG_DEBUG, "Scene Preview Changed");
 			break;
-		case ActionsClass::obs_event_type::SourceMuteStateChanged:
+		case Events::event_type::SourceMuteStateChanged:
 			Macro::set_on_off(this, message, !obs_data_get_bool(event.additionalFields(), "muted"));
 			break;
-		case ActionsClass::obs_event_type::StreamStarted:
+		case Events::event_type::StreamStarted:
 			Macro::set_on_off(this, message, true);
 			break;
-		case ActionsClass::obs_event_type::StreamStarting:
+		case Events::event_type::StreamStarting:
 			Macro::set_on_off(this, message, false);
 			break;
-		case ActionsClass::obs_event_type::StreamStopped:
+		case Events::event_type::StreamStopped:
 			Macro::set_on_off(this, message, false);
 			break;
-		case ActionsClass::obs_event_type::StreamStopping:
+		case Events::event_type::StreamStopping:
 			Macro::set_on_off(this, message, false);
 			break;
-		case ActionsClass::obs_event_type::RecordingStarted:
+		case Events::event_type::RecordingStarted:
 			Macro::set_on_off(this, message, true);
 			break;
-		case ActionsClass::obs_event_type::RecordingStarting:
+		case Events::event_type::RecordingStarting:
 			Macro::set_on_off(this, message, false);
 			break;
-		case ActionsClass::obs_event_type::RecordingStopping:
+		case Events::event_type::RecordingStopping:
 			Macro::set_on_off(this, message, true);
 			break;
-		case ActionsClass::obs_event_type::RecordingStopped:
+		case Events::event_type::RecordingStopped:
 			Macro::set_on_off(this, message, false);
 			break;
-		case ActionsClass::obs_event_type::SceneChanged:
+		case Events::event_type::SceneChanged:
 			Macro::swap_buttons(this, message, state::previous_scene_norc, hook->norc);
 			state::previous_scene_norc = hook->norc;
 			blog(LOG_DEBUG, "Scene Changed");
@@ -694,26 +694,26 @@ void MidiAgent::handle_obs_event(const RpcEvent &event)
 		/// Events that dont need a hook
 		/// </summary>
 		/// <param name="event"></param>
-		switch (ActionsClass::string_to_event(event.updateType())) {
-		case ActionsClass::obs_event_type::FinishedLoading:
+		switch (Events::string_to_event(event.updateType())) {
+		case Events::event_type::LoadingFinished:
 			startup();
 			break;
-		case ActionsClass::obs_event_type::SourceRenamed:
+		case Events::event_type::SourceRenamed:
 			rename_source(event);
 			break;
-		case ActionsClass::obs_event_type::Exiting:
+		case Events::event_type::Exiting:
 			state::closing = true;
 			break;
-		case ActionsClass::obs_event_type::SourceRemoved:
+		case Events::event_type::SourceRemoved:
 			remove_source(event);
 			break;
-		case ActionsClass::obs_event_type::ProfileChanged:
+		case Events::event_type::ProfileChanged:
 			GetDeviceManager().get()->reload();
 			break;
-		case ActionsClass::obs_event_type::SceneCollectionChanged:
+		case Events::event_type::SceneCollectionChanged:
 			GetDeviceManager().get()->reload();
 			break;
-		case ActionsClass::obs_event_type::TransitionBegin:
+		case Events::event_type::TransitionBegin:
 			break;
 		}
 	}
