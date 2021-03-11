@@ -78,9 +78,7 @@ MidiAgent::~MidiAgent()
 {
 	this->disconnect();
 	clear_MidiHooks();
-	close_both_midi_ports();
 	midiin.cancel_callback();
-	//close_both_midi_ports();
 }
 /// <summary>
 /// Checks wether a device is attached and in the device list;
