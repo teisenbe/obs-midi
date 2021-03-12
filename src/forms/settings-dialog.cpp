@@ -573,6 +573,11 @@ void PluginWindow::obs_actions_select(const QString &action) const
 		case ActionsClass::Actions::Poke_filter:
 			show_pair(Pairs::Source);
 			show_pair(Pairs::Scene);
+			show_pair(Pairs::Integer);
+			ui->check_int_override->setChecked(true);
+			ui->sb_int_override->setValue(500);
+			ui->label_Int_override->setText("Duration * ");
+			ui->sb_int_override->setSuffix(" ms");
 			break;
 		default:
 			hide_all_pairs();

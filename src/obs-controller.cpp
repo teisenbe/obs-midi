@@ -14,6 +14,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "obs-controller.h"
 #include "macro-helpers.h"
 #include <thread>
+#include <chrono>
+#include <stdlib.h>
 ////////////////////
 // BUTTON ACTIONS //
 ////////////////////
@@ -499,7 +501,6 @@ float time_to_sleep(float duration)
 {
 	return duration / 2000;
 }
-#include <future> // std::async, std::future
 
 void fade_in_scene_item(MidiHook *hook)
 {
@@ -513,14 +514,18 @@ void fade_in_scene_item(MidiHook *hook)
 			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
 			obs_source_t *source = obs_sceneitem_get_source(item);
 			float i = 0;
+			float tts = time_to_sleep((hook->int_override) ? (float)*hook->int_override : 500.0f);
 			obs_source_filter_add(source, filter);
 			obs_sceneitem_set_visible(item, true);
 
 			while (i <= 100) {
+		
 				obs_data_set_double(data, "opacity", i);
 				obs_source_update(filter, data);
-				_sleep(time_to_sleep(10000));
 				i = i + 0.05f;
+				
+				_sleep(tts);
+				
 			}
 
 			obs_source_filter_remove(source, filter);
@@ -546,13 +551,13 @@ void fade_out_scene_item(MidiHook *hook)
 			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
 			obs_source_t *source = obs_sceneitem_get_source(item);
 			float i = 100;
-
+			float tts = time_to_sleep((hook->int_override) ? (float)*hook->int_override : 500.0f);
 			obs_source_filter_add(source, filter);
 			while (i >= 0) {
 				obs_data_set_double(data, "opacity", i);
 				obs_source_update(filter, data);
-				_sleep(time_to_sleep(3000));
 				i = i - 0.05f;
+				_sleep(tts);
 			}
 			obs_sceneitem_set_visible(item, false);
 
