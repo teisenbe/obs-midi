@@ -18,8 +18,8 @@ public:
 	int channel = 0;
 	int NORC = 0;
 	int value = 0;
-	inline bool isNote() { return (message_type == "Note On" || message_type == "Note Off"); };
-	MidiMessage get() { return (MidiMessage) * this; }
+	inline bool isNote() const { return (message_type == "Note On" || message_type == "Note Off"); };
+	MidiMessage get() const { return (MidiMessage) * this; }
 	static QString get_midi_message_type(const libremidi::message &message);
 	static QString mtype_to_string(libremidi::message_type);
 	static int get_midi_note_or_control(const libremidi::message &mess);

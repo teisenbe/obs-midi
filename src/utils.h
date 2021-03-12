@@ -43,6 +43,7 @@ class ActionsClass : public QObject {
 	Q_OBJECT
 public:
 	enum Actions {
+		Poke_filter,
 		Disable_Preview,
 		Disable_Source_Filter,
 		Do_Transition,
@@ -108,7 +109,7 @@ public:
 	
 	static QString action_to_string(const Actions &enumval);
 	static Actions string_to_action(const QString &string);
-
+	static float fade_value();
 };
 typedef void (*PauseRecordingFunction)(bool);
 typedef bool (*RecordingPausedFunction)();
@@ -205,6 +206,7 @@ const QList<ActionsClass::Actions> AllActions_raw = {
 	ActionsClass::Actions::Unpause_Recording,
 	ActionsClass::Actions::Set_Source_Rotation,
 	ActionsClass::Actions::Set_Source_Scale,
+	ActionsClass::Poke_filter,
 };
 const QList<ActionsClass::Actions> not_ready_actions{
 	ActionsClass::Actions::Set_Current_Scene_Collection,

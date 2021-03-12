@@ -53,7 +53,7 @@ public:
 	QStringList get_output_ports_list();
 	int get_output_port_number(const QString &deviceName);
 
-	QVector<MidiAgent *> get_active_midi_devices();
+	QVector<MidiAgent *> get_active_midi_devices() const;
 	MidiAgent *get_midi_device(const QString &deviceName);
 	QVector<MidiHook *> get_midi_hooks(const QString &deviceName);
 	MidiAgent *register_midi_device(const int &port, std::optional<int> outport = std::nullopt);

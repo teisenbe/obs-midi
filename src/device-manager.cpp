@@ -27,10 +27,10 @@ void DeviceManager::Load(QString datastring)
 {
 	obs_data_t *incoming_data = obs_data_create_from_json(datastring.toStdString().c_str());
 	obs_data_array_t *data = obs_data_get_array(incoming_data, "MidiDevices");
-	size_t deviceCount = obs_data_array_count(data);
+	const size_t deviceCount = obs_data_array_count(data);
 	for (size_t i = 0; i < deviceCount; i++) {
 		obs_data_t *madata = obs_data_array_item(data, i);
-		MidiAgent *device = new MidiAgent(obs_data_get_json(madata));
+		auto *device = new MidiAgent(obs_data_get_json(madata));
 		obs_data_release(madata);
 		midiAgents.push_back(device);
 	}
@@ -55,7 +55,7 @@ void DeviceManager::Unload()
 QStringList DeviceManager::get_input_ports_list()
 {
 	QStringList ports;
-	unsigned int portCount = libremidi::midi_in().get_port_count();
+	const unsigned int portCount = libremidi::midi_in().get_port_count();
 	for (unsigned int i = 0; i < portCount; ++i) {
 		ports.append(QString::fromStdString(libremidi::midi_in().get_port_name(i)));
 	}
@@ -67,7 +67,7 @@ QStringList DeviceManager::get_input_ports_list()
 QStringList DeviceManager::get_output_ports_list()
 {
 	QStringList outports;
-	unsigned int portCount = libremidi::midi_out().get_port_count();
+	const unsigned int portCount = libremidi::midi_out().get_port_count();
 	for (unsigned int i = 0; i < portCount; ++i) {
 		outports.append(QString::fromStdString(libremidi::midi_out().get_port_name(i)));
 	}
@@ -79,7 +79,7 @@ QStringList DeviceManager::get_output_ports_list()
  */
 int DeviceManager::get_input_port_number(const QString &deviceName)
 {
-	QStringList portsList = get_input_ports_list();
+	const QStringList portsList = get_input_ports_list();
 	if (portsList.contains(deviceName)) {
 		return portsList.indexOf(deviceName);
 	} else {
@@ -99,14 +99,14 @@ int DeviceManager::get_input_port_number(const QString &deviceName)
  */
 int DeviceManager::get_output_port_number(const QString &deviceName)
 {
-	QStringList portsList = get_output_ports_list();
+	const QStringList portsList = get_output_ports_list();
 	if (portsList.contains(deviceName)) {
 		return portsList.indexOf(deviceName);
 	} else {
 		return -1;
 	}
 }
-QVector<MidiAgent *> DeviceManager::get_active_midi_devices()
+QVector<MidiAgent *> DeviceManager::get_active_midi_devices() const
 {
 	return midiAgents;
 }
@@ -138,7 +138,7 @@ QVector<MidiHook *> DeviceManager::get_midi_hooks(const QString &deviceName)
  */
 MidiAgent *DeviceManager::register_midi_device(const int &port, std::optional<int> outport)
 {
-	MidiAgent *midiA = new MidiAgent(port, outport);
+	auto *midiA = new MidiAgent(port, outport);
 	midiA->set_enabled(true);
 	midiAgents.push_back(midiA);
 	return midiA;

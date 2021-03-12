@@ -32,7 +32,7 @@ MidiHook::MidiHook(const QString &json_string)
 }
 MidiMessage *MidiHook::get_message_from_hook()
 {
-	MidiMessage *message = new MidiMessage();
+	auto *message = new MidiMessage();
 	message->channel = this->channel;
 	message->message_type = this->message_type;
 	message->NORC = this->norc;
@@ -236,6 +236,9 @@ void MidiHook::setAction()
 	case ActionsClass::Enable_Preview:
 		obsControlFunction = EnablePreview;
 		break;
+	case ActionsClass::Poke_filter:
+		obsControlFunction = make_opacity_filter;
+
 	default:
 		blog(LOG_DEBUG, "Action Does not exist");
 		break;
