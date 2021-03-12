@@ -17,7 +17,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #pragma once
 #include "Midi_hook.h"
-
+#include <qpropertyanimation.h>
+#include <QTime>
 /**
  * Actions
  */
@@ -73,3 +74,6 @@ void stop_media(MidiHook *hook);
 void play_media(MidiHook *hook);
 void next_media(MidiHook *hook);
 void prev_media(MidiHook *hook);
+void make_opacity_filter(MidiHook *hook);
+float time_to_sleep(float duration);
+

@@ -13,6 +13,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 #include "obs-controller.h"
 #include "macro-helpers.h"
+#include <thread>
 ////////////////////
 // BUTTON ACTIONS //
 ////////////////////
@@ -21,7 +22,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
  */
 void SetCurrentScene(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
 	obs_frontend_set_current_scene(source);
 }
 /**
@@ -32,7 +33,7 @@ void SetPreviewScene(MidiHook *hook)
 	if (!obs_frontend_preview_program_mode_active()) {
 		blog(LOG_INFO, "Can Not Set Preview scene -- studio mode not enabled");
 	}
-	OBSScene scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	const OBSScene scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
 	if (!scene) {
 		blog(LOG_DEBUG, "specified scene doesn't exist");
 	}
@@ -51,7 +52,8 @@ void DisablePreview(MidiHook *hook)
 		},
 		nullptr, true);
 }
-void EnablePreview(MidiHook *hook){
+void EnablePreview(MidiHook *hook)
+{
 	obs_queue_task(
 		OBS_TASK_UI,
 		[](void *param) {
@@ -73,16 +75,16 @@ void SetCurrentSceneCollection(MidiHook *hook)
  */
 void ResetSceneItem(MidiHook *hook)
 {
-	OBSScene scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	const OBSScene scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
 	if (!scene) {
 		throw("requested scene doesn't exist");
 	}
-	OBSSceneItemAutoRelease sceneItem = Utils::GetSceneItemFromName(scene, hook->source);
+	const OBSSceneItemAutoRelease sceneItem = Utils::GetSceneItemFromName(scene, hook->source);
 	if (!sceneItem) {
 		throw("specified scene item doesn't exist");
 	}
-	OBSSourceAutoRelease sceneItemSource = obs_sceneitem_get_source(sceneItem);
-	OBSDataAutoRelease settings = obs_source_get_settings(sceneItemSource);
+	const OBSSourceAutoRelease sceneItemSource = obs_sceneitem_get_source(sceneItem);
+	const OBSDataAutoRelease settings = obs_source_get_settings(sceneItemSource);
 
 	obs_source_update(sceneItemSource, settings);
 }
@@ -151,7 +153,7 @@ void SetSourceVisibility(MidiHook *hook)
  */
 void ToggleSourceVisibility(MidiHook *hook)
 {
-	auto scene = Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source);
+	const auto scene = Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source);
 	if (obs_sceneitem_visible(scene)) {
 		obs_sceneitem_set_visible(scene, false);
 	} else {
@@ -180,7 +182,7 @@ void SetMute(MidiHook *hook)
 	if (hook->source.isEmpty()) {
 		throw("sourceName is empty");
 	}
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
 	if (!source) {
 		throw("specified source doesn't exist");
 	}
@@ -316,7 +318,7 @@ void SaveReplayBuffer(MidiHook *hook)
 		Utils::alert_popup("replay buffer not active");
 		return;
 	}
-	OBSOutputAutoRelease replayOutput = obs_frontend_get_replay_buffer_output();
+	const OBSOutputAutoRelease replayOutput = obs_frontend_get_replay_buffer_output();
 	calldata_t cd = {0};
 	proc_handler_t *ph = obs_output_get_proc_handler(replayOutput);
 	proc_handler_call(ph, "save", &cd);
@@ -333,18 +335,18 @@ void SetCurrentProfile(MidiHook *hook)
 void SetTextGDIPlusText(MidiHook *hook) {}
 void SetBrowserSourceURL(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	QString sourceId = obs_source_get_id(source);
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const QString sourceId = obs_source_get_id(source);
 	if (sourceId != "browser_source" && sourceId != "linuxbrowser-source") {
 		return blog(LOG_DEBUG, "Not a browser Source");
 	}
-	OBSDataAutoRelease settings = obs_source_get_settings(source);
+	const OBSDataAutoRelease settings = obs_source_get_settings(source);
 	obs_data_set_string(settings, "url", hook->string_override.toUtf8());
 	obs_source_update(source, settings);
 }
 void ReloadBrowserSource(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
 	obs_properties_t *sourceProperties = obs_source_properties(source);
 	obs_property_t *property = obs_properties_get(sourceProperties, "refreshnocache");
 	obs_property_button_clicked(property, source); // This returns a boolean but we ignore it because the browser plugin always returns `false`.
@@ -356,25 +358,25 @@ void TakeScreenshot(MidiHook *hook)
 }
 void TakeSourceScreenshot(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
 	obs_frontend_take_source_screenshot(source);
 }
 void EnableSourceFilter(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
 	obs_source_set_enabled(filter, true);
 }
 void DisableSourceFilter(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
 	obs_source_set_enabled(filter, false);
 }
 void ToggleSourceFilter(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
 	if (obs_source_enabled(filter)) {
 		obs_source_set_enabled(filter, false);
 	} else {
@@ -386,7 +388,7 @@ void ToggleSourceFilter(MidiHook *hook)
 ////////////////
 void SetVolume(MidiHook *hook)
 {
-	OBSSourceAutoRelease obsSource = obs_get_source_by_name(hook->audio_source.toUtf8());
+	const OBSSourceAutoRelease obsSource = obs_get_source_by_name(hook->audio_source.toUtf8());
 	obs_source_set_volume(obsSource, pow(Utils::mapper(*hook->value), 3.0));
 }
 /**
@@ -394,8 +396,8 @@ void SetVolume(MidiHook *hook)
  */
 void SetSyncOffset(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	obs_source_set_sync_offset(source,*hook->value);
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	obs_source_set_sync_offset(source, *hook->value);
 }
 void SetSourcePosition(MidiHook *hook) {}
 void SetSourceRotation(MidiHook *hook)
@@ -404,7 +406,7 @@ void SetSourceRotation(MidiHook *hook)
 	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
 	uint32_t current = obs_sceneitem_get_alignment(item);
 	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
-	float rotation = Utils::map_to_range((hook->range_min) ? *hook->range_min : 0, (hook->range_max) ? *hook->range_max : 360,*hook->value);
+	const float rotation = Utils::map_to_range((hook->range_min) ? *hook->range_min : 0, (hook->range_max) ? *hook->range_max : 360, *hook->value);
 	obs_sceneitem_set_rot(item, rotation);
 }
 void SetSourceScale(MidiHook *hook)
@@ -414,9 +416,9 @@ void SetSourceScale(MidiHook *hook)
 	uint32_t current = obs_sceneitem_get_alignment(item);
 	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
 	obs_sceneitem_set_bounds_type(item, obs_bounds_type::OBS_BOUNDS_NONE);
-	vec2 *scale= new vec2();
-	vec2_set(scale, Utils::map_to_range(0, (hook->range_min) ? *hook->range_min : 1,*hook->value),
-		 Utils::map_to_range(0, (hook->range_max) ? *hook->range_max : 1,*hook->value));
+	vec2 *scale = new vec2();
+	vec2_set(scale, Utils::map_to_range(0, (hook->range_min) ? *hook->range_min : 1, *hook->value),
+		 Utils::map_to_range(0, (hook->range_max) ? *hook->range_max : 1, *hook->value));
 	obs_sceneitem_set_scale(item, scale);
 	delete (scale);
 }
@@ -431,7 +433,7 @@ void move_t_bar(MidiHook *hook)
 }
 void play_pause_media_source(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	switch (obs_source_media_get_state(source)) {
 	case obs_media_state::OBS_MEDIA_STATE_PAUSED:
 		obs_source_media_play_pause(source, false);
@@ -469,26 +471,103 @@ void toggle_studio_mode(MidiHook *hook)
 void reset_stats(MidiHook *hook) {}
 void restart_media(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_restart(source);
 }
 void play_media(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_play_pause(source, false);
 }
 void stop_media(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_stop(source);
 }
 void next_media(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_next(source);
 }
 void prev_media(MidiHook *hook)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
 	obs_source_media_previous(source);
+}
+
+float time_to_sleep(float duration)
+{
+	return duration / 2000;
+}
+#include <future> // std::async, std::future
+
+void fade_in_scene_item(MidiHook *hook)
+{
+	try {
+		std::thread th{[=]() {
+			obs_data_t *data = obs_data_create();
+			obs_data_set_double(data, "opacity", 0);
+			OBSSourceAutoRelease filter = obs_source_create_private("color_filter", "ColorFilter", data);
+
+			obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+			obs_source_t *source = obs_sceneitem_get_source(item);
+			float i = 0;
+			obs_source_filter_add(source, filter);
+			obs_sceneitem_set_visible(item, true);
+
+			while (i <= 100) {
+				obs_data_set_double(data, "opacity", i);
+				obs_source_update(filter, data);
+				_sleep(time_to_sleep(10000));
+				i = i + 0.05f;
+			}
+
+			obs_source_filter_remove(source, filter);
+
+			obs_data_release(data);
+		}};
+		th.detach();
+	} catch (std::exception &e) {
+		blog(LOG_DEBUG, "Fade error %s", e.what());
+	}
+}
+
+void fade_out_scene_item(MidiHook *hook)
+{
+	try {
+
+		std::thread th{[=]() {
+			obs_data_t *data = obs_data_create();
+			obs_data_set_double(data, "opacity", 100);
+			OBSSourceAutoRelease filter = obs_source_create_private("color_filter", "ColorFilter", data);
+
+			obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+			obs_source_t *source = obs_sceneitem_get_source(item);
+			float i = 100;
+
+			obs_source_filter_add(source, filter);
+			while (i >= 0) {
+				obs_data_set_double(data, "opacity", i);
+				obs_source_update(filter, data);
+				_sleep(time_to_sleep(3000));
+				i = i - 0.05f;
+			}
+			obs_sceneitem_set_visible(item, false);
+
+			obs_source_filter_remove(source, filter);
+
+			obs_data_release(data);
+		}};
+		th.detach();
+	} catch (std::exception &e) {
+		blog(LOG_DEBUG, "Fade error %s", e.what());
+	}
+}
+void make_opacity_filter(MidiHook *hook)
+{
+	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+	(obs_sceneitem_visible(item)) ? fade_out_scene_item(hook) : fade_in_scene_item(hook);
 }
