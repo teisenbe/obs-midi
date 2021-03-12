@@ -14,8 +14,14 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "obs-controller.h"
 #include "macro-helpers.h"
 #include <thread>
-#include <chrono>
-#include <stdlib.h>
+#ifdef _WIN32
+#include <Windows.h>
+#define tsleep _sleep
+#else
+#include <unistd.h>
+#define tsleep usleep
+#endif
+
 ////////////////////
 // BUTTON ACTIONS //
 ////////////////////
@@ -519,13 +525,12 @@ void fade_in_scene_item(MidiHook *hook)
 			obs_sceneitem_set_visible(item, true);
 
 			while (i <= 100) {
-		
+
 				obs_data_set_double(data, "opacity", i);
 				obs_source_update(filter, data);
 				i = i + 0.05f;
-				
-				_sleep(tts);
-				
+
+			tsleep((int)tts);
 			}
 
 			obs_source_filter_remove(source, filter);
@@ -557,7 +562,7 @@ void fade_out_scene_item(MidiHook *hook)
 				obs_data_set_double(data, "opacity", i);
 				obs_source_update(filter, data);
 				i = i - 0.05f;
-				_sleep(tts);
+				tsleep(tts);
 			}
 			obs_sceneitem_set_visible(item, false);
 
