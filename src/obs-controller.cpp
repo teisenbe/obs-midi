@@ -19,7 +19,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #define tsleep _sleep
 #else
 #include <unistd.h>
-#define tsleep(float x) usleep(x * 1000)
+#define tsleep(x) usleep(x * 1000)
 #endif
 
 ////////////////////
