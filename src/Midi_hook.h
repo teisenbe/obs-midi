@@ -23,6 +23,7 @@ public:
 	QString filter;
 	QString transition;
 	QString item;
+	QString shortcut;
 	QString audio_source;
 	QString media_source;
 	std::optional<int> duration;

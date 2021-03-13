@@ -632,6 +632,31 @@ obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
 		&search);
 	return search.result;
 }
+QStringList Utils::GetShortcutsList()
+{
+        QStringList ShortcutsList;
+
+        const OBSDataArrayAutoRelease shortcutsArray = obs_data_array_create();
+        obs_enum_hotkeys(
+                [](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
+                        auto *shortcutsArray = (obs_data_array_t *)data;
+                        const OBSDataAutoRelease shortcutData = obs_data_create();
+                        obs_data_set_string(shortcutData, "shortcutName", obs_hotkey_get_name(hotkey));
+                        obs_data_array_push_back(shortcutsArray, shortcutData);
+                        return true;
+                },
+                shortcutsArray
+        );
+
+        for (size_t i = 0; i < obs_data_array_count(shortcutsArray); i++) {
+                obs_data_t *data = obs_data_array_item(shortcutsArray, i);
+                ShortcutsList.append(obs_data_get_string(data, "shortcutName"));
+                obs_data_release(data);
+        }
+        obs_data_array_release(shortcutsArray);
+
+        return ShortcutsList;
+}
 bool Utils::ReplayBufferEnabled()
 {
 	config_t *profile = obs_frontend_get_profile_config();
