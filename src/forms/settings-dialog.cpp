@@ -655,7 +655,7 @@ MidiHook *PluginWindow::find_existing_hook() const
 			return hook;
 		}
 	}
-	return false;
+	return nullptr;
 }
 int PluginWindow::find_mapping_location(const MidiMessage &message) const
 {
