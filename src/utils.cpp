@@ -637,7 +637,10 @@ QStringList Utils::GetHotkeysList()
 	obs_enum_hotkeys(
 		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
 			auto list = static_cast<QStringList *>(data);
-			list->append(obs_module_text(obs_hotkey_get_name(hotkey)));
+			QString item(obs_hotkey_get_name(hotkey));
+			if (item.contains("libobs") || item.contains("MediaSource") || item.contains("OBSBasic"))
+				return true;
+			list->append(item);
 			return true;
 		},
 		HotkeysList);
