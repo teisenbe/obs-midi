@@ -637,10 +637,12 @@ QStringList Utils::GetHotkeysList()
         QStringList HotkeysList;
 
         const OBSDataArrayAutoRelease hotkeysArray = obs_data_array_create();
+        blog(LOG_INFO, "Enumerate over hotkeys ->");
         obs_enum_hotkeys(
                 [](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
                         auto *hotkeysArray = (obs_data_array_t *)data;
                         const OBSDataAutoRelease hotkeyData = obs_data_create();
+                        blog(LOG_INFO, " - Found hotkey: %s", obs_hotkey_get_name(hotkey));
                         obs_data_set_string(hotkeyData, "hotkeyName", obs_hotkey_get_name(hotkey));
                         obs_data_array_push_back(hotkeysArray, hotkeyData);
                         return true;
@@ -648,9 +650,11 @@ QStringList Utils::GetHotkeysList()
                 hotkeysArray
         );
 
+        blog(LOG_INFO, "Appending keys to UI ->");
         for (size_t i = 0; i < obs_data_array_count(hotkeysArray); i++) {
                 obs_data_t *data = obs_data_array_item(hotkeysArray, i);
                 HotkeysList.append(obs_data_get_string(data, "hotkeyName"));
+                blog(LOG_INFO, " - Found hotkey: %s", obs_data_get_string(data, "hotkeyName"));
                 obs_data_release(data);
         }
         obs_data_array_release(hotkeysArray);
