@@ -764,7 +764,7 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	ui->table_mapping->setItem(row, 11, ioveritem);
 	ui->table_mapping->setItem(row, 12, min);
 	ui->table_mapping->setItem(row, 13, max);
-	ui->table_mapping->setItem(row, 14, hotkey);
+	ui->table_mapping->setItem(row, 14, hotkey_item);
 	set_all_cell_colors(row);
 }
 void PluginWindow::set_all_cell_colors(const int row) const
