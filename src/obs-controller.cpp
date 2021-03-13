@@ -21,7 +21,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <unistd.h>
 #define tsleep(x) usleep(x * 1000)
 #endif
-
+#include <util/platform.h>
 ////////////////////
 // BUTTON ACTIONS //
 ////////////////////

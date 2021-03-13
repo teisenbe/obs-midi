@@ -41,7 +41,7 @@ private slots:
 	void reset_to_defaults() const;
 	void on_scene_change(const QString &new_scene) const;
 	void on_source_change(const QString &new_source) const;
-	void add_new_mapping() const;
+	void add_new_mapping();
 	void add_row_from_hook(const MidiHook *hook) const;
 	void set_all_cell_colors(int row) const;
 	void tab_changed(int tab) const;
@@ -49,7 +49,7 @@ private slots:
 	void load_table() const;
 	void remove_hook(MidiHook *hook) const;
 	void delete_mapping() const;
-	void edit_mapping() const;
+	void edit_mapping();
 	static void set_cell_colors(const QColor &color, QTableWidgetItem *item);
 
 private:
@@ -70,11 +70,15 @@ private:
 	void add_midi_device(const QString &Name) const;
 	void set_headers() const;
 	void set_configure_title(const QString &title) const;
+	void disconnect_midi_message_handler() const;
 	void connect_midi_message_handler() const;
 	bool map_exists() const;
+	MidiHook * find_existing_hook() const;
 	int find_mapping_location(const MidiMessage &message) const;
 	bool verify_mapping() const;
 
 private:
+	int editrow = -1;
+	bool editmode = false;
 	bool switching = false;
 };

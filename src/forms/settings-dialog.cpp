@@ -47,7 +47,6 @@ void PluginWindow::configure_table() const
 	ui->table_mapping->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
 	ui->table_mapping->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 	ui->table_mapping->setSortingEnabled(true);
-
 }
 void PluginWindow::set_title_window()
 {
@@ -156,9 +155,23 @@ void PluginWindow::on_check_enabled_state_changed(int state) const
 	}
 	GetConfig()->Save();
 }
-void PluginWindow::connect_midi_message_handler() const
+void PluginWindow::disconnect_midi_message_handler() const
 {
 	auto devicemanager = GetDeviceManager();
+	auto devices = devicemanager->get_active_midi_devices();
+	for (auto device : devices) {
+		disconnect(device, SIGNAL(broadcast_midi_message(MidiMessage)), this, SLOT(handle_midi_message(MidiMessage)));
+	}
+}
+void PluginWindow::connect_midi_message_handler() const
+{
+	/**
+	 * Disconnects all midi agents from the ui message handler, to ensure only one device is connected to the UI at a time
+	 */
+	disconnect_midi_message_handler();
+
+	auto devicemanager = GetDeviceManager();
+
 	const auto MAdevice = devicemanager->get_midi_device(ui->list_midi_dev->currentItem()->text());
 	connect(MAdevice, SIGNAL(broadcast_midi_message(MidiMessage)), this,
 		SLOT(handle_midi_message(MidiMessage))); /// name, mtype, norc, channel
@@ -200,32 +213,28 @@ void PluginWindow::set_configure_title(const QString &title) const
 }
 void PluginWindow::handle_midi_message(const MidiMessage &mess) const
 {
-	if (ui->tabWidget->currentIndex() == 1) {
-		if (ui->btn_Listen_one->isChecked() || ui->btn_Listen_many->isChecked()) {
-			blog(1, "got midi message via gui, \n Device = %s \n MType = %s \n NORC : %i \n Channel: %i \n Value: %i",
-			     mess.device_name.toStdString().c_str(), mess.message_type.toStdString().c_str(), mess.NORC, mess.channel, mess.value);
-			ui->mapping_lbl_device_name->setText(mess.device_name);
-			ui->sb_channel->setValue(mess.channel);
-			ui->sb_norc->setValue(mess.NORC);
-			ui->slider_value->setValue(mess.value);
-			ui->cb_mtype->setCurrentText(mess.message_type);
-			ui->btn_Listen_one->setChecked(false);
-		} else {
-			if (find_mapping_location(mess) != -1) {
-				ui->table_mapping->selectRow(find_mapping_location(mess));
-			}
-		}
+	if (ui->tabWidget->currentIndex() != 1)
+		return;
+
+	if (ui->btn_Listen_one->isChecked() || ui->btn_Listen_many->isChecked()) {
+		blog(1, "got midi message via gui, \n Device = %s \n MType = %s \n NORC : %i \n Channel: %i \n Value: %i",
+		     mess.device_name.toStdString().c_str(), mess.message_type.toStdString().c_str(), mess.NORC, mess.channel, mess.value);
+		ui->mapping_lbl_device_name->setText(mess.device_name);
+		ui->sb_channel->setValue(mess.channel);
+		ui->sb_norc->setValue(mess.NORC);
+		ui->slider_value->setValue(mess.value);
+		ui->cb_mtype->setCurrentText(mess.message_type);
+		ui->btn_Listen_one->setChecked(false);
+	}
+	if (find_mapping_location(mess) != -1) {
+		ui->table_mapping->selectRow(find_mapping_location(mess));
 	}
 }
 void PluginWindow::on_bid_enabled_state_changed(int state) const
 {
 	auto device = GetDeviceManager()->get_midi_device(ui->list_midi_dev->currentItem()->text().toStdString().c_str());
 	ui->outbox->setEnabled(state);
-	if (state) {
-		device->set_bidirectional(state);
-	} else {
-		device->set_bidirectional(state);
-	}
+	device->set_bidirectional(state);
 }
 PluginWindow::~PluginWindow()
 {
@@ -330,7 +339,7 @@ void PluginWindow::show_pair(Pairs Pair) const
 		ui->sb_int_override->show();
 		ui->label_Int_override->show();
 		ui->check_int_override->show();
-		ui->check_int_override->setEnabled(false);
+		ui->check_int_override->setChecked(false);
 		break;
 	case Pairs::Range:
 		ui->sb_min->show();
@@ -445,6 +454,9 @@ void PluginWindow::reset_to_defaults() const
 	ui->cb_mtype->setCurrentIndex(0);
 	ui->slider_value->setValue(0);
 	ui->btn_add->setText("Add Mapping");
+	ui->btn_delete->setEnabled(false);
+	ui->table_mapping->clearSelection();
+	this->ui->table_mapping->resizeColumnsToContents();
 }
 void PluginWindow::obs_actions_select(const QString &action) const
 {
@@ -619,9 +631,19 @@ bool PluginWindow::map_exists() const
 	auto devicemanager = GetDeviceManager();
 	const auto hooks = devicemanager->get_midi_hooks(ui->mapping_lbl_device_name->text());
 	for (auto hook : hooks) {
-		if ((hook->channel == ui->sb_channel->value()) && (hook->norc == ui->sb_norc->value()) &&
-		    (hook->message_type == ui->cb_mtype->currentText())) {
+		if ((hook->channel == ui->sb_channel->value()) && (hook->norc == ui->sb_norc->value()) && (hook->message_type == ui->cb_mtype->currentText())) {
 			return true;
+		}
+	}
+	return false;
+}
+MidiHook *PluginWindow::find_existing_hook() const
+{
+	auto devicemanager = GetDeviceManager();
+	const auto hooks = devicemanager->get_midi_hooks(ui->mapping_lbl_device_name->text());
+	for (auto hook : hooks) {
+		if ((hook->channel == ui->sb_channel->value()) && (hook->norc == ui->sb_norc->value()) && (hook->message_type == ui->cb_mtype->currentText())) {
+			return hook;
 		}
 	}
 	return false;
@@ -643,13 +665,16 @@ int PluginWindow::find_mapping_location(const MidiMessage &message) const
 	}
 	return -1;
 }
-void PluginWindow::add_new_mapping() const
+void PluginWindow::add_new_mapping()
 {
 	ui->btn_Listen_many->setChecked(false);
 	ui->btn_Listen_one->setChecked(false);
-	if ((!map_exists() && verify_mapping() && ui->sb_channel->value() != 0) || ((map_exists() && ui->check_use_value->isChecked()))) {
-		const auto row = ui->table_mapping->rowCount();
-		ui->table_mapping->insertRow(row);
+	if ((!map_exists() && verify_mapping() && ui->sb_channel->value() != 0) || ((map_exists() && ui->check_use_value->isChecked())) || editmode) {
+		const auto row = (editmode) ? editrow : ui->table_mapping->rowCount();
+		if (!editmode)
+			ui->table_mapping->insertRow(row);
+
+		editmode = false;
 		// don't delete it, because the table takes ownership of the items
 		const auto channel_item = new QTableWidgetItem(QString::number(ui->sb_channel->value()));
 		const auto message_type_item = new QTableWidgetItem(ui->cb_mtype->currentText());
@@ -683,7 +708,7 @@ void PluginWindow::add_new_mapping() const
 		ui->table_mapping->setItem(row, 14, hotkey_item);
 
 		set_all_cell_colors(row);
-		auto *new_midi_hook = new MidiHook();
+		auto *new_midi_hook = (editmode) ? find_existing_hook() : new MidiHook();
 		new_midi_hook->channel = ui->sb_channel->value();
 		new_midi_hook->message_type = ui->cb_mtype->currentText();
 		new_midi_hook->norc = ui->sb_norc->value();
@@ -698,7 +723,7 @@ void PluginWindow::add_new_mapping() const
 		new_midi_hook->hotkey = ui->cb_obs_output_hotkey->currentText();
 		new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
 		new_midi_hook->media_source = ui->cb_obs_output_media_source->currentText();
-		new_midi_hook->int_override.emplace((ui->check_int_override->isChecked()) ? ui->sb_int_override->value() : NULL);
+		new_midi_hook->int_override.emplace(ui->sb_int_override->value());
 		new_midi_hook->range_min.emplace(ui->sb_min->value());
 		new_midi_hook->range_max.emplace(ui->sb_max->value());
 		new_midi_hook->setAction();
@@ -771,8 +796,8 @@ void PluginWindow::set_all_cell_colors(const int row) const
 {
 	const QColor midi_color(0, 170, 255);
 	const QColor action_color(170, 0, 255);
-
-	for (auto col = 0; col <= 13; col++) {
+	
+	for (auto col = 0; col <= ui->table_mapping->columnCount(); col++) {
 		auto *const rc = ui->table_mapping->item(row, col);
 		(col < 3) ? set_cell_colors(midi_color, rc) : set_cell_colors(action_color, rc);
 	}
@@ -780,6 +805,8 @@ void PluginWindow::set_all_cell_colors(const int row) const
 
 void PluginWindow::set_cell_colors(const QColor &color, QTableWidgetItem *item)
 {
+	if (item == NULL)
+		return;
 	const QColor background_color;
 	background_color.black();
 	item->setBackground(background_color);
@@ -806,8 +833,7 @@ void PluginWindow::clear_table() const
 }
 void PluginWindow::load_table() const
 {
-	auto device_manager = GetDeviceManager();
-	const auto hooks = device_manager->get_midi_hooks(ui->mapping_lbl_device_name->text());
+	const auto hooks = GetDeviceManager()->get_midi_hooks(ui->mapping_lbl_device_name->text());
 	if (hooks.count() > 0) {
 		for (auto *hook : hooks) {
 			add_row_from_hook(hook);
@@ -816,47 +842,42 @@ void PluginWindow::load_table() const
 }
 void PluginWindow::remove_hook(MidiHook *hook) const
 {
-	const auto row = ui->table_mapping->selectedItems().at(0)->row();
-	auto device_manager = GetDeviceManager();
-	auto *dev = device_manager->get_midi_device(ui->mapping_lbl_device_name->text());
-	auto hooks = dev->GetMidiHooks();
-	auto conf = GetConfig();
-	dev->remove_MidiHook(hook);
-	conf->Save();
-	ui->table_mapping->removeRow(row);
-	ui->table_mapping->clearSelection();
+	GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->remove_MidiHook(hook);
+	GetConfig()->Save();
 }
 void PluginWindow::delete_mapping() const
 {
 	if (ui->table_mapping->rowCount() > 0) {
 		auto row = ui->table_mapping->selectedItems().at(0)->row();
-		auto device_manager = GetDeviceManager();
-		auto *dev = device_manager->get_midi_device(ui->mapping_lbl_device_name->text());
-		const auto hooks = dev->GetMidiHooks();
-		auto conf = GetConfig();
-		for (auto* hook : hooks) {
+		blog(LOG_DEBUG, "selected row to delete %i", row);
+		const auto hooks = GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->GetMidiHooks();
+		for (auto *hook : hooks) {
 			if ((hook->channel == ui->sb_channel->value()) && (hook->norc == ui->sb_norc->value()) &&
 			    (hook->message_type == ui->cb_mtype->currentText())) {
 				if (hook->value_as_filter) {
 					if (hook->value == ui->slider_value->value()) {
 						remove_hook(hook);
+						ui->table_mapping->removeRow(row);
+						ui->table_mapping->clearSelection();
 					}
 				} else {
 					remove_hook(hook);
+					ui->table_mapping->removeRow(row);
+					ui->table_mapping->clearSelection();
 				}
 			}
 		}
-		this->ui->table_mapping->resizeColumnsToContents();
-		UNUSED_PARAMETER(row);
 	}
 }
-void PluginWindow::edit_mapping() const
+void PluginWindow::edit_mapping()
 {
 	if (ui->table_mapping->rowCount() != 0) {
+		editmode = true;
 		const auto dv = GetDeviceManager().get()->get_midi_hooks(ui->mapping_lbl_device_name->text());
 		blog(LOG_DEBUG, "hook numners: name %s = %i", ui->mapping_lbl_device_name->text().toStdString().c_str(), dv.count());
 		const auto selected_items = ui->table_mapping->selectedItems();
 		const auto row = selected_items.at(0)->row();
+		editrow = row;
 		blog(LOG_DEBUG, "hook in row= %i", row);
 		// rebuild midi
 		ui->sb_channel->setValue(selected_items.at(0)->text().toInt());
@@ -874,10 +895,11 @@ void PluginWindow::edit_mapping() const
 		ui->cb_obs_output_audio_source->setCurrentText(selected_items.at(9)->text());
 		ui->cb_obs_output_media_source->setCurrentText(selected_items.at(10)->text());
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
-                ui->check_int_override->setChecked(check);
-                ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
-                ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
-        }
+    ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
+		ui->check_int_override->setChecked(check);
+		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
+		ui->btn_delete->setEnabled(true);
+
 }
 bool PluginWindow::verify_mapping() const
 {
