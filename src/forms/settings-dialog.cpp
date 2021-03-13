@@ -302,11 +302,11 @@ void PluginWindow::show_pair(Pairs Pair) const
 		ui->cb_obs_output_item->addItems(Utils::GetSceneItemsList(ui->cb_obs_output_scene->currentText()));
 		ui->w_item->show();
 		break;
-	case Pairs::Shortcut:
-		ui->label_obs_output_shortcut->show();
-		ui->cb_obs_output_shortcut->show();
-		ui->cb_obs_output_shortcut->addItems(Utils::GetShortcutsList());
-		ui->w_shortcut->show();
+	case Pairs::Hotkey:
+		ui->label_obs_output_hotkey->show();
+		ui->cb_obs_output_hotkey->show();
+		ui->cb_obs_output_hotkey->addItems(Utils::GetHotkeysList());
+		ui->w_hotkey->show();
 		break;
 	case Pairs::Audio:
 		ui->cb_obs_output_audio_source->clear();
@@ -379,12 +379,12 @@ void PluginWindow::hide_pair(Pairs Pair) const
 		ui->w_item->hide();
 		blog(LOG_DEBUG, "Hide Item");
 		break;
-	case Pairs::Shortcut:
-		ui->label_obs_output_shortcut->hide();
-		ui->cb_obs_output_shortcut->hide();
-		ui->cb_obs_output_shortcut->clear();
-		ui->w_shortcut->hide();
-		blog(LOG_DEBUG, "Hide Shortcut");
+	case Pairs::Hotkey:
+		ui->label_obs_output_hotkey->hide();
+		ui->cb_obs_output_hotkey->hide();
+		ui->cb_obs_output_hotkey->clear();
+		ui->w_hotkey->hide();
+		blog(LOG_DEBUG, "Hide Hotkey");
 		break;
 	case Pairs::Audio:
 		ui->label_obs_output_audio_source->hide();
@@ -661,7 +661,7 @@ void PluginWindow::add_new_mapping() const
 		const auto int_override = new QTableWidgetItem(QString::number(ui->sb_int_override->value()));
 		const auto min = new QTableWidgetItem(QString::number(ui->sb_min->value()));
 		const auto max = new QTableWidgetItem(QString::number(ui->sb_max->value()));
-                const auto shortcut_item = new QTableWidgetItem(ui->cb_obs_output_shortcut->currentText());
+                const auto hotkey_item = new QTableWidgetItem(ui->cb_obs_output_hotkey->currentText());
 		ui->table_mapping->setItem(row, 0, channel_item);
 		ui->table_mapping->setItem(row, 1, message_type_item);
 		ui->table_mapping->setItem(row, 2, norc_item);
@@ -676,7 +676,7 @@ void PluginWindow::add_new_mapping() const
 		ui->table_mapping->setItem(row, 11, int_override);
 		ui->table_mapping->setItem(row, 12, min);
 		ui->table_mapping->setItem(row, 13, max);
-		ui->table_mapping->setItem(row, 14, shortcut_item);
+		ui->table_mapping->setItem(row, 14, hotkey_item);
 
 		set_all_cell_colors(row);
 		auto *new_midi_hook = new MidiHook();
@@ -691,7 +691,7 @@ void PluginWindow::add_new_mapping() const
 		new_midi_hook->filter = ui->cb_obs_output_filter->currentText();
 		new_midi_hook->transition = ui->cb_obs_output_transition->currentText();
 		new_midi_hook->item = ui->cb_obs_output_item->currentText();
-		new_midi_hook->shortcut = ui->cb_obs_output_shortcut->currentText();
+		new_midi_hook->hotkey = ui->cb_obs_output_hotkey->currentText();
 		new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
 		new_midi_hook->media_source = ui->cb_obs_output_media_source->currentText();
 		new_midi_hook->int_override.emplace((ui->check_int_override->isChecked()) ? ui->sb_int_override->value() : NULL);
@@ -870,7 +870,7 @@ void PluginWindow::edit_mapping() const
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
                 ui->check_int_override->setChecked(check);
                 ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
-                ui->cb_obs_output_shortcut->setCurrentText(selected_items.at(14)->text());
+                ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
         }
 }
 bool PluginWindow::verify_mapping() const
@@ -897,7 +897,7 @@ bool PluginWindow::verify_mapping() const
 	if (ui->cb_obs_output_media_source->isVisible() && ui->cb_obs_output_media_source->count() == 0) {
 		results++;
 	}
-	if (ui->cb_obs_output_shortcut->isVisible() && ui->cb_obs_output_shortcut->count() == 0) {
+	if (ui->cb_obs_output_hotkey->isVisible() && ui->cb_obs_output_hotkey->count() == 0) {
 		results++;
 	}
 	if (results > 0) {

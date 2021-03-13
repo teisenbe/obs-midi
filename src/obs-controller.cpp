@@ -393,9 +393,9 @@ void ToggleSourceFilter(MidiHook *hook)
 }
 void TriggerHotkeyByName(MidiHook *hook)
 {
-	obs_hotkey_t *hk = Utils::FindHotkeyByName(hook->shortcut);
+	obs_hotkey_t *hk = Utils::FindHotkeyByName(hook->hotkey);
 	if (!hk) {
-		throw("hotkey not found");
+		throw("Hotkey not found");
 	}
 	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(hk), true);
 }

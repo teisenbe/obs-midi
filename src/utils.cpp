@@ -632,30 +632,30 @@ obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
 		&search);
 	return search.result;
 }
-QStringList Utils::GetShortcutsList()
+QStringList Utils::GetHotkeysList()
 {
-        QStringList ShortcutsList;
+        QStringList HotkeysList;
 
-        const OBSDataArrayAutoRelease shortcutsArray = obs_data_array_create();
+        const OBSDataArrayAutoRelease hotkeysArray = obs_data_array_create();
         obs_enum_hotkeys(
                 [](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
-                        auto *shortcutsArray = (obs_data_array_t *)data;
-                        const OBSDataAutoRelease shortcutData = obs_data_create();
-                        obs_data_set_string(shortcutData, "shortcutName", obs_hotkey_get_name(hotkey));
-                        obs_data_array_push_back(shortcutsArray, shortcutData);
+                        auto *hotkeysArray = (obs_data_array_t *)data;
+                        const OBSDataAutoRelease hotkeyData = obs_data_create();
+                        obs_data_set_string(hotkeyData, "hotkeyName", obs_hotkey_get_name(hotkey));
+                        obs_data_array_push_back(hotkeysArray, hotkeyData);
                         return true;
                 },
-                shortcutsArray
+                hotkeysArray
         );
 
-        for (size_t i = 0; i < obs_data_array_count(shortcutsArray); i++) {
-                obs_data_t *data = obs_data_array_item(shortcutsArray, i);
-                ShortcutsList.append(obs_data_get_string(data, "shortcutName"));
+        for (size_t i = 0; i < obs_data_array_count(hotkeysArray); i++) {
+                obs_data_t *data = obs_data_array_item(hotkeysArray, i);
+                HotkeysList.append(obs_data_get_string(data, "hotkeyName"));
                 obs_data_release(data);
         }
-        obs_data_array_release(shortcutsArray);
+        obs_data_array_release(hotkeysArray);
 
-        return ShortcutsList;
+        return HotkeysList;
 }
 bool Utils::ReplayBufferEnabled()
 {

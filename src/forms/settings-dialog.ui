@@ -1346,7 +1346,7 @@
            </widget>
           </item>
           <item row="12" column="0">
-           <widget class="QWidget" name="w_shortcut" native="true">
+           <widget class="QWidget" name="w_hotkey" native="true">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -1364,7 +1364,7 @@
               <number>1</number>
              </property>
              <item row="0" column="0">
-              <widget class="QLabel" name="label_obs_output_shortcut">
+              <widget class="QLabel" name="label_obs_output_hotkey">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -1384,12 +1384,12 @@
                 </size>
                </property>
                <property name="text">
-                <string>Shortcut</string>
+                <string>Hotkey</string>
                </property>
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="cb_obs_output_shortcut">
+              <widget class="QComboBox" name="cb_obs_output_hotkey">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -1672,7 +1672,7 @@
          </column>
          <column>
           <property name="text">
-           <string>Shortcut</string>
+           <string>Hotkey</string>
           </property>
          </column>
         </widget>

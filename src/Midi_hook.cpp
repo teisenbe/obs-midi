@@ -15,7 +15,7 @@ MidiHook::MidiHook(const QString &json_string)
 	filter = obs_data_get_string(data, "filter");
 	transition = obs_data_get_string(data, "transition");
 	item = obs_data_get_string(data, "item");
-	shortcut = obs_data_get_string(data, "shortcut");
+        hotkey = obs_data_get_string(data, "hotkey");
 	audio_source = obs_data_get_string(data, "audio_source");
 	media_source = obs_data_get_string(data, "media_source");
 	duration.emplace(obs_data_get_int(data, "duration"));
@@ -62,8 +62,8 @@ QString MidiHook::GetData()
 		obs_data_set_string(data, "transition", transition.toStdString().c_str());
 	if (!item.isEmpty())
 		obs_data_set_string(data, "item", item.toStdString().c_str());
-	if (!shortcut.isEmpty())
-		obs_data_set_string(data, "shortcut", shortcut.toStdString().c_str());
+	if (!hotkey.isEmpty())
+		obs_data_set_string(data, "hotkey", hotkey.toStdString().c_str());
 	if (!audio_source.isEmpty())
 		obs_data_set_string(data, "audio_source", audio_source.toStdString().c_str());
 	if (!media_source.isEmpty())

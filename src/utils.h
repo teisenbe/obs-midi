@@ -25,7 +25,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 typedef void (*PauseRecordingFunction)(bool);
 typedef bool (*RecordingPausedFunction)();
-enum class Pairs { Scene, Source, Item, Transition, Audio, Media, Filter, String, Integer, Boolean, Range, Shortcut };
+enum class Pairs { Scene, Source, Item, Transition, Audio, Media, Filter, String, Integer, Boolean, Range, Hotkey };
 enum class Alignment {
 	Top_Left = OBS_ALIGN_LEFT | OBS_ALIGN_TOP,
 	Top_Center = OBS_ALIGN_TOP | OBS_ALIGN_CENTER,
@@ -153,7 +153,7 @@ const char *GetRecordingFolder();
 bool SetRecordingFolder(const char *path);
 QString ParseDataToQueryString(obs_data_t *data);
 obs_hotkey_t *FindHotkeyByName(const QString &name);
-QStringList GetShortcutsList();
+QStringList GetHotkeysList();
 bool ReplayBufferEnabled();
 void StartReplayBuffer();
 bool IsRPHotkeySet();
