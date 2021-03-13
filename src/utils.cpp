@@ -633,7 +633,6 @@ obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
 }
 QStringList Utils::GetHotkeysList()
 {
-	
 	QStringList *HotkeysList=new QStringList();
 	obs_enum_hotkeys(
 		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
@@ -642,7 +641,6 @@ QStringList Utils::GetHotkeysList()
 			return true;
 		},
 		HotkeysList);
-
 	return (QStringList)*HotkeysList;
 }
 bool Utils::ReplayBufferEnabled()

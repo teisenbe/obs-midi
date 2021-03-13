@@ -27,7 +27,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "../device-manager.h"
 #include "../config.h"
 #include "Macros.h"
-
 PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(new Ui::PluginWindow)
 {
 	ui->setupUi(this);
@@ -312,10 +311,9 @@ void PluginWindow::show_pair(Pairs Pair) const
 		ui->w_item->show();
 		break;
 	case Pairs::Hotkey:
-		
 		ui->label_obs_output_hotkey->show();
 		ui->cb_obs_output_hotkey->show();
-		ui->cb_obs_output_hotkey->addItems(translatelist(Utils::GetHotkeysList()));
+		ui->cb_obs_output_hotkey->addItems(Utils::GetHotkeysList());
 		ui->w_hotkey->show();
 		break;
 	case Pairs::Audio:
@@ -426,13 +424,6 @@ void PluginWindow::hide_pair(Pairs Pair) const
 		ui->label_max->hide();
 		break;
 	}
-}
-QStringList PluginWindow::translatelist(QStringList list) {
-	QStringList newlist;
-	for (auto item : list) {
-		newlist.append(tr(item.toStdString().c_str()));
-	}
-	return newlist;
 }
 void PluginWindow::hide_all_pairs() const
 {
@@ -909,7 +900,6 @@ void PluginWindow::edit_mapping()
 		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
 		ui->btn_delete->setEnabled(true);
 	}
-
 }
 
 bool PluginWindow::verify_mapping() const
