@@ -15,6 +15,7 @@ MidiHook::MidiHook(const QString &json_string)
 	filter = obs_data_get_string(data, "filter");
 	transition = obs_data_get_string(data, "transition");
 	item = obs_data_get_string(data, "item");
+        hotkey = obs_data_get_string(data, "hotkey");
 	audio_source = obs_data_get_string(data, "audio_source");
 	media_source = obs_data_get_string(data, "media_source");
 	duration.emplace(obs_data_get_int(data, "duration"));
@@ -61,6 +62,8 @@ QString MidiHook::GetData()
 		obs_data_set_string(data, "transition", transition.toStdString().c_str());
 	if (!item.isEmpty())
 		obs_data_set_string(data, "item", item.toStdString().c_str());
+	if (!hotkey.isEmpty())
+		obs_data_set_string(data, "hotkey", hotkey.toStdString().c_str());
 	if (!audio_source.isEmpty())
 		obs_data_set_string(data, "audio_source", audio_source.toStdString().c_str());
 	if (!media_source.isEmpty())
@@ -236,8 +239,12 @@ void MidiHook::setAction()
 	case ActionsClass::Enable_Preview:
 		obsControlFunction = EnablePreview;
 		break;
-	case ActionsClass::Poke_filter:
+	case ActionsClass::Toggle_Fade_Source:
 		obsControlFunction = make_opacity_filter;
+		break;
+        case ActionsClass::Trigger_Hotkey_By_Name:
+                obsControlFunction = TriggerHotkeyByName;
+		break;
 
 	default:
 		blog(LOG_DEBUG, "Action Does not exist");

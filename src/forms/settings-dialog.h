@@ -66,6 +66,7 @@ private:
 	void load_devices();
 	void show_pair(Pairs pair) const;
 	void hide_pair(Pairs pair) const;
+	static QStringList translatelist(QStringList list);
 	void hide_all_pairs() const;
 	void add_midi_device(const QString &Name) const;
 	void set_headers() const;

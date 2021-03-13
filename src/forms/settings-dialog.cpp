@@ -21,13 +21,12 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <QDialogButtonBox>
 
 #include <obs-module.h>
-
+#include <QObject>
 #include "ui_settings-dialog.h"
 #include "settings-dialog.h"
 #include "../device-manager.h"
 #include "../config.h"
 #include "Macros.h"
-
 PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(new Ui::PluginWindow)
 {
 	ui->setupUi(this);
@@ -311,6 +310,12 @@ void PluginWindow::show_pair(Pairs Pair) const
 		ui->cb_obs_output_item->addItems(Utils::GetSceneItemsList(ui->cb_obs_output_scene->currentText()));
 		ui->w_item->show();
 		break;
+	case Pairs::Hotkey:
+		ui->label_obs_output_hotkey->show();
+		ui->cb_obs_output_hotkey->show();
+		ui->cb_obs_output_hotkey->addItems(Utils::GetHotkeysList());
+		ui->w_hotkey->show();
+		break;
 	case Pairs::Audio:
 		ui->cb_obs_output_audio_source->clear();
 		ui->cb_obs_output_audio_source->addItems(Utils::GetAudioSourceNames());
@@ -343,6 +348,7 @@ void PluginWindow::show_pair(Pairs Pair) const
 		break;
 	}
 }
+
 void PluginWindow::hide_pair(Pairs Pair) const
 {
 	switch (Pair) {
@@ -381,6 +387,13 @@ void PluginWindow::hide_pair(Pairs Pair) const
 		ui->cb_obs_output_item->clear();
 		ui->w_item->hide();
 		blog(LOG_DEBUG, "Hide Item");
+		break;
+	case Pairs::Hotkey:
+		ui->label_obs_output_hotkey->hide();
+		ui->cb_obs_output_hotkey->hide();
+		ui->cb_obs_output_hotkey->clear();
+		ui->w_hotkey->hide();
+		blog(LOG_DEBUG, "Hide Hotkey");
 		break;
 	case Pairs::Audio:
 		ui->label_obs_output_audio_source->hide();
@@ -425,6 +438,7 @@ void PluginWindow::hide_all_pairs() const
 	hide_pair(Pairs::Integer);
 	hide_pair(Pairs::Boolean);
 	hide_pair(Pairs::Range);
+	hide_pair(Pairs::Hotkey);
 }
 void PluginWindow::reset_to_defaults() const
 {
@@ -582,7 +596,7 @@ void PluginWindow::obs_actions_select(const QString &action) const
 			set_min_max_range_defaults(10, 10);
 			set_range_text("Max X", "Max Y");
 			break;
-		case ActionsClass::Actions::Poke_filter:
+		case ActionsClass::Actions::Toggle_Fade_Source:
 			show_pair(Pairs::Source);
 			show_pair(Pairs::Scene);
 			show_pair(Pairs::Integer);
@@ -591,6 +605,9 @@ void PluginWindow::obs_actions_select(const QString &action) const
 			ui->label_Int_override->setText("Duration * ");
 			ui->sb_int_override->setSuffix(" ms");
 			break;
+                case ActionsClass::Actions::Trigger_Hotkey_By_Name:
+                        show_pair(Pairs::Hotkey);
+                        break;
 		default:
 			hide_all_pairs();
 			break;
@@ -673,6 +690,7 @@ void PluginWindow::add_new_mapping()
 		const auto int_override = new QTableWidgetItem(QString::number(ui->sb_int_override->value()));
 		const auto min = new QTableWidgetItem(QString::number(ui->sb_min->value()));
 		const auto max = new QTableWidgetItem(QString::number(ui->sb_max->value()));
+                const auto hotkey_item = new QTableWidgetItem(ui->cb_obs_output_hotkey->currentText());
 		ui->table_mapping->setItem(row, 0, channel_item);
 		ui->table_mapping->setItem(row, 1, message_type_item);
 		ui->table_mapping->setItem(row, 2, norc_item);
@@ -687,6 +705,7 @@ void PluginWindow::add_new_mapping()
 		ui->table_mapping->setItem(row, 11, int_override);
 		ui->table_mapping->setItem(row, 12, min);
 		ui->table_mapping->setItem(row, 13, max);
+		ui->table_mapping->setItem(row, 14, hotkey_item);
 
 		set_all_cell_colors(row);
 		auto *new_midi_hook = (editmode) ? find_existing_hook() : new MidiHook();
@@ -701,6 +720,7 @@ void PluginWindow::add_new_mapping()
 		new_midi_hook->filter = ui->cb_obs_output_filter->currentText();
 		new_midi_hook->transition = ui->cb_obs_output_transition->currentText();
 		new_midi_hook->item = ui->cb_obs_output_item->currentText();
+		new_midi_hook->hotkey = ui->cb_obs_output_hotkey->currentText();
 		new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
 		new_midi_hook->media_source = ui->cb_obs_output_media_source->currentText();
 		new_midi_hook->int_override.emplace(ui->sb_int_override->value());
@@ -751,6 +771,7 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	auto *item_item = new QTableWidgetItem(hook->item);
 	auto *audio_item = new QTableWidgetItem(hook->audio_source);
 	auto *media_item = new QTableWidgetItem(hook->media_source);
+	auto *hotkey_item = new QTableWidgetItem(hook->hotkey);
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
 	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
 	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
@@ -768,6 +789,7 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	ui->table_mapping->setItem(row, 11, ioveritem);
 	ui->table_mapping->setItem(row, 12, min);
 	ui->table_mapping->setItem(row, 13, max);
+	ui->table_mapping->setItem(row, 14, hotkey_item);
 	set_all_cell_colors(row);
 }
 void PluginWindow::set_all_cell_colors(const int row) const
@@ -873,11 +895,13 @@ void PluginWindow::edit_mapping()
 		ui->cb_obs_output_audio_source->setCurrentText(selected_items.at(9)->text());
 		ui->cb_obs_output_media_source->setCurrentText(selected_items.at(10)->text());
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
+		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->check_int_override->setChecked(check);
 		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
 		ui->btn_delete->setEnabled(true);
 	}
 }
+
 bool PluginWindow::verify_mapping() const
 {
 	auto results = 0;
@@ -900,6 +924,9 @@ bool PluginWindow::verify_mapping() const
 		results++;
 	}
 	if (ui->cb_obs_output_media_source->isVisible() && ui->cb_obs_output_media_source->count() == 0) {
+		results++;
+	}
+	if (ui->cb_obs_output_hotkey->isVisible() && ui->cb_obs_output_hotkey->count() == 0) {
 		results++;
 	}
 	if (results > 0) {

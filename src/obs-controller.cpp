@@ -391,6 +391,15 @@ void ToggleSourceFilter(MidiHook *hook)
 		obs_source_set_enabled(filter, true);
 	}
 }
+void TriggerHotkeyByName(MidiHook *hook)
+{
+	obs_hotkey_t *hk = Utils::FindHotkeyByName(hook->hotkey);
+	if (!hk) {
+		throw("Hotkey not found");
+	}
+	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(hk), true);
+}
+
 ////////////////
 // CC ACTIONS //
 ////////////////
@@ -530,7 +539,7 @@ void fade_in_scene_item(MidiHook *hook)
 				obs_source_update(filter, data);
 				i = i + 0.05f;
 
-			tsleep((int)tts);
+				tsleep((int)tts);
 			}
 
 			obs_source_filter_remove(source, filter);

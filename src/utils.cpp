@@ -3,6 +3,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QUrl>
 #include <util/platform.h>
+#include <QObject>
 #if __has_include(<obs-frontend-api.h>)
 #include <obs-frontend-api.h>
 #else
@@ -11,8 +12,6 @@
 #include "utils.h"
 
 #include <QMessageBox>
-
-
 
 #include "obs-module.h"
 #include "util/config-file.h"
@@ -631,6 +630,21 @@ obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
 		},
 		&search);
 	return search.result;
+}
+QStringList Utils::GetHotkeysList()
+{
+	QStringList *HotkeysList=new QStringList();
+	obs_enum_hotkeys(
+		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
+			auto list = static_cast<QStringList *>(data);
+			QString item(obs_hotkey_get_name(hotkey));
+			if (item.contains("libobs") || item.contains("MediaSource") || item.contains("OBSBasic"))
+				return true;
+			list->append(item);
+			return true;
+		},
+		HotkeysList);
+	return (QStringList)*HotkeysList;
 }
 bool Utils::ReplayBufferEnabled()
 {
