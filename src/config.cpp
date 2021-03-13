@@ -18,6 +18,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include "config.h"
 
+#include "obs-module.h"
+
 #define PARAM_DEVICES "MidiDevices"
 
 #define QT_TO_UTF8(str) str.toUtf8().constData()
@@ -49,7 +51,7 @@ void Config::Save()
 	auto deviceManager = GetDeviceManager();
 	obs_data_t *newmidi = obs_data_create_from_json(deviceManager->GetData().toStdString().c_str());
 	obs_data_set_bool(newmidi, "debug_mode", DebugMode);
-	auto path = obs_module_config_path(get_file_name().toStdString().c_str());
+	const auto path = obs_module_config_path(get_file_name().toStdString().c_str());
 	obs_data_save_json_safe(newmidi, path, ".tmp", ".bkp");
 	bfree(path);
 
@@ -71,11 +73,11 @@ QString Config::get_file_name(std::optional<QString> prepend)
 }
 QString Config::GetConfigStore(std::optional<QString> prepend)
 {
-	auto path = obs_module_config_path(NULL);
+	const auto path = obs_module_config_path(NULL);
 	os_mkdirs(path);
 	bfree(path);
-	
-	auto filepath = (prepend) ? obs_module_config_path(get_file_name(prepend).toStdString().c_str()) :obs_module_config_path(get_file_name().toStdString().c_str());
+
+	const auto filepath = (prepend) ? obs_module_config_path(get_file_name(prepend).toStdString().c_str()) :obs_module_config_path(get_file_name().toStdString().c_str());
 	obs_data_t *midiConfig = os_file_exists(filepath) ? obs_data_create_from_json_file(filepath) : obs_data_create();
 	if (!os_file_exists(filepath)) {
 		obs_data_save_json_safe(midiConfig, filepath, ".tmp", ".bkp");

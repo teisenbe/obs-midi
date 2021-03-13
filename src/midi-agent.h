@@ -47,8 +47,8 @@ public:
 	void close_both_midi_ports();
 	void close_midi_output_port();
 	void close_midi_input_port();
-	const QString &get_midi_input_name();
-	const QString &get_midi_output_name();
+	const QString &get_midi_input_name() const;
+	const QString &get_midi_output_name() const;
 	void set_input_port(int port);
 	void set_output_port(int port);
 	void set_midi_output_name(const QString &oname);
@@ -62,7 +62,7 @@ public:
 	static void HandleError(const libremidi::midi_error &error, const std::string_view &error_message, void *userData);
 	void HandleError(const libremidi::driver_error &error_type, const std::string_view &error_message, void *userData);
 	void set_callbacks();
-	QVector<MidiHook *> GetMidiHooks();
+	QVector<MidiHook *> GetMidiHooks() const;
 	void set_midi_hooks(QVector<MidiHook *>);
 	void exe_midi_hook_if_exists(MidiMessage *message);
 	void add_MidiHook(MidiHook *hook);
@@ -91,13 +91,11 @@ private:
 	bool sending{};
 	int input_port = -1;
 	int output_port = -1;
-	int lastscenebtn{};
-	int last_preview_scene_norc{};
 	bool enabled = false;
 	bool connected = false;
 	bool bidirectional = false;
 	MidiHook *get_midi_hook_if_exists(MidiMessage *message);
-	MidiHook *get_midi_hook_if_exists(const RpcEvent &event);
+	MidiHook *get_midi_hook_if_exists(const RpcEvent &event) const;
 	bool closing = false;
 	QVector<MidiHook *> midiHooks;
 };

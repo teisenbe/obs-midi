@@ -70,6 +70,63 @@ public:
 	void OnBroadcastCustomMessage(const QString &realm, obs_data_t *data);
 
 	bool HeartbeatIsActive;
+	enum event_type {
+		SourceDestroyed,
+		SourceRemoved,
+		SceneChanged,
+		SceneListChanged,
+		SceneCollectionChanged,
+		SceneCollectionListChanged,
+		TransitionChange,
+		TransitionListChanged,
+		ProfileChanged,
+		ProfileListChanged,
+		StreamStarting,
+		StreamStarted,
+		StreamStopping,
+		StreamStopped,
+		RecordingStarting,
+		RecordingStarted,
+		RecordingStopping,
+		RecordingStopped,
+		RecordingPaused,
+		RecordingResumed,
+		ReplayStarting,
+		ReplayStarted,
+		ReplayStopping,
+		ReplayStopped,
+		StudioModeSwitched,
+		PreviewSceneChanged,
+		Exiting,
+		LoadingFinished,
+		FrontendEvent,
+		TransitionBegin,
+		TransitionEnd,
+		TransitionVideoEnd,
+		SourceCreated,
+		SourceDestroy,
+		SourceVolumeChanged,
+		SourceMuteStateChanged,
+		SourceAudioSyncOffsetChanged,
+		SourceAudioMixersChanged,
+		SourceRenamed,
+		SourceFilterAdded,
+		SourceFilterRemoved,
+		SourceFilterVisibilityChanged,
+		SourceFilterOrderChanged,
+		SceneReordered,
+		SceneItemAdd,
+		SceneItemDeleted,
+		SceneItemVisibilityChanged,
+		SceneItemLockChanged,
+		SceneItemTransform,
+		SceneItemSelected,
+		SceneItemDeselected,
+		SwitchScenes
+	};
+	Q_ENUM(event_type)
+	static QString event_to_string(const event_type &enumval);
+	static event_type string_to_event(const QString &string);
 
 signals:
 	void obsEvent(const RpcEvent &event);

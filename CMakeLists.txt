@@ -60,7 +60,9 @@ set(obs-midi_SOURCES
 	src/obs-midi.cpp
 	src/events.cpp
 	src/rpc/RpcEvent.cpp
-	src/forms/Macros.cpp)
+	src/forms/Macros.cpp
+	src/Midi_hook.cpp
+	src/Midi_message.cpp)
 
 list(APPEND obs-midi_HEADERS
 	src/utils.h
@@ -73,7 +75,9 @@ list(APPEND obs-midi_HEADERS
 	src/events.h
 	src/rpc/RpcEvent.h
 	src/forms/Macros.h
-	src/macro-helpers.h)
+	src/macro-helpers.h
+	src/Midi_hook.h
+	src/Midi_message.h)
 
 add_library(obs-midi MODULE
 	${obs-midi_SOURCES}

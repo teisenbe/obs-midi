@@ -6,3 +6,7 @@
 /release/*
 src/RtMidi17
 src/version.h
+.idea
+build
+cmake-build-debug
+Packages.pkg

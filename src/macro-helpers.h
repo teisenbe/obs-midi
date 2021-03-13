@@ -1,8 +1,6 @@
 #pragma once
-#include "obs-midi.h"
 #include "utils.h"
 #include "midi-agent.h"
-#include <QObject>
 #include <QTimer>
 /**
  *
@@ -75,7 +73,7 @@ inline static void swap_buttons(MidiAgent *agent, MidiMessage *message, int butt
 /// <param name="message"></param>
 /// <param name="vol"></param>
 inline static void set_volume(MidiAgent* agent, MidiMessage *message, double vol) {
-	uint8_t newvol = Utils::mapper2(cbrt(vol));
+	const uint8_t newvol = Utils::mapper2(cbrt(vol));
 	message->value = newvol;
 	agent->send_message_to_midi_device((MidiMessage)*message);
 }

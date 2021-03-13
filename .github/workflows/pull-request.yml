@@ -1,37 +1,14 @@
-name: 'CI Multiplatform Build and release'
-
+name: 'Check pull request'
 on:
-  push:
-    branches:
-      - release
-      - master
-      - test
+  pull_request:
     paths-ignore:
-      - 'docs/**'
-
-
+      - '**.md'
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 jobs:
-  release:
-    name: 'Generate Filename'
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/release'
-    steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/
-      - uses: avakar/derive-version@v1
-        id: version
-        with:
-          path: ${{ github.workspace }}/
-      - run: |
-          echo "${{ steps.version.outputs.version }}"
   windows:
     name: 'Windows 64-bit'
     runs-on: [windows-latest]
-    needs: [release]
     if: contains(github.event.head_commit.message, '[skip ci]') != true
     env:
       QT_VERSION: '5.15.2'
@@ -43,11 +20,6 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/
-      - uses: avakar/derive-version@v1
-        if: github.ref == 'refs/heads/release'
-        id: version
         with:
           path: ${{ github.workspace }}/
       - name: Add msbuild to PATH
@@ -183,18 +155,12 @@ jobs:
   ubuntu64:
     name: "Linux/Ubuntu 64-bit"
     runs-on: [ubuntu-latest]
-    needs: [release]
     env:
       isCI: true
     if: contains(github.event.head_commit.message, '[skip ci]') != true
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/
-      - uses: avakar/derive-version@v1
-        id: version
-        if: github.ref == 'refs/heads/release'
         with:
           path: ${{ github.workspace }}/
       - name: 'Checkout'
@@ -345,7 +311,6 @@ jobs:
           cp ./obs-midi.so obs-studio/plugins/obs-midi/bin/64bit/
           tar -czvf obs-midi-Linux-${{ steps.version.outputs.version }}-x64.tar.gz obs-studio
           pwd
-
       - name: 'Publish Deb'
         if: success()
         uses: actions/upload-artifact@v2-preview
@@ -361,7 +326,6 @@ jobs:
   macos64:
     name: "macOS 64-bit"
     runs-on: [macos-latest]
-    needs: [release]
     env:
       MACOS_DEPS_VERSION: '2021-02-28'
       QT_VERSION: '5.15.2'
@@ -371,11 +335,6 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/
-      - uses: avakar/derive-version@v1
-        id: version
-        if: github.ref == 'refs/heads/release'
         with:
           path: ${{ github.workspace }}/
       - name: 'Checkout OBS-MIDI'
@@ -525,37 +484,6 @@ jobs:
           install_name_tool -change /usr/local/opt/jack/lib/libjack.0.dylib /usr/local/lib/libjack.0.dylib ./build/obs-midi.so
           echo "Dependencies for obs-midi"
           otool -L ./build/obs-midi.so
-      - name: 'Install Apple Developer Certificate'
-        if: success() &&  github.ref == 'refs/heads/release'
-        uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
-        with:
-          p12-file-base64: ${{ secrets.MACOS_CERT_CODESIGN }}
-          p12-password: ${{ secrets.MACOS_CERT_PASS }}
-      - name: 'Code signing'
-        if: success() &&  github.ref == 'refs/heads/release'
-        working-directory: ./obs-midi
-        shell: bash
-        run: |
-          set -e
-          security find-identity -v -p codesigning
-          codesign --sign "${{ secrets.MACOS_IDENT_CODESIGN }}" ./build/obs-midi.so
-          packagesbuild ./CI/macos/obs-midi.pkgproj
-          mv ./release/obs-midi.pkg ./release/${{ env.MAC_FILENAME_UNSIGNED }}
-          productsign --sign "${{ secrets.MACOS_IDENT_INSTALLER }}" ./release/${{ env.MAC_FILENAME_UNSIGNED }} ./release/${{ env.MAC_FILENAME }}
-          rm ./release/${{ env.MAC_FILENAME_UNSIGNED }}
-      - name: 'Notarization'
-        if: success() &&  github.ref == 'refs/heads/release'
-        working-directory: ./obs-midi
-        shell: bash
-        run: |
-          set -e
-          brew link xcnotary
-
-          xcrun altool  --store-password-in-keychain-item "AC_PASSWORD" -u "${{ secrets.MACOS_IDENT_USER }}" -p "${{ secrets.MACOS_AC_PASS  }}"
-          echo "xcnotary precheck"
-          xcnotary precheck ./release/${{ env.MAC_FILENAME }}
-          echo "xcnotary notarize Currently enabled"
-          if [ "$?" -eq 0 ]; then xcnotary notarize ./release/${{ env.MAC_FILENAME }} -d "cpyarger@gmail.com" -k "AC_PASSWORD"; fi
       - name: 'move files for upload'
         if: success() &&  github.ref != 'refs/heads/release'
         working-directory: ./obs-midi
@@ -570,129 +498,3 @@ jobs:
         with:
           name: '${{ steps.version.outputs.version }}-macOS'
           path: ${{ github.workspace }}/obs-midi/release/*.pkg
-
-  make-release:
-    if: github.ref == 'refs/heads/release'
-    name: 'Create and upload release'
-    runs-on: [ubuntu-latest]
-    needs: [windows, ubuntu64, macos64]
-    steps:
-      - name: 'Checkout'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/
-      - uses: avakar/derive-version@v1
-        id: version
-        with:
-          path: ${{ github.workspace }}/
-      - name: 'Checkout'
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/obs-midi
-      - name: Changelog
-        uses: scottbrenner/generate-changelog-action@master
-        id: Changelog
-      - name: 'Get obs-midi git info'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-midi
-        run: |
-          git fetch --prune --unshallow
-          echo ::set-env name=GIT_BRANCH::${{ github.event.pull_request.head.ref }}
-          echo ::set-env name=GIT_HASH::$(git rev-parse --short HEAD)
-          echo ::set-env name=GIT_TAG::$(git describe --tags --abbrev=0)
-      - name: 'Get the version'
-        shell: bash
-        id: get_version
-        run: |
-          echo ::set-env name=TAG_VERSION::${{ steps.version.outputs.version }}
-      - name: 'Create Release'
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: tag-${{ steps.version.outputs.version }}
-          body: |
-            # OBS-MIDI
-            Use MIDI devices to trigger events in OBS and visa versa.
-
-            # More information
-
-            Take a look at the base repo for More information
-
-            # Currently a WIP
-            Windows and Linux are tested working. Mac has not been tested
-            # Special thanks to the following projects
-            * [RTMidi17](https://github.com/jcelerier/RtMidi17) An amazing modernized RTMIDI library
-            * [OBSWebsocket](https://github.com/Palakis/obs-websocket/) from which much code was borrowed for interfacing with OBS
-            * [MIDItoOBS](https://github.com/lebaston100/MIDItoOBS) Where I got my start playing with this
-            # Changes
-            ${{ steps.Changelog.outputs.changelog }}
-          release_name: obs-midi ${{ steps.version.outputs.version }}
-          draft: false
-          prerelease: false
-      - name: 'Download release artifacts'
-        uses: actions/download-artifact@v2-preview
-      - name: 'Upload Windows .zip artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ steps.version.outputs.version }}-Windows/obs-midi-${{ steps.version.outputs.version }}-Windows.zip
-          asset_name: obs-midi-${{ steps.version.outputs.version }}-Windows.zip
-          asset_content_type: application/zip
-      - name: 'Upload Windows .exe artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ steps.version.outputs.version }}-Windows-Installer/obs-midi-${{ steps.version.outputs.version }}-Windows-Installer.exe
-          asset_name: obs-midi-${{ steps.version.outputs.version }}-Windows-Installer.exe
-          asset_content_type: application/zip
-      - name: 'check out directories'
-        shell: bash
-        working-directory: ${{ github.workspace }}/obs-midi
-        run: |
-          cd ${{ github.workspace }}
-          ls -la
-          echo ${{ github.workspace }}/${{ steps.version.outputs.version }}-linux
-          ls -la ${{ github.workspace }}/${{ steps.version.outputs.version }}-linux
-          echo ${{ github.workspace }}/${{ steps.version.outputs.version }}-macOS
-          ls -la ${{ github.workspace }}/${{ steps.version.outputs.version }}-macOS
-          mv ${{ github.workspace }}/${{ steps.version.outputs.version }}-linux/*.deb ${{ github.workspace }}/${{ steps.version.outputs.version }}-linux/obs-midi-${{ steps.version.outputs.version }}-1_amd64.deb
-      - name: 'Upload macOS artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ steps.version.outputs.version }}-macOS/obs-midi-${{ steps.version.outputs.version }}-macOS.pkg
-          asset_name: obs-midi-${{ steps.version.outputs.version }}-macOS.pkg
-          asset_content_type: application/octet-stream
-      - name: 'Upload Linux artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ steps.version.outputs.version }}-linux/obs-midi-${{ steps.version.outputs.version }}-1_amd64.deb
-          asset_name: obs-midi-${{ steps.version.outputs.version }}-1_amd64.deb
-          asset_content_type: application/octet-stream
-      - name: 'Upload Linux tar artifact to release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ steps.version.outputs.version }}-linux/obs-midi-Linux-${{ steps.version.outputs.version }}-x64.tar.gz
-          asset_name: obs-midi-Linux-${{ steps.version.outputs.version }}-x64.tar.gz
-          asset_content_type: application/octet-stream
-      - name: 'Clean old releases'
-        uses: dev-drprasad/delete-older-releases@v0.1.0
-        with:
-          keep_latest: 5
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

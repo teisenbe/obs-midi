@@ -16,16 +16,16 @@ Macros::Macros(Ui::PluginWindow *parent)
 
 
 Macros::~Macros() {}
-void Macros::setup_connections()
+void Macros::setup_connections() const
 {
 	connect(ui->cb_macro_action, &QComboBox::currentTextChanged, this, &Macros::slot_action_changed);
 }
-void Macros::setup_actions()
+void Macros::setup_actions() const
 {
 	ui->cb_macro_action->clear();
 	ui->cb_macro_action->addItems(Utils::TranslateActions());
 }
-void Macros::show_pair(Pairs Pair)
+void Macros::show_pair(Pairs Pair) const
 {
 	switch (Pair) {
 	case Pairs::Scene:
@@ -82,7 +82,7 @@ void Macros::show_pair(Pairs Pair)
 		break;
 	}
 }
-void Macros::hide_pair(Pairs Pair)
+void Macros::hide_pair(Pairs Pair) const
 {
 	switch (Pair) {
 	case Pairs::Scene:
