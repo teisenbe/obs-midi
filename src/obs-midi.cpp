@@ -1,4 +1,3 @@
-
 #include <QtWidgets/QAction>
 #include <QtWidgets/QMainWindow>
 
@@ -6,15 +5,11 @@
 #include <obs-module.h>
 #if __has_include(<obs-frontend-api.h>)
 #include <obs-frontend-api.h>
-#include "rtmidi17/rtmidi17.hpp"
 #else
 #include <obs-frontend-api/obs-frontend-api.h>
-#include "rtmidi17/rtmidi17.hpp"
 #endif
+#include "libremidi/libremidi.hpp"
 #include <obs-data.h>
-#include <string>
-#include <map>
-#include <iostream>
 #include <utility>
 
 #include "obs-midi.h"
@@ -22,8 +17,7 @@
 #include "src/forms/settings-dialog.h"
 #include "config.h"
 #include "device-manager.h"
-#include "utils.h"
-#include "midi-agent.h"
+
 #include "events.h"
 using namespace std;
 
@@ -47,33 +41,28 @@ eventsPtr _eventsSystem;
 bool obs_module_load(void)
 {
 	blog(LOG_INFO, "MIDI LOADED! :)");
+	blog(LOG_INFO, "obs-midi version %s", GIT_TAG);
 	qRegisterMetaType<MidiMessage>();
-	// Device Manager Setup
+	_eventsSystem = eventsPtr(new Events());
 	_deviceManager = DeviceManagerPtr(new DeviceManager());
-
-	// Config Setup
 	_config = ConfigPtr(new Config());
-
-	// Signal Router Setup
-	_eventsSystem = eventsPtr(new Events(_deviceManager));
-	_config->Load();
-	// UI SETUP
-	QMainWindow *mainWindow = (QMainWindow *)obs_frontend_get_main_window();
+	blog(LOG_DEBUG, "Setup UI");
+	auto *mainWindow = (QMainWindow *)obs_frontend_get_main_window();
 	plugin_window = new PluginWindow(mainWindow);
 	const char *menuActionText = obs_module_text("OBS MIDI Settings");
-	QAction *menuAction = (QAction *)obs_frontend_add_tools_menu_qaction(menuActionText);
+	auto *menuAction = (QAction *)obs_frontend_add_tools_menu_qaction(menuActionText);
 	QObject::connect(menuAction, SIGNAL(triggered()), plugin_window, SLOT(ToggleShowHide()));
-
+	blog(LOG_DEBUG, "OBSMIDI: Setup Complete");
 	return true;
 }
 
 void obs_module_unload()
 {
-	
+    _eventsSystem.get()->shutdown();
 	_eventsSystem.reset();
 	_deviceManager.reset();
 	_config.reset();
-	
+
 	blog(LOG_DEBUG, "goodbye!");
 }
 

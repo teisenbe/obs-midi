@@ -1,5 +1,5 @@
 /*
-obs-websocket
+obs-midi
 Copyright (C) 2016-2020	Stéphane Lepin <stephane.lepin@gmail.com>
 
 This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@ public:
 
 	const std::optional<uint64_t> &recordingTime() const { return _recordingTime; }
 
-	OBSData additionalFields() const { return std::move(OBSData(_additionalFields)); }
+	OBSData additionalFields() const { return OBSData(_additionalFields); }
 
 private:
 	QString _updateType;

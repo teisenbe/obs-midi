@@ -1,6 +1,6 @@
 /*
-obs-websocket
-Copyright (C) 2016-2019	Stéphane Lepin <stephane.lepin@gmail.com>
+obs-midi
+Copyright (C) 2020-2021	Chris Yarger <cpyarger@gmail.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
 #pragma once
-
-
 
 #include <set>
 #include <vector>
@@ -41,9 +39,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "midi-agent.h"
 #include "obs-controller.h"
 
-
-class DeviceManager : public QObject
-{
+class DeviceManager : public QObject {
 	Q_OBJECT
 public:
 	DeviceManager();
@@ -51,21 +47,22 @@ public:
 
 	void Load(QString datastring);
 	void Unload();
-	
-	QStringList GetPortsList();
-	int GetPortNumberByDeviceName(const QString &deviceName);
-	QStringList GetOutPortsList();
-	int GetOutPortNumberByDeviceName(const QString &deviceName);
 
-	QVector<MidiAgent *> GetActiveMidiDevices();
-	MidiAgent *GetMidiDeviceByName(const QString &deviceName);
-	QVector<MidiHook *> GetMidiHooksByDeviceName(const QString &deviceName);
-	MidiAgent *RegisterMidiDevice(const int &port, const int &outport);
+	QStringList get_input_ports_list();
+	int get_input_port_number(const QString &deviceName);
+	QStringList get_output_ports_list();
+	int get_output_port_number(const QString &deviceName);
+
+	QVector<MidiAgent *> get_active_midi_devices() const;
+	MidiAgent *get_midi_device(const QString &deviceName);
+	QVector<MidiHook *> get_midi_hooks(const QString &deviceName);
+	MidiAgent *register_midi_device(const int &port, std::optional<int> outport = std::nullopt);
 
 	QString GetData();
 	void reload();
 signals:
 	void reload_config();
+	void obsEvent(const RpcEvent &event);
 
 private:
 	QVector<MidiAgent *> midiAgents;

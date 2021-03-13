@@ -16,88 +16,65 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
 #pragma once
+#include "Midi_hook.h"
+#include <qpropertyanimation.h>
+#include <QTime>
+/**
+ * Actions
+ */
+void SetCurrentScene(MidiHook *hook);
+void SetPreviewScene(MidiHook *hook);
+void DisablePreview(MidiHook *hook);
+void EnablePreview(MidiHook *hook);
+void SetCurrentSceneCollection(MidiHook *hook);
+void ResetSceneItem(MidiHook *hook);
+void TransitionToProgram(MidiHook *hook);
+void SetCurrentTransition(MidiHook *hook);
+void SetTransitionDuration(MidiHook *hook);  // can also be used with cc
+void SetSourceVisibility(MidiHook *hook);    // doesn't exist??
+void ToggleSourceVisibility(MidiHook *hook); // doesn't exist?
+void ToggleMute(MidiHook *hook);
+void SetMute(MidiHook *hook);
+void StartStopStreaming(MidiHook *hook);
+void StartStreaming(MidiHook *hook);
+void StopStreaming(MidiHook *hook);
+void StartStopRecording(MidiHook *hook);
+void StartRecording(MidiHook *hook);
+void StopRecording(MidiHook *hook);
+void PauseRecording(MidiHook *hook);
+void ResumeRecording(MidiHook *hook);
+void StartStopReplayBuffer(MidiHook *hook);
+void StartReplayBuffer(MidiHook *hook);
+void StopReplayBuffer(MidiHook *hook);
+void SaveReplayBuffer(MidiHook *hook);
+void SetCurrentProfile(MidiHook *hook);
+void SetTextGDIPlusText(MidiHook *hook);
+void SetBrowserSourceURL(MidiHook *hook);
+void ReloadBrowserSource(MidiHook *hook);
+void TakeScreenshot(MidiHook *hook);
+void TakeSourceScreenshot(MidiHook *hook);
+void EnableSourceFilter(MidiHook *hook);
+void DisableSourceFilter(MidiHook *hook);
+void ToggleSourceFilter(MidiHook *hook);
+void TriggerHotkeyByName(MidiHook *hook);
 
-#include <iostream>
+// CC ACTIONS
+void SetVolume(MidiHook *hook);
+void SetSyncOffset(MidiHook *hook);
+void SetSourcePosition(MidiHook *hook);
+void SetSourceRotation(MidiHook *hook);
+void SetSourceScale(MidiHook *hook);
+void SetGainFilter(MidiHook *hook);
+void SetOpacity(MidiHook *hook);
+void move_t_bar(MidiHook *hook);
+void play_pause_media_source(MidiHook *hook);
+void toggle_studio_mode(MidiHook *hook);
+void reset_stats(MidiHook *hook);
+void restart_media(MidiHook *hook);
+void stop_media(MidiHook *hook);
+void play_media(MidiHook *hook);
+void next_media(MidiHook *hook);
+void prev_media(MidiHook *hook);
+void make_opacity_filter(MidiHook *hook);
+int time_to_sleep(int duration);
 
-#include <QtCore/QObject>
-
-#if __has_include(<obs-frontend-api.h>)
-#include <obs-frontend-api.h>
-#else
-#include <obs-frontend-api/obs-frontend-api.h>
-#endif
-
-#include "utils.h"
-#include "obs-midi.h"
-
-
-class OBSController : public QObject
-{
-	Q_OBJECT
-	// BUTTON ACTIONS
-
-public:
-	OBSController(MidiHook *incoming_midi_hook, int incoming_midi_value);
-	~OBSController() override;
-
-private:
-	/**
-	* Variables
-	*/
-	MidiHook *hook;
-	int midi_value;
-
-private:
-	/**
-	* Actions
-	*/
-	void SetCurrentScene();
-	void SetPreviewScene();
-	void SetCurrentSceneCollection();
-	void ResetSceneItem();
-	void TransitionToProgram();
-	void SetCurrentTransition();
-	void SetTransitionDuration();  // can also be used with cc
-	void SetSourceVisibility();    // doesn't exist??
-	void ToggleSourceVisibility(); //doesn't exist?
-	void ToggleMute();
-	void SetMute();
-	void StartStopStreaming();
-	void StartStreaming();
-	void StopStreaming();
-	void StartStopRecording();
-	void StartRecording();
-	void StopRecording();
-	void PauseRecording();
-	void ResumeRecording();
-	void StartStopReplayBuffer();
-	void StartReplayBuffer();
-	void StopReplayBuffer();
-	void SaveReplayBuffer();
-	void SetCurrentProfile();
-	void SetTextGDIPlusText();
-	void SetBrowserSourceURL();
-	void ReloadBrowserSource();
-	void TakeSourceScreenshot();
-	void EnableSourceFilter();
-	void DisableSourceFilter();
-	void ToggleSourceFilter();
-
-	// CC ACTIONS
-	void SetVolume();
-	void SetSyncOffset();
-	void SetSourcePosition();
-	void SetSourceRotation();
-	void SetSourceScale();
-	void SetGainFilter();
-	void SetOpacity();
-	void move_t_bar();
-	void play_pause_media_source();
-	void toggle_studio_mode();
-	void reset_stats();
-	void restart_media();
-	void stop_media();
-	void play_media();
-	void next_media();
-	void prev_media();
-};

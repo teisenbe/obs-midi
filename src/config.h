@@ -1,6 +1,6 @@
 /*
-obs-websocket
-Copyright (C) 2016-2019	Stéphane Lepin <stephane.lepin@gmail.com>
+obs-midi
+Copyright (C) 2020-2021	Chris Yarger <cpyarger@gmail.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,14 +29,10 @@ class Config : QObject {
 public:
 	Config();
 	~Config() override;
-
+	QString get_file_name(std::optional<QString> prepend = std::nullopt);
+	QString GetConfigStore(std::optional<QString> prepend = std::nullopt);
+	bool DebugMode;
 public slots:
 	void Load();
 	void Save();
-
-	
-
-private:
-	QString get_file_name();
-	QString GetConfigStore();
 };

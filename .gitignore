@@ -4,3 +4,9 @@
 
 /.vs/obs-midi/v16
 /release/*
+src/RtMidi17
+src/version.h
+.idea
+build
+cmake-build-debug
+Packages.pkg

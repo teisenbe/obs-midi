@@ -1,7 +1,7 @@
 /*
-obs-websocket
-Copyright (C) 2016-2019	Stéphane Lepin <stephane.lepin@gmail.com>
-Copyright (C) 2017	Brendan Hagan <https://github.com/haganbmj>
+obs-midi
+Copyright (C) 2020-2021	Chris Yarger <cpyarger@gmail.com>
+
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,15 +42,14 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "device-manager.h"
 #include "rpc/RpcEvent.h"
 
-
-class Events : public QObject
-{
+class Events : public QObject {
 	Q_OBJECT
 
 public:
-	explicit Events(DeviceManagerPtr srv);
+	explicit Events();
 	~Events() override;
-
+	void startup();
+	void shutdown();
 	void connectSourceSignals(obs_source_t *source);
 	void disconnectSourceSignals(obs_source_t *source);
 
@@ -71,6 +70,64 @@ public:
 	void OnBroadcastCustomMessage(const QString &realm, obs_data_t *data);
 
 	bool HeartbeatIsActive;
+	enum event_type {
+		SourceDestroyed,
+		SourceRemoved,
+		SceneChanged,
+		SceneListChanged,
+		SceneCollectionChanged,
+		SceneCollectionListChanged,
+		TransitionChange,
+		TransitionListChanged,
+		ProfileChanged,
+		ProfileListChanged,
+		StreamStarting,
+		StreamStarted,
+		StreamStopping,
+		StreamStopped,
+		RecordingStarting,
+		RecordingStarted,
+		RecordingStopping,
+		RecordingStopped,
+		RecordingPaused,
+		RecordingResumed,
+		ReplayStarting,
+		ReplayStarted,
+		ReplayStopping,
+		ReplayStopped,
+		StudioModeSwitched,
+		PreviewSceneChanged,
+		Exiting,
+		LoadingFinished,
+		FrontendEvent,
+		TransitionBegin,
+		TransitionEnd,
+		TransitionVideoEnd,
+		SourceCreated,
+		SourceDestroy,
+		SourceVolumeChanged,
+		SourceMuteStateChanged,
+		SourceAudioSyncOffsetChanged,
+		SourceAudioMixersChanged,
+		SourceRenamed,
+		SourceFilterAdded,
+		SourceFilterRemoved,
+		SourceFilterVisibilityChanged,
+		SourceFilterOrderChanged,
+		SceneReordered,
+		SceneItemAdd,
+		SceneItemDeleted,
+		SceneItemVisibilityChanged,
+		SceneItemLockChanged,
+		SceneItemTransform,
+		SceneItemSelected,
+		SceneItemDeselected,
+		SwitchScenes
+	};
+	Q_ENUM(event_type)
+	static QString event_to_string(const event_type &enumval);
+	static event_type string_to_event(const QString &string);
+
 signals:
 	void obsEvent(const RpcEvent &event);
 
@@ -80,21 +137,21 @@ private slots:
 	void TransitionDurationChanged(int ms);
 
 private:
-	DeviceManagerPtr _srv;
-	QTimer streamStatusTimer;
-	QTimer heartbeatTimer;
-	os_cpu_usage_info_t *cpuUsageInfo;
-
-	bool pulse;
-
 	uint64_t _streamStarttime;
 
 	uint64_t _lastBytesSent;
 	uint64_t _lastBytesSentTime;
+	QTimer streamStatusTimer;
+	QTimer heartbeatTimer;
+
+	bool pulse;
+
+	bool started = false;
 
 	void broadcastUpdate(const char *updateType, obs_data_t *additionalFields);
 
 	void OnSceneChange();
+	void FinishedLoading();
 	void OnSceneListChange();
 	void OnSceneCollectionChange();
 	void OnSceneCollectionListChange();
@@ -144,6 +201,7 @@ private:
 	static void OnSourceRename(void *param, calldata_t *data);
 
 	static void OnSourceFilterAdded(void *param, calldata_t *data);
+	static void OnSourceRemoved(void *param, calldata_t *data);
 	static void OnSourceFilterRemoved(void *param, calldata_t *data);
 	static void OnSourceFilterVisibilityChanged(void *param, calldata_t *data);
 	static void OnSourceFilterOrderChanged(void *param, calldata_t *data);

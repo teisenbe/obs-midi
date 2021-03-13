@@ -1,3 +1,4 @@
-[submodule "src/RtMidi17"]
-	path = src/RtMidi17
-	url = https://github.com/cpyarger/RtMidi17.git
+
+[submodule "src/libremidi"]
+	path = src/libremidi
+	url = git@github.com:jcelerier/libremidi.git
