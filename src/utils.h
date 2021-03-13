@@ -208,6 +208,7 @@ const QList<ActionsClass::Actions> AllActions_raw = {
 	ActionsClass::Actions::Unpause_Recording,
 	ActionsClass::Actions::Set_Source_Rotation,
 	ActionsClass::Actions::Set_Source_Scale,
+	ActionsClass::Actions::Trigger_Hotkey_By_Name,
 	ActionsClass::Poke_filter,
 };
 const QList<ActionsClass::Actions> not_ready_actions{
