@@ -429,6 +429,7 @@ void PluginWindow::hide_all_pairs() const
 	hide_pair(Pairs::Integer);
 	hide_pair(Pairs::Boolean);
 	hide_pair(Pairs::Range);
+	hide_pair(Pairs::Hotkey);
 }
 void PluginWindow::reset_to_defaults() const
 {
@@ -592,6 +593,9 @@ void PluginWindow::obs_actions_select(const QString &action) const
 			ui->label_Int_override->setText("Duration * ");
 			ui->sb_int_override->setSuffix(" ms");
 			break;
+                case ActionsClass::Actions::Trigger_Hotkey_By_Name:
+                        show_pair(Pairs::Hotkey);
+                        break;
 		default:
 			hide_all_pairs();
 			break;
