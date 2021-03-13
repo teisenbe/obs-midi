@@ -21,7 +21,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <QDialogButtonBox>
 
 #include <obs-module.h>
-
+#include <QObject>
 #include "ui_settings-dialog.h"
 #include "settings-dialog.h"
 #include "../device-manager.h"
@@ -312,9 +312,10 @@ void PluginWindow::show_pair(Pairs Pair) const
 		ui->w_item->show();
 		break;
 	case Pairs::Hotkey:
+		
 		ui->label_obs_output_hotkey->show();
 		ui->cb_obs_output_hotkey->show();
-		ui->cb_obs_output_hotkey->addItems(Utils::GetHotkeysList());
+		ui->cb_obs_output_hotkey->addItems(translatelist(Utils::GetHotkeysList()));
 		ui->w_hotkey->show();
 		break;
 	case Pairs::Audio:
@@ -349,6 +350,7 @@ void PluginWindow::show_pair(Pairs Pair) const
 		break;
 	}
 }
+
 void PluginWindow::hide_pair(Pairs Pair) const
 {
 	switch (Pair) {
@@ -424,6 +426,13 @@ void PluginWindow::hide_pair(Pairs Pair) const
 		ui->label_max->hide();
 		break;
 	}
+}
+QStringList PluginWindow::translatelist(QStringList list) {
+	QStringList newlist;
+	for (auto item : list) {
+		newlist.append(tr(item.toStdString().c_str()));
+	}
+	return newlist;
 }
 void PluginWindow::hide_all_pairs() const
 {
@@ -596,7 +605,7 @@ void PluginWindow::obs_actions_select(const QString &action) const
 			set_min_max_range_defaults(10, 10);
 			set_range_text("Max X", "Max Y");
 			break;
-		case ActionsClass::Actions::Poke_filter:
+		case ActionsClass::Actions::Toggle_Fade_Source:
 			show_pair(Pairs::Source);
 			show_pair(Pairs::Scene);
 			show_pair(Pairs::Integer);
@@ -895,12 +904,14 @@ void PluginWindow::edit_mapping()
 		ui->cb_obs_output_audio_source->setCurrentText(selected_items.at(9)->text());
 		ui->cb_obs_output_media_source->setCurrentText(selected_items.at(10)->text());
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
-    ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
+		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->check_int_override->setChecked(check);
 		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
 		ui->btn_delete->setEnabled(true);
+	}
 
 }
+
 bool PluginWindow::verify_mapping() const
 {
 	auto results = 0;

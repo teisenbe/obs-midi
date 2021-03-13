@@ -239,7 +239,7 @@ void MidiHook::setAction()
 	case ActionsClass::Enable_Preview:
 		obsControlFunction = EnablePreview;
 		break;
-	case ActionsClass::Poke_filter:
+	case ActionsClass::Toggle_Fade_Source:
 		obsControlFunction = make_opacity_filter;
 		break;
         case ActionsClass::Trigger_Hotkey_By_Name:

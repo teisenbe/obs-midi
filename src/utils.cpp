@@ -3,6 +3,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QUrl>
 #include <util/platform.h>
+#include <QObject>
 #if __has_include(<obs-frontend-api.h>)
 #include <obs-frontend-api.h>
 #else
@@ -11,8 +12,6 @@
 #include "utils.h"
 
 #include <QMessageBox>
-
-
 
 #include "obs-module.h"
 #include "util/config-file.h"
@@ -634,28 +633,17 @@ obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
 }
 QStringList Utils::GetHotkeysList()
 {
-        QStringList HotkeysList;
+	
+	QStringList *HotkeysList=new QStringList();
+	obs_enum_hotkeys(
+		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
+			auto list = static_cast<QStringList *>(data);
+			list->append(obs_module_text(obs_hotkey_get_name(hotkey)));
+			return true;
+		},
+		HotkeysList);
 
-        const OBSDataArrayAutoRelease hotkeysArray = obs_data_array_create();
-        obs_enum_hotkeys(
-                [](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
-                        auto *hotkeysArray = (obs_data_array_t *)data;
-                        const OBSDataAutoRelease hotkeyData = obs_data_create();
-                        obs_data_set_string(hotkeyData, "hotkeyName", obs_hotkey_get_name(hotkey));
-                        obs_data_array_push_back(hotkeysArray, hotkeyData);
-                        return true;
-                },
-                hotkeysArray
-        );
-
-        for (size_t i = 0; i < obs_data_array_count(hotkeysArray); i++) {
-                obs_data_t *data = obs_data_array_item(hotkeysArray, i);
-                HotkeysList.append(obs_data_get_string(data, "hotkeyName"));
-                obs_data_release(data);
-        }
-        obs_data_array_release(hotkeysArray);
-
-        return HotkeysList;
+	return (QStringList)*HotkeysList;
 }
 bool Utils::ReplayBufferEnabled()
 {

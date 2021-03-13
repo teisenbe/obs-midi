@@ -452,6 +452,8 @@ MidiHook *MidiAgent::get_midi_hook_if_exists(const RpcEvent &event) const
 			found = (midiHooks.at(i)->audio_source == QString(obs_data_get_string(event.additionalFields(), "sourceName")) &&
 				 event.updateType() == "SourceMuteStateChanged");
 			break;
+		case ActionsClass::Actions::Transition:
+		case ActionsClass::Actions::Do_Transition:
 		case ActionsClass::Actions::Set_Preview_Scene:
 		case ActionsClass::Actions::Set_Current_Scene:
 			found = (midiHooks.at(i)->scene == QString(obs_data_get_string(event.additionalFields(), "scene-name")));
@@ -474,9 +476,8 @@ MidiHook *MidiAgent::get_midi_hook_if_exists(const RpcEvent &event) const
 		case ActionsClass::Actions::Disable_Source_Filter:
 
 			break;
-		case ActionsClass::Actions::Do_Transition:
+		
 
-			break;
 		case ActionsClass::Actions::Enable_Preview:
 
 			break;
