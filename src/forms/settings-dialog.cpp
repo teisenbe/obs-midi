@@ -746,6 +746,7 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	auto *item_item = new QTableWidgetItem(hook->item);
 	auto *audio_item = new QTableWidgetItem(hook->audio_source);
 	auto *media_item = new QTableWidgetItem(hook->media_source);
+	auto *hotkey_item = new QTableWidgetItem(hook->hotkey);
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
 	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
 	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
@@ -763,6 +764,7 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	ui->table_mapping->setItem(row, 11, ioveritem);
 	ui->table_mapping->setItem(row, 12, min);
 	ui->table_mapping->setItem(row, 13, max);
+	ui->table_mapping->setItem(row, 14, hotkey);
 	set_all_cell_colors(row);
 }
 void PluginWindow::set_all_cell_colors(const int row) const
