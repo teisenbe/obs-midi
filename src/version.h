@@ -3,5 +3,4 @@
 
 #define GIT_TAG "tag-0.9.3-ALPHA-3.19"
 
-
 #endif

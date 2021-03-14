@@ -13,9 +13,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 #include "device-manager.h"
 #include "forms/settings-dialog.h"
-DeviceManager::DeviceManager()
-{
-}
+DeviceManager::DeviceManager() {}
 DeviceManager::~DeviceManager()
 {
 	Unload();

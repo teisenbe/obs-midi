@@ -26,7 +26,6 @@ using midi_bytes = std::vector<unsigned char>;
 #define RTMIDI17_INLINE
 #endif
 
-
 namespace rtmidi {
 enum class message_type : uint8_t {
 	INVALID = 0x0,
@@ -92,31 +91,20 @@ struct message {
 	double timestamp{};
 
 	message() noexcept = default;
-	template<typename... Args>
-	message(Args... args) noexcept : bytes{(uint8_t)args...}
-	{
-	}
-	static uint8_t make_command(const message_type type,
-				    const int channel) noexcept
-	{
-		return (uint8_t)((uint8_t)type |
-				 clamp(channel, 0, channel - 1));
-	}
+	template<typename... Args> message(Args... args) noexcept : bytes{(uint8_t)args...} {}
+	static uint8_t make_command(const message_type type, const int channel) noexcept { return (uint8_t)((uint8_t)type | clamp(channel, 0, channel - 1)); }
 
-	static message note_on(uint8_t channel, uint8_t note,
-			       uint8_t velocity) noexcept
+	static message note_on(uint8_t channel, uint8_t note, uint8_t velocity) noexcept
 	{
 		return std::move({make_command(message_type::NOTE_ON, channel), note, velocity});
 	}
 
-	static message note_off(uint8_t channel, uint8_t note,
-				uint8_t velocity) noexcept
+	static message note_off(uint8_t channel, uint8_t note, uint8_t velocity) noexcept
 	{
 		return std::move({make_command(message_type::NOTE_OFF, channel), note, velocity});
 	}
 
-	static message control_change(uint8_t channel, uint8_t control,
-				      uint8_t value) noexcept
+	static message control_change(uint8_t channel, uint8_t control, uint8_t value) noexcept
 	{
 		return std::move({make_command(message_type::CONTROL_CHANGE, channel), control, value});
 	}
@@ -128,35 +116,26 @@ struct message {
 
 	static message pitch_bend(uint8_t channel, int value) noexcept
 	{
-		return std::move({make_command(message_type::PITCH_BEND, channel),
-						  (unsigned char)(value & 0x7F),
-						  (uint8_t)((value >> 7) & 0x7F)});
+		return std::move({make_command(message_type::PITCH_BEND, channel), (unsigned char)(value & 0x7F), (uint8_t)((value >> 7) & 0x7F)});
 	}
 
-	static message pitch_bend(uint8_t channel, uint8_t lsb,
-				  uint8_t msb) noexcept
+	static message pitch_bend(uint8_t channel, uint8_t lsb, uint8_t msb) noexcept
 	{
 		return std::move({make_command(message_type::PITCH_BEND, channel), lsb, msb});
 	}
 
-	static message poly_pressure(uint8_t channel, uint8_t note,
-				     uint8_t value) noexcept
+	static message poly_pressure(uint8_t channel, uint8_t note, uint8_t value) noexcept
 	{
 		return std::move({make_command(message_type::POLY_PRESSURE, channel), note, value});
 	}
 
-	static message aftertouch(uint8_t channel, uint8_t value) noexcept
-	{
-		return std::move({make_command(message_type::AFTERTOUCH, channel), value});
-	}
+	static message aftertouch(uint8_t channel, uint8_t value) noexcept { return std::move({make_command(message_type::AFTERTOUCH, channel), value}); }
 
 	bool uses_channel(int channel) const
 	{
 		if (channel <= 0 || channel > 16)
-			throw std::range_error(
-				"message::uses_channel: out of range");
-		return ((bytes[0] & 0xF) == channel - 1) &&
-		       ((bytes[0] & 0xF0) != 0xF0);
+			throw std::range_error("message::uses_channel: out of range");
+		return ((bytes[0] & 0xF) == channel - 1) && ((bytes[0] & 0xF0) != 0xF0);
 	}
 
 	int get_channel() const
@@ -187,8 +166,7 @@ struct message {
 	bool is_note_on_or_off() const
 	{
 		const auto status = get_message_type();
-		return (status == message_type::NOTE_ON) ||
-		       (status == message_type::NOTE_OFF);
+		return (status == message_type::NOTE_ON) || (status == message_type::NOTE_OFF);
 	}
 
 	auto size() const { return bytes.size(); }
@@ -200,14 +178,8 @@ struct message {
 	auto &back() { return bytes.back(); }
 	auto &operator[](int i) { return bytes[i]; }
 
-	template<typename... Args> auto assign(Args &&...args)
-	{
-		return bytes.assign(std::forward<Args>(args)...);
-	}
-	template<typename... Args> auto insert(Args &&...args)
-	{
-		return bytes.insert(std::forward<Args>(args)...);
-	}
+	template<typename... Args> auto assign(Args &&...args) { return bytes.assign(std::forward<Args>(args)...); }
+	template<typename... Args> auto insert(Args &&...args) { return bytes.insert(std::forward<Args>(args)...); }
 	auto clear() { bytes.clear(); }
 
 	auto begin() const { return bytes.begin(); }
@@ -227,20 +199,9 @@ struct message {
 struct meta_events {
 	static message end_of_track() { return std::move({0xFF, 0x2F, 0}); }
 
-	static message channel(int channel)
-	{
-		return std::move(0xff, 0x20, 0x01, clamp(0, 0xff, channel - 1));
-	}
+	static message channel(int channel) { return std::move(0xff, 0x20, 0x01, clamp(0, 0xff, channel - 1)); }
 
-	static message tempo(int mpqn)
-	{
-		return std::move({0xff,
-						  81,
-						  3,
-						  (uint8_t) (mpqn >> 16),
-						  (uint8_t) (mpqn >> 8),
-						  (uint8_t) mpqn});
-	}
+	static message tempo(int mpqn) { return std::move({0xff, 81, 3, (uint8_t)(mpqn >> 16), (uint8_t)(mpqn >> 8), (uint8_t)mpqn}); }
 
 	static message time_signature(int numerator, int denominator)
 	{

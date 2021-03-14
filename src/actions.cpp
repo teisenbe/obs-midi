@@ -12,14 +12,12 @@ ActionsClass::Actions ActionsClass::string_to_action(const QString &action)
 {
 	return QVariant(action).value<ActionsClass::Actions>();
 }
-QString
-ActionsClass::event_to_string(const ActionsClass::obs_event_type &enumval)
+QString ActionsClass::event_to_string(const ActionsClass::obs_event_type &enumval)
 {
 	return std::move(QVariant::fromValue(enumval).toString());
 }
 
-ActionsClass::obs_event_type
-ActionsClass::string_to_event(const QString &action)
+ActionsClass::obs_event_type ActionsClass::string_to_event(const QString &action)
 {
 	return QVariant(action).value<ActionsClass::obs_event_type>();
 }
@@ -29,8 +27,7 @@ ActionsClass::string_to_event(const QString &action)
  */
 void ActionsClass::SetCurrentScene(const QString &sceneName)
 {
-	OBSSourceAutoRelease source =
-		obs_get_source_by_name(sceneName.toStdString().c_str());
+	OBSSourceAutoRelease source = obs_get_source_by_name(sceneName.toStdString().c_str());
 
 	if (source) {
 		obs_frontend_set_current_scene(source);
@@ -69,8 +66,8 @@ void ActionsClass::SetCurrentSceneCollection(const QString &sceneCollection)
 }
 
 /**
-* Reset a scene item.
-*/
+ * Reset a scene item.
+ */
 void ActionsClass::ResetSceneItem(const QString &sceneName, const QString &itemName)
 {
 	OBSScene scene = Utils::GetSceneFromNameOrCurrent(sceneName);
@@ -79,12 +76,10 @@ void ActionsClass::ResetSceneItem(const QString &sceneName, const QString &itemN
 	}
 
 	obs_data_t *params = obs_data_create();
-	obs_data_set_string(params, "scene-name",
-			    sceneName.toStdString().c_str());
+	obs_data_set_string(params, "scene-name", sceneName.toStdString().c_str());
 	OBSDataItemAutoRelease itemField = obs_data_item_byname(params, "item");
 
-	OBSSceneItemAutoRelease sceneItem =
-		Utils::GetSceneItemFromRequestField(scene, itemField);
+	OBSSceneItemAutoRelease sceneItem = Utils::GetSceneItemFromRequestField(scene, itemField);
 	if (!sceneItem) {
 		throw("specified scene item doesn't exist");
 	}
@@ -107,8 +102,7 @@ void ActionsClass::TransitionToProgram()
  * Transitions the currently previewed scene to the main output using specified transition.
  * transitionDuration is optional. (milliseconds)
  */
-void ActionsClass::TransitionToProgram(const QString &transitionName,
-				       int transitionDuration)
+void ActionsClass::TransitionToProgram(const QString &transitionName, int transitionDuration)
 {
 	if (!obs_frontend_preview_program_mode_active()) {
 		throw("studio mode not enabled");
@@ -145,21 +139,20 @@ void ActionsClass::SetTransitionDuration(int duration)
 	obs_frontend_set_transition_duration(duration);
 }
 
-void ActionsClass::SetSourceVisibility() {} //DOESNT EXIST
+void ActionsClass::SetSourceVisibility() {} // DOESNT EXIST
 
-void ActionsClass::ToggleSourceVisibility() {} //DOESNT EXIST
+void ActionsClass::ToggleSourceVisibility() {} // DOESNT EXIST
 
 /**
-* Inverts the mute status of a specified source.
-*/
+ * Inverts the mute status of a specified source.
+ */
 void ActionsClass::ToggleMute(const QString &sourceName)
 {
 	if (sourceName.isEmpty()) {
 		throw("sourceName is empty");
 	}
 
-	OBSSourceAutoRelease source =
-		obs_get_source_by_name(sourceName.toUtf8());
+	OBSSourceAutoRelease source = obs_get_source_by_name(sourceName.toUtf8());
 	if (!source) {
 		throw("sourceName not found");
 	}
@@ -176,8 +169,7 @@ void ActionsClass::SetMute(const QString &sourceName, bool mute)
 		throw("sourceName is empty");
 	}
 
-	OBSSourceAutoRelease source =
-		obs_get_source_by_name(sourceName.toUtf8());
+	OBSSourceAutoRelease source = obs_get_source_by_name(sourceName.toUtf8());
 	if (!source) {
 		throw("specified source doesn't exist");
 	}
@@ -221,8 +213,7 @@ void ActionsClass::StopStreaming()
  */
 void ActionsClass::StartStopRecording()
 {
-	(obs_frontend_recording_active() ? obs_frontend_recording_stop()
-					 : obs_frontend_recording_start());
+	(obs_frontend_recording_active() ? obs_frontend_recording_stop() : obs_frontend_recording_start());
 }
 
 /**
@@ -246,8 +237,8 @@ void ActionsClass::StopRecording()
 }
 
 /**
-* Pause the current recording.
-*/
+ * Pause the current recording.
+ */
 void ActionsClass::PauseRecording()
 {
 	if (obs_frontend_recording_active()) {
@@ -256,8 +247,8 @@ void ActionsClass::PauseRecording()
 }
 
 /**
-* Resume/unpause the current recording (if paused).
-*/
+ * Resume/unpause the current recording (if paused).
+ */
 void ActionsClass::ResumeRecording()
 {
 	if (obs_frontend_recording_active()) {
@@ -266,8 +257,8 @@ void ActionsClass::ResumeRecording()
 }
 
 /**
-* Toggle the Replay Buffer on/off.
-*/
+ * Toggle the Replay Buffer on/off.
+ */
 void ActionsClass::StartStopReplayBuffer()
 {
 	if (obs_frontend_replay_buffer_active()) {
@@ -278,11 +269,11 @@ void ActionsClass::StartStopReplayBuffer()
 }
 
 /**
-* Start recording into the Replay Buffer.
-* Will throw an error if "Save Replay Buffer" hotkey is not set in OBS' settings.
-* Setting this hotkey is mandatory, even when triggering saves only
-* through obs-midi.
-*/
+ * Start recording into the Replay Buffer.
+ * Will throw an error if "Save Replay Buffer" hotkey is not set in OBS' settings.
+ * Setting this hotkey is mandatory, even when triggering saves only
+ * through obs-midi.
+ */
 void ActionsClass::StartReplayBuffer()
 {
 	if (!Utils::ReplayBufferEnabled()) {
@@ -295,8 +286,8 @@ void ActionsClass::StartReplayBuffer()
 }
 
 /**
-* Stop recording into the Replay Buffer.
-*/
+ * Stop recording into the Replay Buffer.
+ */
 void ActionsClass::StopReplayBuffer()
 {
 	if (obs_frontend_replay_buffer_active() == true) {
@@ -305,18 +296,17 @@ void ActionsClass::StopReplayBuffer()
 }
 
 /**
-* Flush and save the contents of the Replay Buffer to disk. This is
-* basically the same as triggering the "Save Replay Buffer" hotkey.
-* Will return an `error` if the Replay Buffer is not active.
-*/
+ * Flush and save the contents of the Replay Buffer to disk. This is
+ * basically the same as triggering the "Save Replay Buffer" hotkey.
+ * Will return an `error` if the Replay Buffer is not active.
+ */
 void ActionsClass::SaveReplayBuffer()
 {
 	if (!obs_frontend_replay_buffer_active()) {
 		throw("replay buffer not active");
 	}
 
-	OBSOutputAutoRelease replayOutput =
-		obs_frontend_get_replay_buffer_output();
+	OBSOutputAutoRelease replayOutput = obs_frontend_get_replay_buffer_output();
 
 	calldata_t cd = {0};
 	proc_handler_t *ph = obs_output_get_proc_handler(replayOutput);
@@ -342,8 +332,7 @@ void ActionsClass::ReloadBrowserSource() {}
 
 void ActionsClass::TakeSourceScreenshot(const QString &source)
 {
-	obs_frontend_take_source_screenshot(
-		obs_get_source_by_name(source.toStdString().c_str()));
+	obs_frontend_take_source_screenshot(obs_get_source_by_name(source.toStdString().c_str()));
 }
 
 void ActionsClass::EnableSourceFilter() {}
@@ -358,8 +347,7 @@ void ActionsClass::ToggleSourceFilter() {}
 
 void ActionsClass::SetVolume(const QString &source, float volume)
 {
-	OBSSourceAutoRelease obsSource =
-		obs_get_source_by_name(source.toUtf8());
+	OBSSourceAutoRelease obsSource = obs_get_source_by_name(source.toUtf8());
 	if (!obsSource) {
 		return; // source does not exist
 	}
@@ -376,8 +364,7 @@ void ActionsClass::SetSyncOffset(const QString &sourceName, int64_t sourceSyncOf
 		throw("source name is empty");
 	}
 
-	OBSSourceAutoRelease source =
-		obs_get_source_by_name(sourceName.toUtf8());
+	OBSSourceAutoRelease source = obs_get_source_by_name(sourceName.toUtf8());
 	if (!source) {
 		throw("specified source doesn't exist");
 	}
@@ -395,8 +382,7 @@ void ActionsClass::SetGainFilter() {}
 
 void ActionsClass::SetOpacity() {}
 
-void ActionsClass::do_obs_action(MidiHook *hook, int MidiVal,
-				 ActionsClass::Actions action)
+void ActionsClass::do_obs_action(MidiHook *hook, int MidiVal, ActionsClass::Actions action)
 {
 	switch (action) {
 	case ActionsClass::Actions::Set_Current_Scene:
@@ -412,8 +398,7 @@ void ActionsClass::do_obs_action(MidiHook *hook, int MidiVal,
 		if (hook->transition.isEmpty()) {
 			ActionsClass::TransitionToProgram();
 		} else if (hook->duration != -1) {
-			ActionsClass::TransitionToProgram(hook->transition,
-							  hook->duration);
+			ActionsClass::TransitionToProgram(hook->transition, hook->duration);
 		} else {
 			ActionsClass::TransitionToProgram(hook->transition);
 		}
@@ -459,8 +444,7 @@ void ActionsClass::do_obs_action(MidiHook *hook, int MidiVal,
 		ActionsClass::StopReplayBuffer();
 		break;
 	case ActionsClass::Actions::Set_Volume:
-		ActionsClass::SetVolume(hook->audio_source,
-					pow(Utils::mapper(MidiVal), 3.0));
+		ActionsClass::SetVolume(hook->audio_source, pow(Utils::mapper(MidiVal), 3.0));
 		break;
 	case ActionsClass::Actions::Take_Source_Screenshot:
 		ActionsClass::TakeSourceScreenshot(hook->source);
@@ -502,8 +486,7 @@ void ActionsClass::do_obs_action(MidiHook *hook, int MidiVal,
 		ActionsClass::ReloadBrowserSource();
 		break;
 	case ActionsClass::Actions::Set_Sync_Offset:
-		ActionsClass::SetSyncOffset(hook->media_source,
-					    (int64_t)MidiVal);
+		ActionsClass::SetSyncOffset(hook->media_source, (int64_t)MidiVal);
 		break;
 	case ActionsClass::Actions::Set_Source_Rotation:
 		ActionsClass::SetSourceRotation();

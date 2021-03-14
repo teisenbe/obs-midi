@@ -74,7 +74,7 @@ private:
 	void disconnect_midi_message_handler() const;
 	void connect_midi_message_handler() const;
 	bool map_exists() const;
-	MidiHook * find_existing_hook() const;
+	MidiHook *find_existing_hook() const;
 	int find_mapping_location(const MidiMessage &message) const;
 	bool verify_mapping() const;
 

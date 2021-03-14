@@ -475,7 +475,6 @@ MidiHook *MidiAgent::get_midi_hook_if_exists(const RpcEvent &event) const
 		case ActionsClass::Actions::Disable_Source_Filter:
 
 			break;
-		
 
 		case ActionsClass::Actions::Enable_Preview:
 
