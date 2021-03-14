@@ -67,6 +67,7 @@ public:
 	void exe_midi_hook_if_exists(MidiMessage *message);
 	void add_MidiHook(MidiHook *hook);
 	void remove_MidiHook(MidiHook *hook);
+	void edit_midi_hook(MidiHook *old_hook, MidiHook *new_hook);
 	void clear_MidiHooks();
 	QString GetData();
 	void remove_source(const RpcEvent &event);

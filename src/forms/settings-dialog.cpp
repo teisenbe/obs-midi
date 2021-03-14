@@ -38,7 +38,7 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	configure_table();
 	hide_all_pairs();
 	connect_ui_signals();
-
+	reset_to_defaults();
 	starting = false;
 }
 void PluginWindow::configure_table() const
@@ -68,6 +68,7 @@ void PluginWindow::connect_ui_signals() const
 	connect(ui->table_mapping, SIGNAL(cellClicked(int, int)), this, SLOT(edit_mapping()));
 	/**************Connections to mappper****************/
 	connect(ui->btn_add, SIGNAL(clicked()), this, SLOT(add_new_mapping()));
+	connect(ui->btn_reset, SIGNAL(clicked()), this, SLOT(reset_to_defaults()));
 	connect(ui->btn_delete, SIGNAL(clicked()), this, SLOT(delete_mapping()));
 	connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_changed(int)));
 	connect(ui->outbox, SIGNAL(currentTextChanged(QString)), this, SLOT(select_output_device(QString)));
@@ -454,16 +455,23 @@ void PluginWindow::reset_to_defaults() const
 	ui->cb_obs_output_audio_source->setCurrentIndex(0);
 	ui->cb_obs_output_media_source->setCurrentIndex(0);
 	ui->sb_channel->setValue(0);
-	ui->sb_norc->setValue(0);
+	ui->sb_norc->clear();
 	ui->cb_mtype->setCurrentIndex(0);
 	ui->slider_value->setValue(0);
 	ui->btn_add->setText("Add Mapping");
 	ui->btn_delete->setEnabled(false);
+	ui->btn_reset->setEnabled(false);
 	ui->table_mapping->clearSelection();
+	ui->sb_max->clear();
+	ui->sb_min->clear();
+	ui->sb_int_override->clear();
+	clear_table();
+	load_table();
 	this->ui->table_mapping->resizeColumnsToContents();
 }
 void PluginWindow::obs_actions_select(const QString &action) const
 {
+	ui->btn_reset->setEnabled(true);
 	if (!switching) {
 		hide_all_pairs();
 		switch (ActionsClass::string_to_action(Utils::untranslate(action))) {
@@ -677,8 +685,6 @@ void PluginWindow::add_new_mapping()
 		const auto row = (editmode) ? editrow : ui->table_mapping->rowCount();
 		if (!editmode)
 			ui->table_mapping->insertRow(row);
-
-		editmode = false;
 		// don't delete it, because the table takes ownership of the items
 		const auto channel_item = new QTableWidgetItem(QString::number(ui->sb_channel->value()));
 		const auto message_type_item = new QTableWidgetItem(ui->cb_mtype->currentText());
@@ -700,42 +706,68 @@ void PluginWindow::add_new_mapping()
 		ui->table_mapping->setItem(row, 1, message_type_item);
 		ui->table_mapping->setItem(row, 2, norc_item);
 		ui->table_mapping->setItem(row, 3, action_item);
-		ui->table_mapping->setItem(row, 4, scene_item);
-		ui->table_mapping->setItem(row, 5, source_item);
-		ui->table_mapping->setItem(row, 6, filter_item);
-		ui->table_mapping->setItem(row, 7, transition_item);
-		ui->table_mapping->setItem(row, 8, item_item);
-		ui->table_mapping->setItem(row, 9, audio_item);
-		ui->table_mapping->setItem(row, 10, media_item);
-		ui->table_mapping->setItem(row, 11, int_override);
-		ui->table_mapping->setItem(row, 12, min);
-		ui->table_mapping->setItem(row, 13, max);
-		ui->table_mapping->setItem(row, 14, hotkey_item);
 
-		set_all_cell_colors(row);
-		auto *new_midi_hook = (editmode) ? find_existing_hook() : new MidiHook();
+		auto *new_midi_hook = new MidiHook();
 		new_midi_hook->channel = ui->sb_channel->value();
 		new_midi_hook->message_type = ui->cb_mtype->currentText();
 		new_midi_hook->norc = ui->sb_norc->value();
 		new_midi_hook->value_as_filter = ui->check_use_value->isChecked();
-		new_midi_hook->value.emplace((ui->check_use_value->isChecked()) ? ui->slider_value->value() : NULL);
+		new_midi_hook->value.emplace(ui->slider_value->value());
 		new_midi_hook->action = ui->cb_obs_output_action->currentText();
-		new_midi_hook->scene = ui->cb_obs_output_scene->currentText();
-		new_midi_hook->source = ui->cb_obs_output_source->currentText();
-		new_midi_hook->filter = ui->cb_obs_output_filter->currentText();
-		new_midi_hook->transition = ui->cb_obs_output_transition->currentText();
-		new_midi_hook->item = ui->cb_obs_output_item->currentText();
-		new_midi_hook->setHotkey(hotkey);
-		new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
-		new_midi_hook->media_source = ui->cb_obs_output_media_source->currentText();
-		new_midi_hook->int_override.emplace(ui->sb_int_override->value());
-		new_midi_hook->range_min.emplace(ui->sb_min->value());
-		new_midi_hook->range_max.emplace(ui->sb_max->value());
-		new_midi_hook->setAction();
-		GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->add_MidiHook(new_midi_hook);
+		if (ui->cb_obs_output_scene->isVisible()) {
+			ui->table_mapping->setItem(row, 4, scene_item);
+			new_midi_hook->scene = ui->cb_obs_output_scene->currentText();
+		}
+		if (ui->cb_obs_output_source->isVisible()) {
+			ui->table_mapping->setItem(row, 5, source_item);
+			new_midi_hook->source = ui->cb_obs_output_source->currentText();
+		}
+		if (ui->cb_obs_output_filter->isVisible()) {
+			ui->table_mapping->setItem(row, 6, filter_item);
+			new_midi_hook->filter = ui->cb_obs_output_filter->currentText();
+		}
+		if (ui->cb_obs_output_transition->isVisible()) {
+			ui->table_mapping->setItem(row, 7, transition_item);
+			new_midi_hook->transition = ui->cb_obs_output_transition->currentText();
+		}
+		if (ui->cb_obs_output_item->isVisible()) {
+			ui->table_mapping->setItem(row, 8, item_item);
+			new_midi_hook->item = ui->cb_obs_output_item->currentText();
+		}
+		if (ui->cb_obs_output_hotkey->isVisible())
+			new_midi_hook->hotkey = ui->cb_obs_output_hotkey->currentText();
+		if (ui->cb_obs_output_audio_source->isVisible()) {
+			ui->table_mapping->setItem(row, 9, audio_item);
+			new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
+		}
+		if (ui->cb_obs_output_media_source->isVisible()) {
+			ui->table_mapping->setItem(row, 10, media_item);
+			new_midi_hook->media_source = ui->cb_obs_output_media_source->currentText();
+		}
+		if (ui->sb_int_override->isVisible()) {
+			ui->table_mapping->setItem(row, 11, int_override);
+			new_midi_hook->int_override.emplace(ui->sb_int_override->value());
+		}
+		if (ui->sb_min->isVisible()) {
+			ui->table_mapping->setItem(row, 12, min);
+			new_midi_hook->range_min.emplace(ui->sb_min->value());
+		}
+		if (ui->sb_max->isVisible()) {
+			ui->table_mapping->setItem(row, 13, max);
+			new_midi_hook->range_max.emplace(ui->sb_max->value());
+		}
+		ui->table_mapping->setItem(row, 14, hotkey_item);
+        new_midi_hook->setHotkey(hotkey);
 
+		new_midi_hook->setAction();
+		set_all_cell_colors(row);
+		if (editmode) {
+			GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->edit_midi_hook(edithook, new_midi_hook);
+		} else {
+			GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->add_MidiHook(new_midi_hook);
+		}
 		GetConfig().get()->Save();
-		ui->table_mapping->selectRow(row);
+		reset_to_defaults();
 		this->ui->table_mapping->resizeColumnsToContents();
 	} else {
 		if (ui->sb_channel->value()) {
@@ -758,6 +790,8 @@ void PluginWindow::add_new_mapping()
 			Utils::alert_popup(mess);
 		}
 	}
+	if (editmode)
+		editmode = false;
 }
 void PluginWindow::add_row_from_hook(MidiHook *hook) const
 {
@@ -853,32 +887,36 @@ void PluginWindow::remove_hook(MidiHook *hook) const
 }
 void PluginWindow::delete_mapping() const
 {
-	if (ui->table_mapping->rowCount() > 0) {
-		auto row = ui->table_mapping->selectedItems().at(0)->row();
-		blog(LOG_DEBUG, "selected row to delete %i", row);
-		const auto hooks = GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->GetMidiHooks();
-		for (auto *hook : hooks) {
-			if ((hook->channel == ui->sb_channel->value()) && (hook->norc == ui->sb_norc->value()) &&
-			    (hook->message_type == ui->cb_mtype->currentText())) {
-				if (hook->value_as_filter) {
-					if (hook->value == ui->slider_value->value()) {
-						remove_hook(hook);
-						ui->table_mapping->removeRow(row);
-						ui->table_mapping->clearSelection();
-					}
-				} else {
+	if (ui->table_mapping->rowCount() <= 0)
+		return;
+
+	auto row = ui->table_mapping->selectedItems().at(0)->row();
+	blog(LOG_DEBUG, "selected row to delete %i", row);
+	const auto hooks = GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->GetMidiHooks();
+	for (auto *hook : hooks) {
+		if ((hook->channel == ui->sb_channel->value()) && (hook->norc == ui->sb_norc->value()) && (hook->message_type == ui->cb_mtype->currentText())) {
+			if (hook->value_as_filter) {
+				if (hook->value == ui->slider_value->value()) {
 					remove_hook(hook);
 					ui->table_mapping->removeRow(row);
 					ui->table_mapping->clearSelection();
 				}
+			} else {
+				remove_hook(hook);
+				ui->table_mapping->removeRow(row);
+				ui->table_mapping->clearSelection();
 			}
 		}
 	}
+	reset_to_defaults();
 }
 void PluginWindow::edit_mapping()
 {
 	if (ui->table_mapping->rowCount() != 0) {
 		editmode = true;
+
+		ui->btn_add->setText("Save Edits");
+		ui->btn_reset->setEnabled(true);
 		const auto dv = GetDeviceManager().get()->get_midi_hooks(ui->mapping_lbl_device_name->text());
 		blog(LOG_DEBUG, "hook numners: name %s = %i", ui->mapping_lbl_device_name->text().toStdString().c_str(), dv.count());
 		const auto selected_items = ui->table_mapping->selectedItems();
@@ -906,6 +944,7 @@ void PluginWindow::edit_mapping()
 		HotkeyModel *hotkeyModel = (HotkeyModel *)ui->cb_obs_output_hotkey->model();
 		ui->cb_obs_output_hotkey->setCurrentIndex(hotkeyModel->getIndexOfHotkeyDescription(selected_items.at(14)->text()));
 		ui->btn_delete->setEnabled(true);
+		edithook = find_existing_hook();
 	}
 }
 
