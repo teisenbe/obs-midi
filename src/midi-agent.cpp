@@ -395,7 +395,12 @@ void MidiAgent::remove_MidiHook(MidiHook *hook)
 		delete (hook);
 	}
 }
-/// <summary>
+void MidiAgent::edit_midi_hook(MidiHook *old_hook, MidiHook *new_hook)
+{
+	remove_MidiHook(old_hook);
+	add_MidiHook(new_hook);
+}
+	/// <summary>
 /// Clears all the MidiHooks for this device.
 /// *This does not delete hooks from config unless saved afterwards*
 /// </summary>
