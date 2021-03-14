@@ -15,7 +15,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include <vector>
 
-
 #include "ui_settings-dialog.h"
 #include "../midi-agent.h"
 #include "../version.h"
@@ -42,7 +41,7 @@ private slots:
 	void on_scene_change(const QString &new_scene) const;
 	void on_source_change(const QString &new_source) const;
 	void add_new_mapping();
-	void add_row_from_hook(MidiHook *hook) const;
+	void add_row_from_hook(const MidiHook *hook) const;
 	void set_all_cell_colors(int row) const;
 	void tab_changed(int tab) const;
 	void clear_table() const;

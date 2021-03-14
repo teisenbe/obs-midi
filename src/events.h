@@ -56,6 +56,7 @@ public:
 	void connectFilterSignals(obs_source_t *filter);
 	void disconnectFilterSignals(obs_source_t *filter);
 
+	void initialiseHotkeysHooks();
 	void hookTransitionPlaybackEvents();
 	void unhookTransitionPlaybackEvents();
 

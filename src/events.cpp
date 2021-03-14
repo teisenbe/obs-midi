@@ -81,6 +81,7 @@ void Events::startup()
 		signal_handler_connect(coreSignalHandler, "source_destroy", OnSourceDestroy, this);
 	}
 	hookTransitionPlaybackEvents();
+	initialiseHotkeysHooks();
 }
 void Events::shutdown()
 {
@@ -302,6 +303,16 @@ void Events::disconnectFilterSignals(obs_source_t *filter)
 	}
 	signal_handler_t *sh = obs_source_get_signal_handler(filter);
 	signal_handler_disconnect(sh, "enable", OnSourceFilterVisibilityChanged, this);
+}
+void Events::initialiseHotkeysHooks()
+{
+	QVector<MidiAgent *> midiAgents = GetDeviceManager()->get_active_midi_devices();
+	for (auto midiAgent : midiAgents) {
+		QVector<MidiHook *> midiHooks = midiAgent->GetMidiHooks();
+		for (auto midiHook : midiHooks) {
+			midiHook->initHotkey();
+		}
+	}
 }
 void Events::hookTransitionPlaybackEvents()
 {

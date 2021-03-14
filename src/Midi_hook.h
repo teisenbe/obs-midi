@@ -42,10 +42,11 @@ public:
 	obsc obsControlFunction;
 	void EXE();
 	void setAction();
+	void initHotkey();
 	void setHotkey(Hotkey *hotkey);
-	Hotkey *getHotkey();
+	Hotkey *getHotkey() const;
 
 private:
-	QString hotkey;
+        QString hotkey;
 	Hotkey *hotkeyInstance = NULL;
 };

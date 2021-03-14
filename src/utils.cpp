@@ -1025,9 +1025,9 @@ QStringList Utils::get_filter_names(const QString &Source)
  */
 Hotkey::Hotkey(obs_hotkey_t *obsHotkey)
 {
-	name = obs_hotkey_get_name(obsHotkey);
-	description = obs_hotkey_get_description(obsHotkey);
-	id = obs_hotkey_get_id(obsHotkey);
+    name = obs_hotkey_get_name(obsHotkey);
+    description = obs_hotkey_get_description(obsHotkey);
+    id = obs_hotkey_get_id(obsHotkey);
 }
 int HotkeyModel::rowCount(const QModelIndex &parent) const
 {
@@ -1066,7 +1066,7 @@ void HotkeyModel::fetchHotkeys()
 			    QString(obs_hotkey_get_name(obsHotkey)).contains("OBSBasic"))
 				return true;
 			auto hotkeysList = static_cast<QList<Hotkey> *>(data);
-                        hotkeysList->append(Hotkey(obsHotkey));
+			hotkeysList->append(Hotkey(obsHotkey));
 			return true;
 		},
 		&hotkeysList);

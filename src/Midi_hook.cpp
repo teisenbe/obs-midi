@@ -29,6 +29,7 @@ MidiHook::MidiHook(const QString &json_string)
 	value_as_filter = obs_data_get_bool(data, "value_as_filter");
 	value.emplace(obs_data_get_int(data, "value"));
 	setAction();
+	initHotkey();
 	obs_data_release(data);
 }
 MidiMessage *MidiHook::get_message_from_hook()
@@ -254,6 +255,9 @@ void MidiHook::setAction()
 
 void MidiHook::setHotkey(Hotkey *hotkey)
 {
+	if (hotkeyInstance) {
+		delete hotkeyInstance;
+	}
 	if (!hotkey) {
 		hotkeyInstance = NULL;
 		this->hotkey = "";
@@ -263,7 +267,7 @@ void MidiHook::setHotkey(Hotkey *hotkey)
 	this->hotkey = hotkey->name;
 }
 
-Hotkey *MidiHook::getHotkey()
+void MidiHook::initHotkey()
 {
 	if (!hotkeyInstance && !hotkey.isEmpty()) {
 		obs_hotkey_t *obsHotkey = Utils::FindHotkeyByName(hotkey);
@@ -271,6 +275,9 @@ Hotkey *MidiHook::getHotkey()
 			this->hotkeyInstance = new Hotkey(obsHotkey);
 		}
 	}
+}
 
+Hotkey *MidiHook::getHotkey() const
+{
 	return hotkeyInstance;
 }

@@ -734,8 +734,6 @@ void PluginWindow::add_new_mapping()
 			ui->table_mapping->setItem(row, 8, item_item);
 			new_midi_hook->item = ui->cb_obs_output_item->currentText();
 		}
-		if (ui->cb_obs_output_hotkey->isVisible())
-			new_midi_hook->hotkey = ui->cb_obs_output_hotkey->currentText();
 		if (ui->cb_obs_output_audio_source->isVisible()) {
 			ui->table_mapping->setItem(row, 9, audio_item);
 			new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
@@ -756,8 +754,10 @@ void PluginWindow::add_new_mapping()
 			ui->table_mapping->setItem(row, 13, max);
 			new_midi_hook->range_max.emplace(ui->sb_max->value());
 		}
-		ui->table_mapping->setItem(row, 14, hotkey_item);
-        new_midi_hook->setHotkey(hotkey);
+		if (ui->cb_obs_output_hotkey->isVisible()) {
+			ui->table_mapping->setItem(row, 14, hotkey_item);
+			new_midi_hook->setHotkey(hotkey);
+		}
 
 		new_midi_hook->setAction();
 		set_all_cell_colors(row);
@@ -793,7 +793,7 @@ void PluginWindow::add_new_mapping()
 	if (editmode)
 		editmode = false;
 }
-void PluginWindow::add_row_from_hook(MidiHook *hook) const
+void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 {
 	const auto row = ui->table_mapping->rowCount();
 	ui->table_mapping->insertRow(row);
