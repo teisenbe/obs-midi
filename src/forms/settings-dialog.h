@@ -15,8 +15,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include <vector>
 
-#include "ui_settings-dialog.h"
 
+#include "ui_settings-dialog.h"
 #include "../midi-agent.h"
 #include "../version.h"
 
@@ -82,4 +82,5 @@ private:
 	int editrow = -1;
 	bool editmode = false;
 	bool switching = false;
+	MidiHook *edithook;
 };

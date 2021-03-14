@@ -78,17 +78,18 @@ list(APPEND obs-midi_HEADERS
 	src/macro-helpers.h
 	src/Midi_hook.h
 	src/Midi_message.h)
-set(obs-midi_UI
+set(obs_midi_UI
 	src/forms/settings-dialog.ui)
-qt5_wrap_ui(obs-midi_UI_HEADERS ${obs-midi_UI})
+
+qt5_wrap_ui(obs_midi_UI_HEADERS ${obs_midi_UI})
 
 add_library(obs-midi MODULE
 	${obs-midi_SOURCES}
-	${obs-midi_UI_HEADERS}
+	${obs_midi_UI_HEADERS}
 	${obs-midi_HEADERS})
 include_directories(
 	"${LIBOBS_INCLUDE_DIR}/../UI/obs-frontend-api"
-
+	${obs_midi_UI_HEADERS}
 	${Qt5Core_INCLUDES}
 	${Qt5Widgets_INCLUDES}
 	"${CMAKE_SOURCE_DIR}/deps/asio/asio/include")
