@@ -1034,3 +1034,73 @@ QStringList Utils::get_filter_names(const QString &Source)
 	obs_source_release(source);
 	return enumParams.names;
 }
+
+/**
+ * Hotkey class and model
+ */
+Hotkey::Hotkey(obs_hotkey_t *obsHotkey)
+{
+	name = obs_hotkey_get_name(obsHotkey);
+	description = obs_hotkey_get_description(obsHotkey);
+	id = obs_hotkey_get_id(obsHotkey);
+}
+int HotkeyModel::rowCount(const QModelIndex &parent) const
+{
+	return hotkeysList.size();
+}
+int HotkeyModel::columnCount(const QModelIndex &parent) const
+{
+	return 3;
+}
+QVariant HotkeyModel::data(const QModelIndex &index, int role) const
+{
+	if (!index.isValid())
+		return QVariant();
+
+	if (index.row() >= hotkeysList.size())
+		return QVariant();
+
+	if (role == Qt::DisplayRole) {
+		if (index.column() == 0)
+			return hotkeysList[index.row()].name;
+		if (index.column() == 1)
+			return hotkeysList[index.row()].description;
+		if (index.column() == 2)
+			return QVariant::fromValue(hotkeysList[index.row()].id);
+	}
+	return QVariant();
+}
+void HotkeyModel::fetchHotkeys()
+{
+	beginResetModel();
+	hotkeysList.clear();
+
+	obs_enum_hotkeys(
+		[](void *data, obs_hotkey_id id, obs_hotkey_t *obsHotkey) {
+			if (obs_hotkey_get_registerer_type(obsHotkey) != OBS_HOTKEY_REGISTERER_FRONTEND ||
+			    QString(obs_hotkey_get_name(obsHotkey)).contains("OBSBasic"))
+				return true;
+			auto hotkeysList = static_cast<QList<Hotkey> *>(data);
+                        hotkeysList->append(Hotkey(obsHotkey));
+			return true;
+		},
+		&hotkeysList);
+
+	endResetModel();
+}
+Hotkey *HotkeyModel::getHotkeyAtIndex(int index)
+{
+	if (index < 0 || index >= hotkeysList.size())
+		return NULL;
+	return &hotkeysList[index];
+}
+int HotkeyModel::getIndexOfHotkeyDescription(QString hotkeyDescription)
+{
+	auto it = std::find_if(hotkeysList.begin(), hotkeysList.end(), [&hotkeyDescription](Hotkey hotkey) { return hotkey.description == hotkeyDescription; });
+
+	if (it != hotkeysList.end()) {
+		return std::distance(hotkeysList.begin(), it);
+		;
+	}
+	return -1;
+}

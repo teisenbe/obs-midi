@@ -107,7 +107,7 @@ public:
 		Unpause_Recording
 	};
 	Q_ENUM(Actions)
-	
+
 	static QString action_to_string(const Actions &enumval);
 	static Actions string_to_action(const QString &string);
 	static float fade_value();
@@ -236,4 +236,28 @@ const QList<ActionsClass::Actions> not_ready_actions{
 };
 void alert_popup(const QString &message);
 QString translate_action(ActionsClass::Actions action);
+};
+/**
+ * Hotkey class and model
+ */
+class Hotkey {
+public:
+	Hotkey(obs_hotkey_t *obsHotkey);
+	QString name;
+	QString description;
+	obs_hotkey_id id;
+};
+class HotkeyModel : public QAbstractListModel {
+	Q_OBJECT
+public:
+	HotkeyModel(QObject *parent = 0) : QAbstractListModel(parent){};
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	QVariant data(const QModelIndex &index, int role) const;
+	void fetchHotkeys();
+	Hotkey *getHotkeyAtIndex(int index);
+	int getIndexOfHotkeyDescription(QString hotkeyDescription);
+
+private:
+	QList<Hotkey> hotkeysList;
 };
