@@ -873,6 +873,7 @@ void PluginWindow::edit_mapping()
 {
 	if (ui->table_mapping->rowCount() != 0) {
 		editmode = true;
+		ui->btn_add->setText("Save Edits");
 		const auto dv = GetDeviceManager().get()->get_midi_hooks(ui->mapping_lbl_device_name->text());
 		blog(LOG_DEBUG, "hook numners: name %s = %i", ui->mapping_lbl_device_name->text().toStdString().c_str(), dv.count());
 		const auto selected_items = ui->table_mapping->selectedItems();
