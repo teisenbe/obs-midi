@@ -80,7 +80,7 @@ list(APPEND obs-midi_HEADERS
 	src/Midi_message.h)
 set(obs-midi_UI
 	src/forms/settings-dialog.ui)
-qt5_wrap_ui(obs_UI_HEADERS ${obs-midi_UI})
+qt5_wrap_ui(obs-midi_UI_HEADERS ${obs-midi_UI})
 
 add_library(obs-midi MODULE
 	${obs-midi_SOURCES}
