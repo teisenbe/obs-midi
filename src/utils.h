@@ -153,7 +153,6 @@ const char *GetRecordingFolder();
 bool SetRecordingFolder(const char *path);
 QString ParseDataToQueryString(obs_data_t *data);
 obs_hotkey_t *FindHotkeyByName(const QString &name);
-QStringList GetHotkeysList();
 bool ReplayBufferEnabled();
 void StartReplayBuffer();
 bool IsRPHotkeySet();
