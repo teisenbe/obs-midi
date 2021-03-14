@@ -56,7 +56,7 @@ void TakeSourceScreenshot(MidiHook *hook);
 void EnableSourceFilter(MidiHook *hook);
 void DisableSourceFilter(MidiHook *hook);
 void ToggleSourceFilter(MidiHook *hook);
-void TriggerHotkeyByName(MidiHook *hook);
+void TriggerHotkey(MidiHook *hook);
 
 // CC ACTIONS
 void SetVolume(MidiHook *hook);
@@ -77,4 +77,3 @@ void next_media(MidiHook *hook);
 void prev_media(MidiHook *hook);
 void make_opacity_filter(MidiHook *hook);
 int time_to_sleep(int duration);
-

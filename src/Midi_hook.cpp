@@ -242,8 +242,8 @@ void MidiHook::setAction()
 	case ActionsClass::Toggle_Fade_Source:
 		obsControlFunction = make_opacity_filter;
 		break;
-        case ActionsClass::Trigger_Hotkey_By_Name:
-                obsControlFunction = TriggerHotkeyByName;
+	case ActionsClass::Trigger_Hotkey:
+		obsControlFunction = TriggerHotkey;
 		break;
 
 	default:

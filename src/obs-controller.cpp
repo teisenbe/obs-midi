@@ -391,7 +391,7 @@ void ToggleSourceFilter(MidiHook *hook)
 		obs_source_set_enabled(filter, true);
 	}
 }
-void TriggerHotkeyByName(MidiHook *hook)
+void TriggerHotkey(MidiHook *hook)
 {
 	obs_hotkey_t *hk = Utils::FindHotkeyByName(hook->hotkey);
 	if (!hk) {

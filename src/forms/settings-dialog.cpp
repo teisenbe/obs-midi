@@ -605,9 +605,9 @@ void PluginWindow::obs_actions_select(const QString &action) const
 			ui->label_Int_override->setText("Duration * ");
 			ui->sb_int_override->setSuffix(" ms");
 			break;
-                case ActionsClass::Actions::Trigger_Hotkey_By_Name:
-                        show_pair(Pairs::Hotkey);
-                        break;
+		case ActionsClass::Actions::Trigger_Hotkey:
+			show_pair(Pairs::Hotkey);
+			break;
 		default:
 			hide_all_pairs();
 			break;
