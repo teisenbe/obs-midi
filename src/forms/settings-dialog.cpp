@@ -78,6 +78,10 @@ void PluginWindow::setup_actions() const
 	ui->cb_obs_output_action->addItems(Utils::TranslateActions());
 	ui->cb_obs_output_action->setCurrentIndex(1);
 	ui->cb_obs_output_action->setCurrentIndex(0);
+
+	HotkeyModel *model = new HotkeyModel;
+	ui->cb_obs_output_hotkey->setModel(model);
+	ui->cb_obs_output_hotkey->setModelColumn(1);
 }
 void PluginWindow::ToggleShowHide()
 {
@@ -313,7 +317,7 @@ void PluginWindow::show_pair(Pairs Pair) const
 	case Pairs::Hotkey:
 		ui->label_obs_output_hotkey->show();
 		ui->cb_obs_output_hotkey->show();
-		ui->cb_obs_output_hotkey->addItems(Utils::GetHotkeysList());
+		((HotkeyModel *)ui->cb_obs_output_hotkey->model())->fetchHotkeys();
 		ui->w_hotkey->show();
 		break;
 	case Pairs::Audio:
@@ -690,7 +694,8 @@ void PluginWindow::add_new_mapping()
 		const auto int_override = new QTableWidgetItem(QString::number(ui->sb_int_override->value()));
 		const auto min = new QTableWidgetItem(QString::number(ui->sb_min->value()));
 		const auto max = new QTableWidgetItem(QString::number(ui->sb_max->value()));
-                const auto hotkey_item = new QTableWidgetItem(ui->cb_obs_output_hotkey->currentText());
+		Hotkey *hotkey = ((HotkeyModel *)ui->cb_obs_output_hotkey->model())->getHotkeyAtIndex(ui->cb_obs_output_hotkey->currentIndex());
+		const auto hotkey_item = new QTableWidgetItem(hotkey->description);
 		ui->table_mapping->setItem(row, 0, channel_item);
 		ui->table_mapping->setItem(row, 1, message_type_item);
 		ui->table_mapping->setItem(row, 2, norc_item);
@@ -720,7 +725,7 @@ void PluginWindow::add_new_mapping()
 		new_midi_hook->filter = ui->cb_obs_output_filter->currentText();
 		new_midi_hook->transition = ui->cb_obs_output_transition->currentText();
 		new_midi_hook->item = ui->cb_obs_output_item->currentText();
-		new_midi_hook->hotkey = ui->cb_obs_output_hotkey->currentText();
+		new_midi_hook->setHotkey(hotkey);
 		new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
 		new_midi_hook->media_source = ui->cb_obs_output_media_source->currentText();
 		new_midi_hook->int_override.emplace(ui->sb_int_override->value());
@@ -754,7 +759,7 @@ void PluginWindow::add_new_mapping()
 		}
 	}
 }
-void PluginWindow::add_row_from_hook(const MidiHook *hook) const
+void PluginWindow::add_row_from_hook(MidiHook *hook) const
 {
 	const auto row = ui->table_mapping->rowCount();
 	ui->table_mapping->insertRow(row);
@@ -771,7 +776,8 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	auto *item_item = new QTableWidgetItem(hook->item);
 	auto *audio_item = new QTableWidgetItem(hook->audio_source);
 	auto *media_item = new QTableWidgetItem(hook->media_source);
-	auto *hotkey_item = new QTableWidgetItem(hook->hotkey);
+	Hotkey *hotkey = hook->getHotkey();
+	auto *hotkey_item = hotkey ? new QTableWidgetItem(hotkey->description) : new QTableWidgetItem();
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
 	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
 	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
@@ -796,7 +802,7 @@ void PluginWindow::set_all_cell_colors(const int row) const
 {
 	const QColor midi_color(0, 170, 255);
 	const QColor action_color(170, 0, 255);
-	
+
 	for (auto col = 0; col <= ui->table_mapping->columnCount(); col++) {
 		auto *const rc = ui->table_mapping->item(row, col);
 		(col < 3) ? set_cell_colors(midi_color, rc) : set_cell_colors(action_color, rc);
@@ -895,9 +901,10 @@ void PluginWindow::edit_mapping()
 		ui->cb_obs_output_audio_source->setCurrentText(selected_items.at(9)->text());
 		ui->cb_obs_output_media_source->setCurrentText(selected_items.at(10)->text());
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
-		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->check_int_override->setChecked(check);
 		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
+		HotkeyModel *hotkeyModel = (HotkeyModel *)ui->cb_obs_output_hotkey->model();
+		ui->cb_obs_output_hotkey->setCurrentIndex(hotkeyModel->getIndexOfHotkeyDescription(selected_items.at(14)->text()));
 		ui->btn_delete->setEnabled(true);
 	}
 }

@@ -10,8 +10,8 @@ class MidiHook : public QObject {
 	Q_OBJECT
 public:
 	MidiHook();
-	MidiHook(const QString& json_string);
-	MidiMessage* get_message_from_hook();
+	MidiHook(const QString &json_string);
+	MidiMessage *get_message_from_hook();
 	QString GetData();
 
 	int channel = -1;     // midi channel
@@ -23,7 +23,6 @@ public:
 	QString filter;
 	QString transition;
 	QString item;
-	QString hotkey;
 	QString audio_source;
 	QString media_source;
 	std::optional<int> duration;
@@ -39,8 +38,14 @@ public:
 	/// <summary>
 	/// Function pointer to execute action
 	/// </summary>
-	typedef void (*obsc)(MidiHook*);
+	typedef void (*obsc)(MidiHook *);
 	obsc obsControlFunction;
 	void EXE();
 	void setAction();
+	void setHotkey(Hotkey *hotkey);
+	Hotkey *getHotkey();
+
+private:
+	QString hotkey;
+	Hotkey *hotkeyInstance = NULL;
 };

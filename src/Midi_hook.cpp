@@ -15,7 +15,7 @@ MidiHook::MidiHook(const QString &json_string)
 	filter = obs_data_get_string(data, "filter");
 	transition = obs_data_get_string(data, "transition");
 	item = obs_data_get_string(data, "item");
-        hotkey = obs_data_get_string(data, "hotkey");
+	hotkey = obs_data_get_string(data, "hotkey");
 	audio_source = obs_data_get_string(data, "audio_source");
 	media_source = obs_data_get_string(data, "media_source");
 	duration.emplace(obs_data_get_int(data, "duration"));
@@ -250,4 +250,27 @@ void MidiHook::setAction()
 		blog(LOG_DEBUG, "Action Does not exist");
 		break;
 	};
+}
+
+void MidiHook::setHotkey(Hotkey *hotkey)
+{
+	if (!hotkey) {
+		hotkeyInstance = NULL;
+		this->hotkey = "";
+		return;
+	}
+	hotkeyInstance = hotkey;
+	this->hotkey = hotkey->name;
+}
+
+Hotkey *MidiHook::getHotkey()
+{
+	if (!hotkeyInstance && !hotkey.isEmpty()) {
+		obs_hotkey_t *obsHotkey = Utils::FindHotkeyByName(hotkey);
+		if (obsHotkey) {
+			this->hotkeyInstance = new Hotkey(obsHotkey);
+		}
+	}
+
+	return hotkeyInstance;
 }
