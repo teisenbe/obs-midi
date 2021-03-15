@@ -676,33 +676,7 @@ int PluginWindow::find_mapping_location(const MidiMessage &message) const
 }
 void PluginWindow::add_new_mapping()
 {
-	ui->btn_Listen_many->setChecked(false);
-	ui->btn_Listen_one->setChecked(false);
 	if ((!map_exists() && verify_mapping() && ui->sb_channel->value() != 0) || ((map_exists() && ui->check_use_value->isChecked())) || editmode) {
-		const auto row = (editmode) ? editrow : ui->table_mapping->rowCount();
-		if (!editmode)
-			ui->table_mapping->insertRow(row);
-		// don't delete it, because the table takes ownership of the items
-		const auto channel_item = new QTableWidgetItem(QString::number(ui->sb_channel->value()));
-		const auto message_type_item = new QTableWidgetItem(ui->cb_mtype->currentText());
-		const auto norc_item = new QTableWidgetItem(QString::number(ui->sb_norc->value()));
-		const auto action_item = new QTableWidgetItem(ui->cb_obs_output_action->currentText());
-		const auto scene_item = new QTableWidgetItem(ui->cb_obs_output_scene->currentText());
-		const auto source_item = new QTableWidgetItem(ui->cb_obs_output_source->currentText());
-		const auto filter_item = new QTableWidgetItem(ui->cb_obs_output_filter->currentText());
-		const auto transition_item = new QTableWidgetItem(ui->cb_obs_output_transition->currentText());
-		const auto item_item = new QTableWidgetItem(ui->cb_obs_output_item->currentText());
-		const auto audio_item = new QTableWidgetItem(ui->cb_obs_output_audio_source->currentText());
-		const auto media_item = new QTableWidgetItem(ui->cb_obs_output_media_source->currentText());
-		const auto int_override = new QTableWidgetItem(QString::number(ui->sb_int_override->value()));
-		const auto min = new QTableWidgetItem(QString::number(ui->sb_min->value()));
-		const auto max = new QTableWidgetItem(QString::number(ui->sb_max->value()));
-		const auto hotkey_item = new QTableWidgetItem(ui->cb_obs_output_hotkey->currentText());
-		ui->table_mapping->setItem(row, 0, channel_item);
-		ui->table_mapping->setItem(row, 1, message_type_item);
-		ui->table_mapping->setItem(row, 2, norc_item);
-		ui->table_mapping->setItem(row, 3, action_item);
-
 		auto *new_midi_hook = new MidiHook();
 		new_midi_hook->channel = ui->sb_channel->value();
 		new_midi_hook->message_type = ui->cb_mtype->currentText();
@@ -711,53 +685,39 @@ void PluginWindow::add_new_mapping()
 		new_midi_hook->value.emplace(ui->slider_value->value());
 		new_midi_hook->action = ui->cb_obs_output_action->currentText();
 		if (ui->cb_obs_output_scene->isVisible()) {
-			ui->table_mapping->setItem(row, 4, scene_item);
 			new_midi_hook->scene = ui->cb_obs_output_scene->currentText();
 		}
 		if (ui->cb_obs_output_source->isVisible()) {
-			ui->table_mapping->setItem(row, 5, source_item);
 			new_midi_hook->source = ui->cb_obs_output_source->currentText();
 		}
 		if (ui->cb_obs_output_filter->isVisible()) {
-			ui->table_mapping->setItem(row, 6, filter_item);
 			new_midi_hook->filter = ui->cb_obs_output_filter->currentText();
 		}
 		if (ui->cb_obs_output_transition->isVisible()) {
-			ui->table_mapping->setItem(row, 7, transition_item);
 			new_midi_hook->transition = ui->cb_obs_output_transition->currentText();
 		}
 		if (ui->cb_obs_output_item->isVisible()) {
-			ui->table_mapping->setItem(row, 8, item_item);
 			new_midi_hook->item = ui->cb_obs_output_item->currentText();
 		}
 		if (ui->cb_obs_output_audio_source->isVisible()) {
-			ui->table_mapping->setItem(row, 9, audio_item);
 			new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
 		}
 		if (ui->cb_obs_output_media_source->isVisible()) {
-			ui->table_mapping->setItem(row, 10, media_item);
 			new_midi_hook->media_source = ui->cb_obs_output_media_source->currentText();
 		}
 		if (ui->sb_int_override->isVisible()) {
-			ui->table_mapping->setItem(row, 11, int_override);
 			new_midi_hook->int_override.emplace(ui->sb_int_override->value());
 		}
 		if (ui->sb_min->isVisible()) {
-			ui->table_mapping->setItem(row, 12, min);
 			new_midi_hook->range_min.emplace(ui->sb_min->value());
 		}
 		if (ui->sb_max->isVisible()) {
-			ui->table_mapping->setItem(row, 13, max);
 			new_midi_hook->range_max.emplace(ui->sb_max->value());
 		}
 		if (ui->cb_obs_output_hotkey->isVisible()) {
-			ui->table_mapping->setItem(row, 14, hotkey_item);
-			auto key = Utils::get_hotkey_key(ui->cb_obs_output_hotkey->currentText());
-			blog(LOG_DEBUG, "hotkey_key %s", key.toStdString().c_str());
-			new_midi_hook->hotkey = key;
+			new_midi_hook->hotkey = Utils::get_hotkey_key(ui->cb_obs_output_hotkey->currentText());
 		}
 		new_midi_hook->setAction();
-		set_all_cell_colors(row);
 		if (editmode) {
 			GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->edit_midi_hook(edithook, new_midi_hook);
 		} else {
@@ -765,7 +725,6 @@ void PluginWindow::add_new_mapping()
 		}
 		GetConfig().get()->Save();
 		reset_to_defaults();
-		this->ui->table_mapping->resizeColumnsToContents();
 	} else {
 		if (ui->sb_channel->value()) {
 			Utils::alert_popup("Can Not Map Channel 0. \nPlease Click Listen One or Listen Many to listen for MIDI Event to map");

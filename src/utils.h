@@ -236,9 +236,10 @@ const QList<ActionsClass::Actions> not_ready_actions{
 };
 void alert_popup(const QString &message);
 QString translate_action(ActionsClass::Actions action);
-
+static QMap<QString, obs_hotkey_t *> hotkey_name_map;
 static QMap<QString, QString> hotkey_map;
 void build_hotkey_map();
+void build_hotkey_name_map();
 QString get_hotkey_key(QString value);
 QString get_hotkey_value(QString key);
 
