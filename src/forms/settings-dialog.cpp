@@ -816,6 +816,7 @@ void PluginWindow::tab_changed(const int tab) const
 		ui->cb_obs_output_action->setCurrentIndex(0);
 		ui->mapping_lbl_device_name->setText(ui->list_midi_dev->currentItem()->text());
 	}
+	Utils::build_hotkey_map();
 	clear_table();
 	load_table();
 	this->ui->table_mapping->resizeColumnsToContents();

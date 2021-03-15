@@ -926,7 +926,7 @@ QString Utils::translate_action(ActionsClass::Actions action)
 }
 void Utils::build_hotkey_map() {
 	hotkey_map.clear();
-
+	hotkey_name_map.clear();
 	obs_enum_hotkeys(
 		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
 			QString item(obs_hotkey_get_name(hotkey));
