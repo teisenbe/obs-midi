@@ -39,6 +39,7 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	hide_all_pairs();
 	connect_ui_signals();
 	reset_to_defaults();
+
 	starting = false;
 }
 void PluginWindow::configure_table() const
@@ -701,7 +702,7 @@ void PluginWindow::add_new_mapping()
 		ui->table_mapping->setItem(row, 1, message_type_item);
 		ui->table_mapping->setItem(row, 2, norc_item);
 		ui->table_mapping->setItem(row, 3, action_item);
-		
+
 		auto *new_midi_hook = new MidiHook();
 		new_midi_hook->channel = ui->sb_channel->value();
 		new_midi_hook->message_type = ui->cb_mtype->currentText();
@@ -729,8 +730,6 @@ void PluginWindow::add_new_mapping()
 			ui->table_mapping->setItem(row, 8, item_item);
 			new_midi_hook->item = ui->cb_obs_output_item->currentText();
 		}
-		if (ui->cb_obs_output_hotkey->isVisible())
-			new_midi_hook->hotkey = ui->cb_obs_output_hotkey->currentText();
 		if (ui->cb_obs_output_audio_source->isVisible()) {
 			ui->table_mapping->setItem(row, 9, audio_item);
 			new_midi_hook->audio_source = ui->cb_obs_output_audio_source->currentText();
@@ -751,7 +750,12 @@ void PluginWindow::add_new_mapping()
 			ui->table_mapping->setItem(row, 13, max);
 			new_midi_hook->range_max.emplace(ui->sb_max->value());
 		}
-		ui->table_mapping->setItem(row, 14, hotkey_item);
+		if (ui->cb_obs_output_hotkey->isVisible()) {
+			ui->table_mapping->setItem(row, 14, hotkey_item);
+			auto key = Utils::get_hotkey_key(ui->cb_obs_output_hotkey->currentText());
+			blog(LOG_DEBUG, "hotkey_key %s", key.toStdString().c_str());
+			new_midi_hook->hotkey = key;
+		}
 		new_midi_hook->setAction();
 		set_all_cell_colors(row);
 		if (editmode) {
@@ -803,7 +807,7 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	auto *item_item = new QTableWidgetItem(hook->item);
 	auto *audio_item = new QTableWidgetItem(hook->audio_source);
 	auto *media_item = new QTableWidgetItem(hook->media_source);
-	auto *hotkey_item = new QTableWidgetItem(hook->hotkey);
+	auto *hotkey_item = new QTableWidgetItem(Utils::get_hotkey_value(hook->hotkey));
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
 	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
 	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
@@ -906,7 +910,7 @@ void PluginWindow::edit_mapping()
 {
 	if (ui->table_mapping->rowCount() != 0) {
 		editmode = true;
-		
+
 		ui->btn_add->setText("Save Edits");
 		ui->btn_reset->setEnabled(true);
 		const auto dv = GetDeviceManager().get()->get_midi_hooks(ui->mapping_lbl_device_name->text());
