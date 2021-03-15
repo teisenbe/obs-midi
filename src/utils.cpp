@@ -633,18 +633,7 @@ obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
 }
 QStringList Utils::GetHotkeysList()
 {
-	QStringList *HotkeysList=new QStringList();
-	obs_enum_hotkeys(
-		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
-			auto list = static_cast<QStringList *>(data);
-			QString item(obs_hotkey_get_name(hotkey));
-			if (item.contains("libobs") || item.contains("MediaSource") || item.contains("OBSBasic"))
-				return true;
-			list->append(item);
-			return true;
-		},
-		HotkeysList);
-	return (QStringList)*HotkeysList;
+	return QStringList(hotkey_map.values());
 }
 bool Utils::ReplayBufferEnabled()
 {
@@ -952,6 +941,34 @@ QString Utils::translate_action(ActionsClass::Actions action)
 {
 	return QString(obs_module_text(ActionsClass::action_to_string(action).toStdString().c_str()));
 }
+void Utils::build_hotkey_map() {
+	hotkey_map.clear();
+
+	obs_enum_hotkeys(
+		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
+			QString item(obs_hotkey_get_name(hotkey));
+			if (item.contains("libobs") || item.contains("MediaSource") || item.contains("OBSBasic"))
+				return true;
+			blog(LOG_DEBUG, "hotkey_map insert: <%s>,<%s>",obs_hotkey_get_name(hotkey) ,obs_hotkey_get_description(hotkey));
+			hotkey_map.insert(item, obs_hotkey_get_description(hotkey));
+			return true;
+			
+		},
+		NULL);
+	blog(LOG_DEBUG, "test_map_get_key %s ",hotkey_map.key("Deactivate capture").toStdString().c_str());
+
+}
+QString Utils::get_hotkey_key(QString value)
+{
+
+	return hotkey_map.key(value);
+}
+QString Utils::get_hotkey_value(QString key)
+{
+
+	return hotkey_map.value(key);
+}
+
 QString Utils::untranslate(const QString &tstring)
 {
 	return ActionsClass::action_to_string(AllActions_raw.at(TranslateActions().indexOf(tstring)));

@@ -392,6 +392,7 @@ void Events::FinishedLoading()
     hookTransitionPlaybackEvents();
     startup();
     started=true;
+    Utils::build_hotkey_map();
 	broadcastUpdate("LoadingFinished");
 }
 /**
