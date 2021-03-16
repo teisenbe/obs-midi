@@ -35,6 +35,7 @@ public:
 	std::optional<int> range_max;
 	bool value_as_filter = false;
 	std::optional<int> value;
+    QString hotkey;
 	/// <summary>
 	/// Function pointer to execute action
 	/// </summary>
@@ -47,6 +48,5 @@ public:
 	obs_hotkey_t *getHotkey() const;
 
 private:
-	QString hotkey;
-	obs_hotkey_t *hotkeyInstance;
+	obs_hotkey_t *hotkeyInstance = NULL;
 };

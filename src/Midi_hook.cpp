@@ -29,7 +29,6 @@ MidiHook::MidiHook(const QString &json_string)
 	value_as_filter = obs_data_get_bool(data, "value_as_filter");
 	value.emplace(obs_data_get_int(data, "value"));
 	setAction();
-	initHotkey();
 	obs_data_release(data);
 }
 MidiMessage *MidiHook::get_message_from_hook()
