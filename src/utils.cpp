@@ -608,28 +608,11 @@ QString Utils::ParseDataToQueryString(obs_data_t *data)
 	}
 	return query;
 }
+
+
 obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
 {
-	struct current_search {
-		QString query;
-		obs_hotkey_t *result;
-	};
-	current_search search;
-	search.query = name;
-	search.result = nullptr;
-	obs_enum_hotkeys(
-		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
-			auto *search = reinterpret_cast<current_search *>(data);
-			const char *hk_name = obs_hotkey_get_name(hotkey);
-			if (hk_name == search->query) {
-				search->result = hotkey;
-				return false;
-			}
-			UNUSED_PARAMETER(id);
-			return true;
-		},
-		&search);
-	return search.result;
+	return hotkey_name_map.value(name);
 }
 bool Utils::ReplayBufferEnabled()
 {
