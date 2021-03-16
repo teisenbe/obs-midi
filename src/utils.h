@@ -237,10 +237,6 @@ void alert_popup(const QString &message);
 QString translate_action(ActionsClass::Actions action);
 
 static QMap<QString, QString> hotkey_map;
-void build_hotkey_map();
-QString get_hotkey_key(QString value);
-QString get_hotkey_value(QString key);
-
 
 };
 
