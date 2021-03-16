@@ -103,7 +103,7 @@ public:
 		Toggle_Start_Stop_Recording,
 		Toggle_Start_Stop_Replay_Buffer,
 		Toggle_Start_Stop_Streaming,
-		Trigger_Hotkey,
+                Trigger_Hotkey_By_Name,
 		Unpause_Recording
 	};
 	Q_ENUM(Actions)
@@ -207,7 +207,7 @@ const QList<ActionsClass::Actions> AllActions_raw = {
 	ActionsClass::Actions::Unpause_Recording,
 	ActionsClass::Actions::Set_Source_Rotation,
 	ActionsClass::Actions::Set_Source_Scale,
-	ActionsClass::Actions::Trigger_Hotkey,
+	ActionsClass::Actions::Trigger_Hotkey_By_Name,
 	ActionsClass::Toggle_Fade_Source,
 };
 const QList<ActionsClass::Actions> not_ready_actions{
