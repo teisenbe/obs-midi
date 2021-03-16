@@ -402,7 +402,6 @@ void Events::FinishedLoading()
     startup();
     started=true;
     initialiseHotkeysHooks();
-//        Utils::build_hotkey_map();
 	broadcastUpdate("LoadingFinished");
 }
 /**

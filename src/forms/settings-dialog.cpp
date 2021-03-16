@@ -755,7 +755,6 @@ void PluginWindow::add_new_mapping()
 		}
 		if (ui->cb_obs_output_hotkey->isVisible()) {
 			ui->table_mapping->setItem(row, 14, hotkey_item);
-//                        auto key = Utils::get_hotkey_key(ui->cb_obs_output_hotkey->currentText());
                         new_midi_hook->setHotkey(hotkey);
 		}
 
