@@ -395,8 +395,8 @@ void TriggerHotkey(MidiHook *hook)
 {
 	obs_hotkey_t *hotkeyInstance = hook->getHotkey();
 	if (!hotkeyInstance) {
-        blog(LOG_ERROR, "ERROR: Triggered hotkey %s not found", hook->hotkey.toStdString().c_str());
-        return;
+		blog(LOG_ERROR, "ERROR: Triggered hotkey %s not found", hook->hotkey.toStdString().c_str());
+		return;
 	}
 	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(hotkeyInstance), true);
 }

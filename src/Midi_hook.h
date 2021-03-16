@@ -35,7 +35,7 @@ public:
 	std::optional<int> range_max;
 	bool value_as_filter = false;
 	std::optional<int> value;
-    QString hotkey;
+	QString hotkey;
 	/// <summary>
 	/// Function pointer to execute action
 	/// </summary>

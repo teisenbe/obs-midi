@@ -249,7 +249,6 @@ public:
 	QVariant data(const QModelIndex &index, int role) const;
 	void fetchHotkeys();
 	obs_hotkey_t *getHotkeyAtIndex(int index);
-	int getIndexOfHotkeyDescription(QString hotkeyDescription);
 
 private:
 	QList<obs_hotkey_t *> hotkeysList;

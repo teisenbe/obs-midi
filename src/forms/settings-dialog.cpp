@@ -717,7 +717,8 @@ void PluginWindow::add_new_mapping()
 			new_midi_hook->range_max.emplace(ui->sb_max->value());
 		}
 		if (ui->cb_obs_output_hotkey->isVisible()) {
-			new_midi_hook->setHotkey(hotkey);
+			new_midi_hook->setHotkey(
+				((HotkeyModel *)ui->cb_obs_output_hotkey->model())->getHotkeyAtIndex(ui->cb_obs_output_hotkey->currentIndex()));
 		}
 
 		new_midi_hook->setAction();
@@ -769,8 +770,14 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	auto *item_item = new QTableWidgetItem(hook->item);
 	auto *audio_item = new QTableWidgetItem(hook->audio_source);
 	auto *media_item = new QTableWidgetItem(hook->media_source);
+	auto *hotkey_item = new QTableWidgetItem();
 	auto *hotkey = hook->getHotkey();
-	auto *hotkey_item = hotkey ? new QTableWidgetItem(obs_hotkey_get_description(hotkey)) : new QTableWidgetItem();
+	if (hotkey) {
+		hotkey_item->setText(obs_hotkey_get_description(hotkey));
+	} else {
+		blog(LOG_ERROR, "ERROR: Stored hotkey %s not found", hook->hotkey.toStdString().c_str());
+		hotkey_item->setText("**Hotkey was not found**");
+	}
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
 	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
 	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
@@ -901,8 +908,7 @@ void PluginWindow::edit_mapping()
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
 		ui->check_int_override->setChecked(check);
 		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
-		HotkeyModel *hotkeyModel = (HotkeyModel *)ui->cb_obs_output_hotkey->model();
-		ui->cb_obs_output_hotkey->setCurrentIndex(hotkeyModel->getIndexOfHotkeyDescription(selected_items.at(14)->text()));
+		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->btn_delete->setEnabled(true);
 		edithook = find_existing_hook();
 	}

@@ -1068,14 +1068,3 @@ obs_hotkey_t *HotkeyModel::getHotkeyAtIndex(int index)
 		return NULL;
 	return hotkeysList[index];
 }
-int HotkeyModel::getIndexOfHotkeyDescription(QString hotkeyDescription)
-{
-	auto it = std::find_if(hotkeysList.begin(), hotkeysList.end(),
-			       [&hotkeyDescription](obs_hotkey_t *hotkey) { return QString(obs_hotkey_get_description(hotkey)) == hotkeyDescription; });
-
-	if (it != hotkeysList.end()) {
-		return std::distance(hotkeysList.begin(), it);
-		;
-	}
-	return -1;
-}
