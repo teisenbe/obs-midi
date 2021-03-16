@@ -317,7 +317,6 @@ void PluginWindow::show_pair(Pairs Pair) const
 	case Pairs::Hotkey:
 		ui->label_obs_output_hotkey->show();
 		ui->cb_obs_output_hotkey->show();
-		((HotkeyModel *)ui->cb_obs_output_hotkey->model())->fetchHotkeys();
 		ui->w_hotkey->show();
 		break;
 	case Pairs::Audio:
@@ -859,6 +858,7 @@ void PluginWindow::tab_changed(const int tab) const
 		ui->cb_obs_output_action->setCurrentIndex(1);
 		ui->cb_obs_output_action->setCurrentIndex(0);
 		ui->mapping_lbl_device_name->setText(ui->list_midi_dev->currentItem()->text());
+        ((HotkeyModel *)ui->cb_obs_output_hotkey->model())->fetchHotkeys();
 	}
 	clear_table();
 	load_table();
