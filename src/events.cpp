@@ -81,7 +81,6 @@ void Events::startup()
 		signal_handler_connect(coreSignalHandler, "source_destroy", OnSourceDestroy, this);
 	}
 	hookTransitionPlaybackEvents();
-	initialiseHotkeysHooks();
 }
 void Events::shutdown()
 {
@@ -399,9 +398,11 @@ void Events::OnSceneChange()
 }
 void Events::FinishedLoading()
 {
-	hookTransitionPlaybackEvents();
-	startup();
-	started = true;
+    hookTransitionPlaybackEvents();
+    startup();
+    started=true;
+    initialiseHotkeysHooks();
+//        Utils::build_hotkey_map();
 	broadcastUpdate("LoadingFinished");
 }
 /**

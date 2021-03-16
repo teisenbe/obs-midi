@@ -39,6 +39,7 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	hide_all_pairs();
 	connect_ui_signals();
 	reset_to_defaults();
+
 	starting = false;
 }
 void PluginWindow::configure_table() const
@@ -615,7 +616,7 @@ void PluginWindow::obs_actions_select(const QString &action) const
 			ui->label_Int_override->setText("Duration * ");
 			ui->sb_int_override->setSuffix(" ms");
 			break;
-		case ActionsClass::Actions::Trigger_Hotkey:
+		case ActionsClass::Actions::Trigger_Hotkey_By_Name:
 			show_pair(Pairs::Hotkey);
 			break;
 		default:
@@ -754,7 +755,8 @@ void PluginWindow::add_new_mapping()
 		}
 		if (ui->cb_obs_output_hotkey->isVisible()) {
 			ui->table_mapping->setItem(row, 14, hotkey_item);
-			new_midi_hook->setHotkey(hotkey);
+//                        auto key = Utils::get_hotkey_key(ui->cb_obs_output_hotkey->currentText());
+                        new_midi_hook->setHotkey(hotkey);
 		}
 
 		new_midi_hook->setAction();
