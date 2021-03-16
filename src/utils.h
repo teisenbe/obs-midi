@@ -103,7 +103,7 @@ public:
 		Toggle_Start_Stop_Recording,
 		Toggle_Start_Stop_Replay_Buffer,
 		Toggle_Start_Stop_Streaming,
-                Trigger_Hotkey_By_Name,
+		Trigger_Hotkey_By_Name,
 		Unpause_Recording
 	};
 	Q_ENUM(Actions)
@@ -248,7 +248,7 @@ public:
 	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	QVariant data(const QModelIndex &index, int role) const;
 	void fetchHotkeys();
-    obs_hotkey_t *getHotkeyAtIndex(int index);
+	obs_hotkey_t *getHotkeyAtIndex(int index);
 	int getIndexOfHotkeyDescription(QString hotkeyDescription);
 
 private:

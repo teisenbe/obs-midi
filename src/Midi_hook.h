@@ -44,9 +44,9 @@ public:
 	void setAction();
 	void initHotkey();
 	void setHotkey(obs_hotkey_t *hotkey);
-    obs_hotkey_t *getHotkey() const;
+	obs_hotkey_t *getHotkey() const;
 
 private:
-    QString hotkey;
-    obs_hotkey_t *hotkeyInstance;
+	QString hotkey;
+	obs_hotkey_t *hotkeyInstance;
 };

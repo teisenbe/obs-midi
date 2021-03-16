@@ -393,7 +393,7 @@ void ToggleSourceFilter(MidiHook *hook)
 }
 void TriggerHotkey(MidiHook *hook)
 {
-    obs_hotkey_t *hotkeyInstance = hook->getHotkey();
+	obs_hotkey_t *hotkeyInstance = hook->getHotkey();
 	if (!hotkeyInstance) {
 		throw("Hotkey not found");
 	}

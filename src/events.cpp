@@ -398,10 +398,10 @@ void Events::OnSceneChange()
 }
 void Events::FinishedLoading()
 {
-    hookTransitionPlaybackEvents();
-    startup();
-    started=true;
-    initialiseHotkeysHooks();
+	hookTransitionPlaybackEvents();
+	startup();
+	started = true;
+	initialiseHotkeysHooks();
 	broadcastUpdate("LoadingFinished");
 }
 /**

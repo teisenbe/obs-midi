@@ -1040,7 +1040,7 @@ QVariant HotkeyModel::data(const QModelIndex &index, int role) const
 		return QVariant();
 
 	if (role == Qt::DisplayRole) {
-        return QVariant(obs_hotkey_get_description(hotkeysList[index.row()]));
+		return QVariant(obs_hotkey_get_description(hotkeysList[index.row()]));
 	}
 	return QVariant();
 }
@@ -1070,7 +1070,8 @@ obs_hotkey_t *HotkeyModel::getHotkeyAtIndex(int index)
 }
 int HotkeyModel::getIndexOfHotkeyDescription(QString hotkeyDescription)
 {
-	auto it = std::find_if(hotkeysList.begin(), hotkeysList.end(), [&hotkeyDescription](obs_hotkey_t *hotkey) { return QString(obs_hotkey_get_description(hotkey)) == hotkeyDescription; });
+	auto it = std::find_if(hotkeysList.begin(), hotkeysList.end(),
+			       [&hotkeyDescription](obs_hotkey_t *hotkey) { return QString(obs_hotkey_get_description(hotkey)) == hotkeyDescription; });
 
 	if (it != hotkeysList.end()) {
 		return std::distance(hotkeysList.begin(), it);
