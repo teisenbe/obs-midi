@@ -82,7 +82,6 @@ void PluginWindow::setup_actions() const
 
 	HotkeyModel *model = new HotkeyModel;
 	ui->cb_obs_output_hotkey->setModel(model);
-	ui->cb_obs_output_hotkey->setModelColumn(1);
 }
 void PluginWindow::ToggleShowHide()
 {
@@ -700,8 +699,8 @@ void PluginWindow::add_new_mapping()
 		const auto int_override = new QTableWidgetItem(QString::number(ui->sb_int_override->value()));
 		const auto min = new QTableWidgetItem(QString::number(ui->sb_min->value()));
 		const auto max = new QTableWidgetItem(QString::number(ui->sb_max->value()));
-		Hotkey *hotkey = ((HotkeyModel *)ui->cb_obs_output_hotkey->model())->getHotkeyAtIndex(ui->cb_obs_output_hotkey->currentIndex());
-		const auto hotkey_item = new QTableWidgetItem(hotkey->description);
+        obs_hotkey_t *hotkey = ((HotkeyModel *)ui->cb_obs_output_hotkey->model())->getHotkeyAtIndex(ui->cb_obs_output_hotkey->currentIndex());
+		const auto hotkey_item = new QTableWidgetItem(obs_hotkey_get_description(hotkey));
 		ui->table_mapping->setItem(row, 0, channel_item);
 		ui->table_mapping->setItem(row, 1, message_type_item);
 		ui->table_mapping->setItem(row, 2, norc_item);
@@ -810,8 +809,8 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	auto *item_item = new QTableWidgetItem(hook->item);
 	auto *audio_item = new QTableWidgetItem(hook->audio_source);
 	auto *media_item = new QTableWidgetItem(hook->media_source);
-	Hotkey *hotkey = hook->getHotkey();
-	auto *hotkey_item = hotkey ? new QTableWidgetItem(hotkey->description) : new QTableWidgetItem();
+    obs_hotkey_t *hotkey = hook->getHotkey();
+	auto *hotkey_item = hotkey ? new QTableWidgetItem(obs_hotkey_get_description(hotkey)) : new QTableWidgetItem();
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
 	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
 	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();

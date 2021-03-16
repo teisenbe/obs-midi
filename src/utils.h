@@ -236,16 +236,7 @@ const QList<ActionsClass::Actions> not_ready_actions{
 void alert_popup(const QString &message);
 QString translate_action(ActionsClass::Actions action);
 };
-/**
- * Hotkey class and model
- */
-class Hotkey {
-public:
-	Hotkey(obs_hotkey_t *obsHotkey);
-	QString name;
-	QString description;
-	obs_hotkey_id id;
-};
+
 class HotkeyModel : public QAbstractListModel {
 	Q_OBJECT
 public:
@@ -254,9 +245,9 @@ public:
 	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	QVariant data(const QModelIndex &index, int role) const;
 	void fetchHotkeys();
-	Hotkey *getHotkeyAtIndex(int index);
+    obs_hotkey_t *getHotkeyAtIndex(int index);
 	int getIndexOfHotkeyDescription(QString hotkeyDescription);
 
 private:
-	QList<Hotkey> hotkeysList;
+	QList<obs_hotkey_t *> hotkeysList;
 };

@@ -253,31 +253,28 @@ void MidiHook::setAction()
 	};
 }
 
-void MidiHook::setHotkey(Hotkey *hotkey)
+void MidiHook::setHotkey(obs_hotkey_t *hotkey)
 {
-	if (hotkeyInstance) {
-		delete hotkeyInstance;
-	}
 	if (!hotkey) {
 		hotkeyInstance = NULL;
 		this->hotkey = "";
 		return;
 	}
 	hotkeyInstance = hotkey;
-	this->hotkey = hotkey->name;
+	this->hotkey = QString(obs_hotkey_get_name(hotkey));
 }
 
 void MidiHook::initHotkey()
 {
-	if (!hotkeyInstance && !hotkey.isEmpty()) {
+	if (!hotkey.isEmpty()) {
 		obs_hotkey_t *obsHotkey = Utils::FindHotkeyByName(hotkey);
 		if (obsHotkey) {
-			this->hotkeyInstance = new Hotkey(obsHotkey);
+			this->hotkeyInstance = obsHotkey;
 		}
 	}
 }
 
-Hotkey *MidiHook::getHotkey() const
+obs_hotkey_t *MidiHook::getHotkey() const
 {
 	return hotkeyInstance;
 }

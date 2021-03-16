@@ -1021,21 +1021,15 @@ QStringList Utils::get_filter_names(const QString &Source)
 }
 
 /**
- * Hotkey class and model
+ * Hotkey model
  */
-Hotkey::Hotkey(obs_hotkey_t *obsHotkey)
-{
-    name = obs_hotkey_get_name(obsHotkey);
-    description = obs_hotkey_get_description(obsHotkey);
-    id = obs_hotkey_get_id(obsHotkey);
-}
 int HotkeyModel::rowCount(const QModelIndex &parent) const
 {
 	return hotkeysList.size();
 }
 int HotkeyModel::columnCount(const QModelIndex &parent) const
 {
-	return 3;
+	return 1;
 }
 QVariant HotkeyModel::data(const QModelIndex &index, int role) const
 {
@@ -1046,12 +1040,7 @@ QVariant HotkeyModel::data(const QModelIndex &index, int role) const
 		return QVariant();
 
 	if (role == Qt::DisplayRole) {
-		if (index.column() == 0)
-			return hotkeysList[index.row()].name;
-		if (index.column() == 1)
-			return hotkeysList[index.row()].description;
-		if (index.column() == 2)
-			return QVariant::fromValue(hotkeysList[index.row()].id);
+        return QVariant(obs_hotkey_get_description(hotkeysList[index.row()]));
 	}
 	return QVariant();
 }
@@ -1065,23 +1054,23 @@ void HotkeyModel::fetchHotkeys()
 			if (obs_hotkey_get_registerer_type(obsHotkey) != OBS_HOTKEY_REGISTERER_FRONTEND ||
 			    QString(obs_hotkey_get_name(obsHotkey)).contains("OBSBasic"))
 				return true;
-			auto hotkeysList = static_cast<QList<Hotkey> *>(data);
-			hotkeysList->append(Hotkey(obsHotkey));
+			auto hotkeysList = static_cast<QList<obs_hotkey_t *> *>(data);
+			hotkeysList->append(obsHotkey);
 			return true;
 		},
 		&hotkeysList);
 
 	endResetModel();
 }
-Hotkey *HotkeyModel::getHotkeyAtIndex(int index)
+obs_hotkey_t *HotkeyModel::getHotkeyAtIndex(int index)
 {
 	if (index < 0 || index >= hotkeysList.size())
 		return NULL;
-	return &hotkeysList[index];
+	return hotkeysList[index];
 }
 int HotkeyModel::getIndexOfHotkeyDescription(QString hotkeyDescription)
 {
-	auto it = std::find_if(hotkeysList.begin(), hotkeysList.end(), [&hotkeyDescription](Hotkey hotkey) { return hotkey.description == hotkeyDescription; });
+	auto it = std::find_if(hotkeysList.begin(), hotkeysList.end(), [&hotkeyDescription](obs_hotkey_t *hotkey) { return QString(obs_hotkey_get_description(hotkey)) == hotkeyDescription; });
 
 	if (it != hotkeysList.end()) {
 		return std::distance(hotkeysList.begin(), it);
