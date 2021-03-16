@@ -152,7 +152,6 @@ QString OBSVersionString();
 const char *GetRecordingFolder();
 bool SetRecordingFolder(const char *path);
 QString ParseDataToQueryString(obs_data_t *data);
-obs_hotkey_t *FindHotkeyByName(const QString &name);
 bool ReplayBufferEnabled();
 void StartReplayBuffer();
 bool IsRPHotkeySet();
@@ -235,21 +234,11 @@ const QList<ActionsClass::Actions> not_ready_actions{
 };
 void alert_popup(const QString &message);
 QString translate_action(ActionsClass::Actions action);
-
+static QMap<QString, obs_hotkey_t *> hotkey_name_map;
 static QMap<QString, QString> hotkey_map;
-
-};
-
-class HotkeyModel : public QAbstractListModel {
-	Q_OBJECT
-public:
-	HotkeyModel(QObject *parent = 0) : QAbstractListModel(parent){};
-	int rowCount(const QModelIndex &parent = QModelIndex()) const;
-	int columnCount(const QModelIndex &parent = QModelIndex()) const;
-	QVariant data(const QModelIndex &index, int role) const;
-	void fetchHotkeys();
-	obs_hotkey_t *getHotkeyAtIndex(int index);
-
-private:
-	QList<obs_hotkey_t *> hotkeysList;
+void build_hotkey_map();
+QString get_hotkey_key(QString value);
+QString get_hotkey_value(QString key);
+obs_hotkey_t *get_obs_hotkey_by_name(const QString &name);
+QStringList get_hotkeys_list();
 };

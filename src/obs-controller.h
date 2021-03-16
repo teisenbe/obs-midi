@@ -56,7 +56,7 @@ void TakeSourceScreenshot(MidiHook *hook);
 void EnableSourceFilter(MidiHook *hook);
 void DisableSourceFilter(MidiHook *hook);
 void ToggleSourceFilter(MidiHook *hook);
-void TriggerHotkey(MidiHook *hook);
+void TriggerHotkeyByName(MidiHook *hook);
 
 // CC ACTIONS
 void SetVolume(MidiHook *hook);

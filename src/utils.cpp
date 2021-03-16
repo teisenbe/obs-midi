@@ -608,29 +608,6 @@ QString Utils::ParseDataToQueryString(obs_data_t *data)
 	}
 	return query;
 }
-obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
-{
-	struct current_search {
-		QString query;
-		obs_hotkey_t *result;
-	};
-	current_search search;
-	search.query = name;
-	search.result = nullptr;
-	obs_enum_hotkeys(
-		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
-			auto *search = reinterpret_cast<current_search *>(data);
-			const char *hk_name = obs_hotkey_get_name(hotkey);
-			if (hk_name == search->query) {
-				search->result = hotkey;
-				return false;
-			}
-			UNUSED_PARAMETER(id);
-			return true;
-		},
-		&search);
-	return search.result;
-}
 bool Utils::ReplayBufferEnabled()
 {
 	config_t *profile = obs_frontend_get_profile_config();
@@ -937,6 +914,40 @@ QString Utils::translate_action(ActionsClass::Actions action)
 {
 	return QString(obs_module_text(ActionsClass::action_to_string(action).toStdString().c_str()));
 }
+
+void Utils::build_hotkey_map()
+{
+	hotkey_map.clear();
+	hotkey_name_map.clear();
+	obs_enum_hotkeys(
+		[](void *data, obs_hotkey_id id, obs_hotkey_t *obsHotkey) {
+			QString hotkey_name(obs_hotkey_get_name(obsHotkey));
+			if (obs_hotkey_get_registerer_type(obsHotkey) != OBS_HOTKEY_REGISTERER_FRONTEND || hotkey_name.contains("OBSBasic"))
+				return true;
+			blog(LOG_DEBUG, "hotkey_map insert: <%s>,<%s>", obs_hotkey_get_name(obsHotkey), obs_hotkey_get_description(obsHotkey));
+			hotkey_map.insert(hotkey_name, obs_hotkey_get_description(obsHotkey));
+			hotkey_name_map.insert(hotkey_name, obsHotkey);
+			return true;
+		},
+		NULL);
+}
+QString Utils::get_hotkey_key(QString value)
+{
+	return hotkey_map.key(value);
+}
+QString Utils::get_hotkey_value(QString key)
+{
+	return hotkey_map.value(key);
+}
+obs_hotkey_t *Utils::get_obs_hotkey_by_name(const QString &name)
+{
+	return hotkey_name_map.value(name);
+}
+QStringList Utils::get_hotkeys_list()
+{
+	return QStringList(hotkey_map.values());
+}
+
 QString Utils::untranslate(const QString &tstring)
 {
 	return ActionsClass::action_to_string(AllActions_raw.at(TranslateActions().indexOf(tstring)));
@@ -1018,53 +1029,4 @@ QStringList Utils::get_filter_names(const QString &Source)
 		&enumParams);
 	obs_source_release(source);
 	return enumParams.names;
-}
-
-/**
- * Hotkey model
- */
-int HotkeyModel::rowCount(const QModelIndex &parent) const
-{
-	return hotkeysList.size();
-}
-int HotkeyModel::columnCount(const QModelIndex &parent) const
-{
-	return 1;
-}
-QVariant HotkeyModel::data(const QModelIndex &index, int role) const
-{
-	if (!index.isValid())
-		return QVariant();
-
-	if (index.row() >= hotkeysList.size())
-		return QVariant();
-
-	if (role == Qt::DisplayRole) {
-		return QVariant(obs_hotkey_get_description(hotkeysList[index.row()]));
-	}
-	return QVariant();
-}
-void HotkeyModel::fetchHotkeys()
-{
-	beginResetModel();
-	hotkeysList.clear();
-
-	obs_enum_hotkeys(
-		[](void *data, obs_hotkey_id id, obs_hotkey_t *obsHotkey) {
-			if (obs_hotkey_get_registerer_type(obsHotkey) != OBS_HOTKEY_REGISTERER_FRONTEND ||
-			    QString(obs_hotkey_get_name(obsHotkey)).contains("OBSBasic"))
-				return true;
-			auto hotkeysList = static_cast<QList<obs_hotkey_t *> *>(data);
-			hotkeysList->append(obsHotkey);
-			return true;
-		},
-		&hotkeysList);
-
-	endResetModel();
-}
-obs_hotkey_t *HotkeyModel::getHotkeyAtIndex(int index)
-{
-	if (index < 0 || index >= hotkeysList.size())
-		return NULL;
-	return hotkeysList[index];
 }

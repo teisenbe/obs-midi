@@ -23,6 +23,7 @@ public:
 	QString filter;
 	QString transition;
 	QString item;
+	QString hotkey;
 	QString audio_source;
 	QString media_source;
 	std::optional<int> duration;
@@ -35,7 +36,6 @@ public:
 	std::optional<int> range_max;
 	bool value_as_filter = false;
 	std::optional<int> value;
-	QString hotkey;
 	/// <summary>
 	/// Function pointer to execute action
 	/// </summary>
@@ -43,10 +43,4 @@ public:
 	obsc obsControlFunction;
 	void EXE();
 	void setAction();
-	void initHotkey();
-	void setHotkey(obs_hotkey_t *hotkey);
-	obs_hotkey_t *getHotkey() const;
-
-private:
-	obs_hotkey_t *hotkeyInstance = NULL;
 };

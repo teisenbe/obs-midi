@@ -243,37 +243,11 @@ void MidiHook::setAction()
 		obsControlFunction = make_opacity_filter;
 		break;
 	case ActionsClass::Trigger_Hotkey_By_Name:
-		obsControlFunction = TriggerHotkey;
+		obsControlFunction = TriggerHotkeyByName;
 		break;
 
 	default:
 		blog(LOG_DEBUG, "Action Does not exist");
 		break;
 	};
-}
-
-void MidiHook::setHotkey(obs_hotkey_t *hotkey)
-{
-	if (!hotkey) {
-		hotkeyInstance = NULL;
-		this->hotkey = "";
-		return;
-	}
-	hotkeyInstance = hotkey;
-	this->hotkey = QString(obs_hotkey_get_name(hotkey));
-}
-
-void MidiHook::initHotkey()
-{
-	if (!hotkey.isEmpty()) {
-		obs_hotkey_t *obsHotkey = Utils::FindHotkeyByName(hotkey);
-		if (obsHotkey) {
-			this->hotkeyInstance = obsHotkey;
-		}
-	}
-}
-
-obs_hotkey_t *MidiHook::getHotkey() const
-{
-	return hotkeyInstance;
 }

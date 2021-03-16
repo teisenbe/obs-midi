@@ -391,14 +391,14 @@ void ToggleSourceFilter(MidiHook *hook)
 		obs_source_set_enabled(filter, true);
 	}
 }
-void TriggerHotkey(MidiHook *hook)
+void TriggerHotkeyByName(MidiHook *hook)
 {
-	obs_hotkey_t *hotkeyInstance = hook->getHotkey();
-	if (!hotkeyInstance) {
-		blog(LOG_ERROR, "ERROR: Triggered hotkey %s not found", hook->hotkey.toStdString().c_str());
+	obs_hotkey_t *obsHotkey = Utils::get_obs_hotkey_by_name(hook->hotkey);
+	if (!obsHotkey) {
+		blog(LOG_ERROR, "ERROR: Triggered hotkey <%s> was not found", hook->hotkey.toStdString().c_str());
 		return;
 	}
-	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(hotkeyInstance), true);
+	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(obsHotkey), true);
 }
 
 ////////////////

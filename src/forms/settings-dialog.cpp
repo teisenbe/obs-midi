@@ -80,9 +80,6 @@ void PluginWindow::setup_actions() const
 	ui->cb_obs_output_action->addItems(Utils::TranslateActions());
 	ui->cb_obs_output_action->setCurrentIndex(1);
 	ui->cb_obs_output_action->setCurrentIndex(0);
-
-	HotkeyModel *model = new HotkeyModel;
-	ui->cb_obs_output_hotkey->setModel(model);
 }
 void PluginWindow::ToggleShowHide()
 {
@@ -318,6 +315,7 @@ void PluginWindow::show_pair(Pairs Pair) const
 	case Pairs::Hotkey:
 		ui->label_obs_output_hotkey->show();
 		ui->cb_obs_output_hotkey->show();
+		ui->cb_obs_output_hotkey->addItems(Utils::get_hotkeys_list());
 		ui->w_hotkey->show();
 		break;
 	case Pairs::Audio:
@@ -717,10 +715,8 @@ void PluginWindow::add_new_mapping()
 			new_midi_hook->range_max.emplace(ui->sb_max->value());
 		}
 		if (ui->cb_obs_output_hotkey->isVisible()) {
-			new_midi_hook->setHotkey(
-				((HotkeyModel *)ui->cb_obs_output_hotkey->model())->getHotkeyAtIndex(ui->cb_obs_output_hotkey->currentIndex()));
+			new_midi_hook->hotkey = Utils::get_hotkey_key(ui->cb_obs_output_hotkey->currentText());
 		}
-
 		new_midi_hook->setAction();
 		if (editmode) {
 			GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->edit_midi_hook(edithook, new_midi_hook);
@@ -771,12 +767,12 @@ void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 	auto *audio_item = new QTableWidgetItem(hook->audio_source);
 	auto *media_item = new QTableWidgetItem(hook->media_source);
 	auto *hotkey_item = new QTableWidgetItem();
-	auto *hotkey = hook->getHotkey();
-	if (hotkey) {
-		hotkey_item->setText(obs_hotkey_get_description(hotkey));
+	auto hotkey_description = Utils::get_hotkey_value(hook->hotkey);
+	if (hotkey_description.isEmpty()) {
+		hotkey_item->setText(QString("** HOTKEY WAS NOT FOUND **"));
+		blog(LOG_ERROR, "ERROR: Stored hotkey with name <%s> was not found", hook->hotkey.toStdString().c_str());
 	} else {
-		blog(LOG_ERROR, "ERROR: Stored hotkey %s not found", hook->hotkey.toStdString().c_str());
-		hotkey_item->setText("**Hotkey was not found**");
+		hotkey_item->setText(hotkey_description);
 	}
 	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
 	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
@@ -826,7 +822,7 @@ void PluginWindow::tab_changed(const int tab) const
 		ui->cb_obs_output_action->setCurrentIndex(1);
 		ui->cb_obs_output_action->setCurrentIndex(0);
 		ui->mapping_lbl_device_name->setText(ui->list_midi_dev->currentItem()->text());
-		((HotkeyModel *)ui->cb_obs_output_hotkey->model())->fetchHotkeys();
+                Utils::build_hotkey_map();
 	}
 	clear_table();
 	load_table();
@@ -908,7 +904,7 @@ void PluginWindow::edit_mapping()
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
 		ui->check_int_override->setChecked(check);
 		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
-		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
+                ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->btn_delete->setEnabled(true);
 		edithook = find_existing_hook();
 	}
