@@ -922,7 +922,7 @@ void Utils::build_hotkey_map()
 	obs_enum_hotkeys(
 		[](void *data, obs_hotkey_id id, obs_hotkey_t *obsHotkey) {
 			QString hotkey_name(obs_hotkey_get_name(obsHotkey));
-			if (obs_hotkey_get_registerer_type(obsHotkey) != OBS_HOTKEY_REGISTERER_FRONTEND || hotkey_name.contains("OBSBasic"))
+			if (hotkey_name.contains("libobs") || hotkey_name.contains("MediaSource") || hotkey_name.contains("OBSBasic"))
 				return true;
 			blog(LOG_DEBUG, "hotkey_map insert: <%s>,<%s>", obs_hotkey_get_name(obsHotkey), obs_hotkey_get_description(obsHotkey));
 			hotkey_map.insert(hotkey_name, obs_hotkey_get_description(obsHotkey));
