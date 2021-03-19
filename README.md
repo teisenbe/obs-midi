@@ -13,6 +13,7 @@ Those two guys are
 [![Crowdin](https://badges.crowdin.net/obs-midi/localized.svg)](https://crowdin.com/project/obs-midi)
 [![CodeFactor](https://www.codefactor.io/repository/github/cpyarger/obs-midi/badge/master)](https://www.codefactor.io/repository/github/cpyarger/obs-midi/overview/master)
 
+A not fully accurate download count (based off the last few releases I have kept) [![img](https://img.shields.io/github/downloads/cpyarger/obs-midi/total)](#)
 Currently runs on Windows and Linux, and MAC
 
 # Installing

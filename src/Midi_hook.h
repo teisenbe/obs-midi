@@ -3,6 +3,7 @@
 #include <optional>
 #include "utils.h"
 #include "Midi_message.h"
+class Actions;
 /*
  * Midi Hook Class
  */
@@ -39,8 +40,7 @@ public:
 	/// <summary>
 	/// Function pointer to execute action
 	/// </summary>
-	typedef void (*obsc)(MidiHook*);
-	obsc obsControlFunction;
+	Actions *actions;
 	void EXE();
 	void setAction();
 };

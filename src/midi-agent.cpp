@@ -406,8 +406,8 @@ void MidiAgent::edit_midi_hook(MidiHook *old_hook, MidiHook *new_hook)
 /// </summary>
 void MidiAgent::clear_MidiHooks()
 {
-	for (int i = 0; i < midiHooks.count(); i++) {
-		delete midiHooks.at(i);
+	for (auto hook:midiHooks) {
+		delete hook;
 	}
 	midiHooks.clear();
 }
@@ -444,21 +444,21 @@ QString MidiAgent::GetData()
 /// <returns>MidiHook *</returns>
 MidiHook *MidiAgent::get_midi_hook_if_exists(const RpcEvent &event) const
 {
-	for (int i = 0; i < this->midiHooks.size(); i++) {
+	for (auto hook: this->midiHooks) {
 		bool found = false;
-		switch (ActionsClass::string_to_action(Utils::untranslate(midiHooks.at(i)->action))) {
+		switch (ActionsClass::string_to_action(Utils::untranslate(hook->action))) {
 		case ActionsClass::Actions::Set_Volume:
-			found = (midiHooks.at(i)->audio_source == QString(obs_data_get_string(event.additionalFields(), "sourceName")) &&
+			found = (hook->audio_source == QString(obs_data_get_string(event.additionalFields(), "sourceName")) &&
 				 event.updateType() == "SourceVolumeChanged");
 			break;
 		case ActionsClass::Actions::Toggle_Mute:
-			found = (midiHooks.at(i)->audio_source == QString(obs_data_get_string(event.additionalFields(), "sourceName")) &&
+			found = (hook->audio_source == QString(obs_data_get_string(event.additionalFields(), "sourceName")) &&
 				 event.updateType() == "SourceMuteStateChanged");
 			break;
 		case ActionsClass::Actions::Do_Transition:
 		case ActionsClass::Actions::Set_Preview_Scene:
 		case ActionsClass::Actions::Set_Current_Scene:
-			found = (midiHooks.at(i)->scene == QString(obs_data_get_string(event.additionalFields(), "scene-name")));
+			found = (hook->scene == QString(obs_data_get_string(event.additionalFields(), "scene-name")));
 			break;
 		case ActionsClass::Actions::Toggle_Start_Stop_Recording:
 		case ActionsClass::Actions::Start_Recording:
@@ -623,7 +623,7 @@ MidiHook *MidiAgent::get_midi_hook_if_exists(const RpcEvent &event) const
 			break;
 		}
 		if (found)
-			return midiHooks.at(i);
+			return hook;
 	}
 	return NULL;
 }
@@ -631,12 +631,14 @@ MidiHook *MidiAgent::get_midi_hook_if_exists(const RpcEvent &event) const
 void MidiAgent::handle_obs_event(const RpcEvent &event)
 {
 	blog(LOG_DEBUG, "OBS Event : %s \n AD: %s", event.updateType().toStdString().c_str(), obs_data_get_json(event.additionalFields()));
-	MidiHook *hook = get_midi_hook_if_exists(event);
 	if (event.updateType() == "FinishedLoading") {
 		loading = false;
+		return;
 	}
 	if (loading)
 		return;
+	MidiHook *hook = get_midi_hook_if_exists(event);
+
 	/// <summary>
 	/// 	ON EVENT TYPE Find matching hook, pull data from that hook, and do thing.
 	/// </summary>

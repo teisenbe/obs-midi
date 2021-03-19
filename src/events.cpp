@@ -1620,3 +1620,11 @@ obs_data_t *Events::GetStats()
 	obs_data_set_double(stats, "free-disk-space", freeDiskSpace);
 	return stats;
 }
+void Events::initialiseHotkeysHooks()
+{
+	for (auto midiAgent : GetDeviceManager()->get_active_midi_devices()) {
+		for (auto midiHook : midiAgent->GetMidiHooks()) {
+			midiHook->initHotkey();
+		}
+	}
+}

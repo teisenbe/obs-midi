@@ -1,7 +1,6 @@
-
+#include"obs-controller.h"
 #include "Midi_hook.h"
 
-#include "obs-controller.h"
 MidiHook::MidiHook(){};
 MidiHook::MidiHook(const QString &json_string)
 {
@@ -40,10 +39,7 @@ MidiMessage *MidiHook::get_message_from_hook()
 	message->value = *this->value;
 	return std::move(message);
 }
-void MidiHook::EXE()
-{
-	(*obsControlFunction)(this);
-}
+
 QString MidiHook::GetData()
 {
 	blog(LOG_DEBUG, "MH::GetData");
@@ -95,159 +91,42 @@ QString MidiHook::GetData()
 }
 void MidiHook::setAction()
 {
-	switch (ActionsClass::string_to_action(Utils::untranslate(action))) {
-	case ActionsClass::Set_Current_Scene:
-		break;
-	case ActionsClass::Reset_Scene_Item:
-		obsControlFunction = ResetSceneItem;
-		break;
-	case ActionsClass::Toggle_Mute:
-		obsControlFunction = ToggleMute;
-		break;
-	case ActionsClass::Do_Transition:
-		obsControlFunction = TransitionToProgram;
-		break;
-	case ActionsClass::Set_Current_Transition:
-		obsControlFunction = SetCurrentTransition;
-		break;
-	case ActionsClass::Set_Mute:
-		obsControlFunction = SetMute;
-		break;
-	case ActionsClass::Toggle_Start_Stop_Streaming:
-		obsControlFunction = StartStopStreaming;
-		break;
-	case ActionsClass::Set_Preview_Scene:
-		obsControlFunction = SetPreviewScene;
-		break;
-	case ActionsClass::Set_Current_Scene_Collection:
-		obsControlFunction = SetCurrentSceneCollection;
-		break;
-	case ActionsClass::Set_Transition_Duration:
-		obsControlFunction = SetTransitionDuration;
-		break;
-	case ActionsClass::Start_Streaming:
-		obsControlFunction = StartStreaming;
-		break;
-	case ActionsClass::Stop_Streaming:
-		obsControlFunction = StopStreaming;
-		break;
-	case ActionsClass::Start_Recording:
-		obsControlFunction = StartRecording;
-		break;
-	case ActionsClass::Stop_Recording:
-		obsControlFunction = StopRecording;
-		break;
-	case ActionsClass::Start_Replay_Buffer:
-		obsControlFunction = StartReplayBuffer;
-		break;
-	case ActionsClass::Stop_Replay_Buffer:
-		obsControlFunction = StopReplayBuffer;
-		break;
-	case ActionsClass::Set_Volume:
-		obsControlFunction = SetVolume;
-		break;
-	case ActionsClass::Take_Source_Screenshot:
-		obsControlFunction = TakeSourceScreenshot;
-		break;
-	case ActionsClass::Pause_Recording:
-		obsControlFunction = PauseRecording;
-		break;
-	case ActionsClass::Enable_Source_Filter:
-		obsControlFunction = EnableSourceFilter;
-		break;
-	case ActionsClass::Disable_Source_Filter:
-		obsControlFunction = DisableSourceFilter;
-		break;
-	case ActionsClass::Toggle_Start_Stop_Recording:
-		obsControlFunction = StartStopRecording;
-		break;
-	case ActionsClass::Toggle_Start_Stop_Replay_Buffer:
-		obsControlFunction = StartStopReplayBuffer;
-		break;
-	case ActionsClass::Resume_Recording:
-		obsControlFunction = ResumeRecording;
-		break;
-	case ActionsClass::Save_Replay_Buffer:
-		obsControlFunction = SaveReplayBuffer;
-		break;
-	case ActionsClass::Set_Current_Profile:
-		obsControlFunction = SetCurrentProfile;
-		break;
-	case ActionsClass::Toggle_Source_Filter:
-		obsControlFunction = ToggleSourceFilter;
-		break;
-	case ActionsClass::Set_Text_GDIPlus_Text:
-		obsControlFunction = SetTextGDIPlusText;
-		break;
-	case ActionsClass::Set_Browser_Source_URL:
-		obsControlFunction = SetBrowserSourceURL;
-		break;
-	case ActionsClass::Reload_Browser_Source:
-		obsControlFunction = ReloadBrowserSource;
-		break;
-	case ActionsClass::Set_Sync_Offset:
-		obsControlFunction = SetSyncOffset;
-		break;
-	case ActionsClass::Set_Source_Rotation:
-		obsControlFunction = SetSourceRotation;
-		break;
-	case ActionsClass::Set_Source_Position:
-		obsControlFunction = SetSourcePosition;
-		break;
-	case ActionsClass::Set_Gain_Filter:
-		obsControlFunction = SetGainFilter;
-		break;
-	case ActionsClass::Set_Opacity:
-		obsControlFunction = SetOpacity;
-		break;
-	case ActionsClass::Set_Source_Scale:
-		obsControlFunction = SetSourceScale;
-		break;
-	case ActionsClass::Move_T_Bar:
-		obsControlFunction = move_t_bar;
-		break;
-	case ActionsClass::Play_Pause_Media:
-		obsControlFunction = play_pause_media_source;
-		break;
-	case ActionsClass::Studio_Mode:
-		obsControlFunction = toggle_studio_mode;
-		break;
-	case ActionsClass::Reset_Stats:
-		obsControlFunction = reset_stats;
-		break;
-	case ActionsClass::Restart_Media:
-		obsControlFunction = restart_media;
-		break;
-	case ActionsClass::Stop_Media:
-		obsControlFunction = stop_media;
-		break;
-	case ActionsClass::Previous_Media:
-		obsControlFunction = prev_media;
-		break;
-	case ActionsClass::Next_Media:
-		obsControlFunction = next_media;
-		break;
-	case ActionsClass::Toggle_Source_Visibility:
-		obsControlFunction = ToggleSourceVisibility;
-		break;
-	case ActionsClass::Take_Screenshot:
-		obsControlFunction = TakeScreenshot;
-		break;
-	case ActionsClass::Disable_Preview:
-		obsControlFunction = DisablePreview;
-		break;
-	case ActionsClass::Enable_Preview:
-		obsControlFunction = EnablePreview;
-		break;
-	case ActionsClass::Toggle_Fade_Source:
-		obsControlFunction = make_opacity_filter;
-		break;
-        case ActionsClass::Trigger_Hotkey_By_Name:
-                obsControlFunction = TriggerHotkeyByName;
-		break;
+	if (action.isEmpty() || action.isNull())
+		return;
+	Actions AC(this);
+	actions = AC.get_action(action, this);
+}
+void MidiHook::EXE()
+{
+	actions->execute();
+}
+void MidiHook::setHotkey(obs_hotkey_t *hotkey)
+{
+	if (!hotkey) {
+		hotkeyInstance = NULL;
+		return;
+	}
+	hotkeyInstance = hotkey;
+	this->hotkey = QString(obs_hotkey_get_name(hotkey));
+}
 
-	default:
-		blog(LOG_DEBUG, "Action Does not exist");
-		break;
-	};
+void MidiHook::initHotkey()
+{
+	if (hotkey.isEmpty()) {
+		this->hotkey = nullptr;
+		return;
+	}
+	obs_hotkey_t *obsHotkey = Utils::FindHotkeyByName(hotkey);
+	if (obsHotkey) {
+		this->hotkeyInstance = obsHotkey;
+	}
+}
+
+obs_hotkey_t *MidiHook::getHotkey() const
+{
+	if (!hotkeyInstance) {
+		blog(LOG_ERROR, "ERROR: Stored hotkey %s not found", hotkey.toStdString().c_str());
+		return nullptr;
+	}
+	return hotkeyInstance;
 }
