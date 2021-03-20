@@ -80,11 +80,21 @@ void Actions::make_map()
 	_action_map.insert(QString("Enable_Preview"), new EnablePreview());
 	_action_map.insert(QString("Toggle_Fade_Source"), new make_opacity_filter());
 	_action_map.insert(QString("Trigger_Hotkey_By_Name"), new TriggerHotkey());
+	_action_map.insert(QString("Trigger Hotkey"), new TriggerHotkey());
 }
 
-Actions *Actions::get_action(QString action, MidiHook *h)
+Actions *Actions::make_action(QString action, MidiHook *h)
 {
-	return _action_map[action];
+	Actions *act = _action_map[action];
+	act->set_hook(h);
+	return act;
+}
+QString Actions::get_action_string() {
+	return QString(Utils::translate_action_string(hook->action))
+		.append(" using ")
+		.append(this->hook->message_type)
+		.append(" ")
+		.append(QString::number(this->hook->norc));
 }
 ////////////////////
 // BUTTON ACTIONS //
@@ -111,6 +121,14 @@ void SetPreviewScene::execute()
 	}
 	obs_source_t *source = obs_scene_get_source(scene);
 	obs_frontend_set_current_preview_scene(source);
+}
+QString SetPreviewScene::get_action_string()
+{
+	return QString(Utils::translate_action_string(hook->action))
+		.append(" using ")
+		.append(this->hook->message_type)
+		.append(" ")
+		.append(QString::number(this->hook->norc));
 }
 void DisablePreview::execute()
 {
@@ -240,7 +258,7 @@ void ToggleMute::execute()
 	if (hook->audio_source.isEmpty()) {
 		throw("sourceName is empty");
 	}
-	obs_source *source = obs_get_source_by_name(hook->audio_source.toStdString().c_str());
+	obs_source *source = obs_get_source_by_name(hook->audio_source.qtocs());
 	if (!source) {
 		throw("sourceName not found");
 	}
@@ -259,6 +277,14 @@ void SetMute::execute()
 		throw("specified source doesn't exist");
 	}
 	obs_source_set_muted(source, *hook->value);
+}
+QString SetMute::get_action_string()
+{
+	return QString(Utils::translate_action_string(hook->action))
+		.append(" with ")
+		.append(this->hook->message_type)
+		.append(" ")
+		.append(QString::number(this->hook->norc));
 }
 /**
  * Toggle streaming on or off.
@@ -459,10 +485,21 @@ void TriggerHotkey::execute()
 {
 	obs_hotkey_t *obsHotkey = Utils::get_obs_hotkey_by_name(hook->hotkey);
 	if (!obsHotkey) {
-		blog(LOG_ERROR, "ERROR: Triggered hotkey <%s> was not found", hook->hotkey.toStdString().c_str());
+		blog(LOG_ERROR, "ERROR: Triggered hotkey <%s> was not found", hook->hotkey.qtocs());
 		return;
 	}
 	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(obsHotkey), true);
+}
+
+QString TriggerHotkey::get_action_string()
+{
+	return QString("Trigger Hotkey")
+		.append(" ")
+		.append(obs_hotkey_get_description(Utils::get_obs_hotkey_by_name(hook->hotkey)))
+		.append(" using ")
+		.append(hook->message_type)
+		.append(" ")
+		.append(QString::number(this->hook->norc));
 }
 
 ////////////////
@@ -472,6 +509,16 @@ void SetVolume::execute()
 {
 	const OBSSourceAutoRelease obsSource = obs_get_source_by_name(hook->audio_source.toUtf8());
 	obs_source_set_volume(obsSource, pow(Utils::mapper(*hook->value), 3.0));
+}
+QString SetVolume::get_action_string()
+{
+	return QString(Utils::translate_action_string(hook->action))
+		.append(" of ")
+		.append(hook->audio_source)
+		.append(" using ")
+		.append(this->hook->message_type)
+		.append(" ")
+		.append(QString::number(this->hook->norc));
 }
 /**
  * Set the audio sync offset of a specified source.

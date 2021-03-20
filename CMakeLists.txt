@@ -78,10 +78,8 @@ list(APPEND obs-midi_HEADERS
 	src/macro-helpers.h
 	src/Midi_hook.h
 	src/Midi_message.h)
-set(obs_midi_UI
-	src/forms/settings-dialog.ui)
 
-qt5_wrap_ui(obs_midi_UI_HEADERS ${obs_midi_UI})
+qt5_wrap_ui(obs_midi_UI_HEADERS src/forms/settings-dialog.ui)
 
 add_library(obs-midi MODULE
 	${obs-midi_SOURCES}

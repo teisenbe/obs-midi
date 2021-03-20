@@ -45,11 +45,12 @@ private slots:
 	void set_all_cell_colors(int row) const;
 	void tab_changed(int tab) const;
 	void clear_table() const;
+	void insert_mapping_table_help_text() const;
 	void load_table() const;
 	void remove_hook(MidiHook *hook) const;
 	void delete_mapping() const;
 	void edit_mapping();
-	static void set_cell_colors(const QColor &color, QTableWidgetItem *item);
+	//static void set_cell_colors(const QColor &color, QTableWidgetItem *item);
 
 private:
 	Ui::PluginWindow *ui;
@@ -57,7 +58,7 @@ private:
 	bool loadingdevices = false;
 	bool starting = true;
 	bool listening = false;
-	void configure_table() const;
+	//void configure_table() const;
 	void set_title_window();
 	void connect_ui_signals() const;
 	void setup_actions() const;
@@ -65,10 +66,10 @@ private:
 	void load_devices();
 	void show_pair(Pairs pair) const;
 	void hide_pair(Pairs pair) const;
-	static QStringList translatelist(QStringList list);
+	//static QStringList translatelist(QStringList list);
 	void hide_all_pairs() const;
 	void add_midi_device(const QString &Name) const;
-	void set_headers() const;
+	//void set_headers() const;
 	void set_configure_title(const QString &title) const;
 	void disconnect_midi_message_handler() const;
 	void connect_midi_message_handler() const;

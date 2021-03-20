@@ -26,8 +26,12 @@ class Actions : public QObject {
 public:
 	Actions(){};
 	Actions(MidiHook *_hook);
+	void set_hook(MidiHook *_hook) { hook = _hook; }
 	virtual void execute(){};
-	static Actions *get_action(QString action, MidiHook* h);
+	static Actions *make_action(QString action, MidiHook *h);
+	virtual QString get_action_string();
+	virtual void set_data(obs_data_t *data){};
+	virtual void set_data(QString datastring){};
 
 protected:
 	MidiHook *hook;
@@ -41,6 +45,11 @@ class SetCurrentScene : public Actions {
 public:
 	SetCurrentScene(){};
 	void execute() override;
+
+	QString get_action_string() override { return QString("Set Current Scene to ").append(scene); }
+
+private:
+	QString scene;
 };
 /**
  * Actions
@@ -50,6 +59,7 @@ class SetPreviewScene : public Actions {
 public:
 	SetPreviewScene(){};
 	void execute() override;
+	QString get_action_string() override;
 };
 class DisablePreview : public Actions {
 public:
@@ -105,6 +115,8 @@ class SetMute : public Actions {
 public:
 	SetMute(){};
 	void execute() override;
+	QString get_action_string() override;
+	
 };
 class StartStopStreaming : public Actions {
 public:
@@ -215,6 +227,7 @@ class TriggerHotkey : public Actions {
 public:
 	TriggerHotkey(){};
 	void execute() override;
+	QString get_action_string() override;
 };
 
 // CC ACTIONS
@@ -222,11 +235,13 @@ class SetVolume : public Actions {
 public:
 	SetVolume(){};
 	void execute() override;
+	QString get_action_string() override;
 };
 class SetSyncOffset : public Actions {
 public:
 	SetSyncOffset(){};
 	void execute() override;
+	
 };
 class SetSourcePosition : public Actions {
 public:

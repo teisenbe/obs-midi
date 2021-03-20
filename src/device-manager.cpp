@@ -23,7 +23,7 @@ DeviceManager::~DeviceManager()
  */
 void DeviceManager::Load(QString datastring)
 {
-	obs_data_t *incoming_data = obs_data_create_from_json(datastring.toStdString().c_str());
+	obs_data_t *incoming_data = obs_data_create_from_json(datastring.qtocs());
 	obs_data_array_t *data = obs_data_get_array(incoming_data, "MidiDevices");
 	const size_t deviceCount = obs_data_array_count(data);
 	for (size_t i = 0; i < deviceCount; i++) {
@@ -40,7 +40,7 @@ void DeviceManager::Unload()
 {
 	blog(LOG_INFO, "UNLOADING DEVICE MANAGER");
 	for (auto &midiAgent : midiAgents) {
-		blog(LOG_DEBUG, "Unloading Midi Device %s", midiAgent->get_midi_input_name().toStdString().c_str());
+		blog(LOG_DEBUG, "Unloading Midi Device %s", midiAgent->get_midi_input_name().qtocs());
 		midiAgent->clear_MidiHooks();
 		delete midiAgent;
 	}
@@ -150,7 +150,7 @@ QString DeviceManager::GetData()
 	obs_data_t *return_data = obs_data_create();
 	obs_data_array_t *data = obs_data_array_create();
 	for (auto midiAgent : midiAgents) {
-		obs_data_t *adata = obs_data_create_from_json(midiAgent->GetData().toStdString().c_str());
+		obs_data_t *adata = obs_data_create_from_json(midiAgent->GetData().qtocs());
 		obs_data_array_push_back(data, adata);
 		obs_data_release(adata);
 	}

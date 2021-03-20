@@ -1,10 +1,10 @@
-#include"obs-controller.h"
+#include "obs-controller.h"
 #include "Midi_hook.h"
 
 MidiHook::MidiHook(){};
 MidiHook::MidiHook(const QString &json_string)
 {
-	const auto data = obs_data_create_from_json(json_string.toStdString().c_str());
+	const auto data = obs_data_create_from_json(json_string.qtocs());
 	channel = obs_data_get_int(data, "channel");
 	message_type = obs_data_get_string(data, "message_type");
 	norc = obs_data_get_int(data, "norc");
@@ -27,7 +27,7 @@ MidiHook::MidiHook(const QString &json_string)
 	int_override.emplace(obs_data_get_int(data, "range_max"));
 	value_as_filter = obs_data_get_bool(data, "value_as_filter");
 	value.emplace(obs_data_get_int(data, "value"));
-	setAction();
+	set_obs_action();
 	obs_data_release(data);
 }
 MidiMessage *MidiHook::get_message_from_hook()
@@ -39,94 +39,159 @@ MidiMessage *MidiHook::get_message_from_hook()
 	message->value = *this->value;
 	return std::move(message);
 }
+void MidiHook::get_scene(obs_data_t *data)
+{
+	if (scene.isEmpty() || scene.isNull())
+		return;
+	obs_data_set_string(data, "scene", scene.qtocs());
+}
+void MidiHook::get_source(obs_data_t *data)
+{
+	if (source.isEmpty())
+		return;
+	obs_data_set_string(data, "source", source.qtocs());
+}
+void MidiHook::get_filter(obs_data_t *data)
+{
+	if (filter.isEmpty())
+		return;
+	obs_data_set_string(data, "filter", filter.qtocs());
+}
+void MidiHook::get_transition(obs_data_t *data)
+{
+	if (transition.isEmpty())
+		return;
+	obs_data_set_string(data, "transition", transition.qtocs());
+}
+void MidiHook::get_item(obs_data_t *data)
+{
+	if (item.isEmpty())
+		return;
+	obs_data_set_string(data, "item", item.qtocs());
+}
+void MidiHook::get_hotkey(obs_data_t *data)
+{
+	if (hotkey.isEmpty())
+		return;
+	obs_data_set_string(data, "hotkey", hotkey.qtocs());
+}
+void MidiHook::get_audio_source(obs_data_t *data)
+{
+	if (audio_source.isEmpty())
+		return;
+	obs_data_set_string(data, "audio_source", audio_source.qtocs());
+}
+void MidiHook::get_media_source(obs_data_t *data)
+{
+	if (media_source.isEmpty())
+		return;
+	obs_data_set_string(data, "media_source", media_source.qtocs());
+}
+void MidiHook::get_duration(obs_data_t *data)
+{
+	if (duration)
+		obs_data_set_int(data, "duration", *duration);
+}
+void MidiHook::get_scene_collection(obs_data_t *data)
+{
+	if (scene_collection.isEmpty())
+		return;
+	obs_data_set_string(data, "scene_collection", scene_collection.qtocs());
+}
+void MidiHook::get_profile(obs_data_t *data)
+{
+	if (profile.isEmpty())
+		return;
+	obs_data_set_string(data, "profile", profile.qtocs());
+}
+void MidiHook::get_string_override(obs_data_t *data)
+{
+	if (string_override.isEmpty())
+		return;
+	obs_data_set_string(data, "string_override", string_override.qtocs());
+}
+void MidiHook::get_bool_override(obs_data_t *data)
+{
+	if (bool_override)
+		obs_data_set_bool(data, "bool_override", *bool_override);
+}
+void MidiHook::get_int_override(obs_data_t *data)
+{
+	if (int_override)
+		obs_data_set_int(data, "int_override", *int_override);
+}
+void MidiHook::get_range_min(obs_data_t *data)
+{
+	if (range_min)
+		obs_data_set_int(data, "range_min", *range_min);
+}
+void MidiHook::get_range_max(obs_data_t *data)
+{
+	if (range_max)
+		obs_data_set_int(data, "range_max", *range_max);
+}
+void MidiHook::get_value(obs_data_t *data)
+{
+	obs_data_set_bool(data, "value_as_filter", value_as_filter);
+	if (value_as_filter)
+		obs_data_set_int(data, "value", *value);
+}
+void MidiHook::get_channel(obs_data_t *data)
+{
+	obs_data_set_int(data, "channel", channel);
+}
+
+void MidiHook::get_message(obs_data_t *data)
+{
+	obs_data_set_string(data, "message_type", message_type.qtocs());
+}
+
+void MidiHook::get_norc(obs_data_t *data)
+{
+	obs_data_set_int(data, "norc", norc);
+}
+
+void MidiHook::get_action(obs_data_t *data)
+{
+	obs_data_set_string(data, "action", action.qtocs());
+}
 
 QString MidiHook::GetData()
 {
-	blog(LOG_DEBUG, "MH::GetData");
 	obs_data_t *data = obs_data_create();
-	obs_data_set_int(data, "channel", channel);
-	obs_data_set_string(data, "message_type", message_type.toStdString().c_str());
-	obs_data_set_int(data, "norc", norc);
-	obs_data_set_string(data, "action", action.toStdString().c_str());
-	if (!scene.isEmpty())
-		obs_data_set_string(data, "scene", scene.toStdString().c_str());
-	if (!source.isEmpty())
-		obs_data_set_string(data, "source", source.toStdString().c_str());
-	if (!filter.isEmpty())
-		obs_data_set_string(data, "filter", filter.toStdString().c_str());
-	if (!transition.isEmpty())
-		obs_data_set_string(data, "transition", transition.toStdString().c_str());
-	if (!item.isEmpty())
-		obs_data_set_string(data, "item", item.toStdString().c_str());
-	if (!hotkey.isEmpty())
-		obs_data_set_string(data, "hotkey", hotkey.toStdString().c_str());
-	if (!audio_source.isEmpty())
-		obs_data_set_string(data, "audio_source", audio_source.toStdString().c_str());
-	if (!media_source.isEmpty())
-		obs_data_set_string(data, "media_source", media_source.toStdString().c_str());
-	if (duration)
-		obs_data_set_int(data, "duration", *duration);
-	if (!scene_collection.isEmpty())
-		obs_data_set_string(data, "scene_collection", scene_collection.toStdString().c_str());
-	if (!profile.isEmpty())
-		obs_data_set_string(data, "profile", profile.toStdString().c_str());
-	if (!string_override.isEmpty())
-		obs_data_set_string(data, "string_override", string_override.toStdString().c_str());
-	if (bool_override)
-		obs_data_set_bool(data, "bool_override", *bool_override);
-	if (int_override)
-		obs_data_set_int(data, "int_override", *int_override);
-	if (range_min)
-		obs_data_set_int(data, "range_min", *range_min);
-	if (range_max)
-		obs_data_set_int(data, "range_max", *range_max);
-	if (value_as_filter)
-		obs_data_set_int(data, "value", *value);
-	obs_data_set_bool(data, "value_as_filter", value_as_filter);
+	get_channel(data);
+	get_message(data);
+	get_norc(data);
+	get_action(data);
+	get_scene(data);
+	get_source(data);
+	get_filter(data);
+	get_transition(data);
+	get_item(data);
+	get_hotkey(data);
+	get_audio_source(data);
+	get_media_source(data);
+	get_duration(data);
+	get_scene_collection(data);
+	get_profile(data);
+	get_string_override(data);
+	get_bool_override(data);
+	get_int_override(data);
+	get_range_min(data);
+	get_range_max(data);
+	get_value(data);
 	QString hook_data(obs_data_get_json(data));
-	blog(LOG_DEBUG, "Midi Hook JSON = %s", hook_data.toStdString().c_str());
 	obs_data_release(data);
-	blog(LOG_DEBUG, "Midi Hook JSON post release = %s", hook_data.toStdString().c_str());
 	return hook_data;
 }
-void MidiHook::setAction()
+void MidiHook::set_obs_action()
 {
 	if (action.isEmpty() || action.isNull())
 		return;
 	Actions AC(this);
-	actions = AC.get_action(action, this);
+	actions = AC.make_action(action, this);
 }
 void MidiHook::EXE()
 {
 	actions->execute();
-}
-void MidiHook::setHotkey(obs_hotkey_t *hotkey)
-{
-	if (!hotkey) {
-		hotkeyInstance = NULL;
-		return;
-	}
-	hotkeyInstance = hotkey;
-	this->hotkey = QString(obs_hotkey_get_name(hotkey));
-}
-
-void MidiHook::initHotkey()
-{
-	if (hotkey.isEmpty()) {
-		this->hotkey = nullptr;
-		return;
-	}
-	obs_hotkey_t *obsHotkey = Utils::FindHotkeyByName(hotkey);
-	if (obsHotkey) {
-		this->hotkeyInstance = obsHotkey;
-	}
-}
-
-obs_hotkey_t *MidiHook::getHotkey() const
-{
-	if (!hotkeyInstance) {
-		blog(LOG_ERROR, "ERROR: Stored hotkey %s not found", hotkey.toStdString().c_str());
-		return nullptr;
-	}
-	return hotkeyInstance;
 }

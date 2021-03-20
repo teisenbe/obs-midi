@@ -374,7 +374,7 @@ QString Events::getRecordingTimecode()
 void Events::OnSceneChange()
 {
 	const OBSSourceAutoRelease currentScene = obs_frontend_get_current_scene();
-	obs_data_t *idata = obs_data_create_from_json(Utils::GetSceneItems(currentScene).toStdString().c_str());
+	obs_data_t *idata = obs_data_create_from_json(Utils::GetSceneItems(currentScene).qtocs());
 	const OBSDataArrayAutoRelease sceneItems = obs_data_get_array(idata, "array");
 	obs_data_release(idata);
 	obs_data_t *data = obs_data_create();
@@ -1538,7 +1538,7 @@ void Events::OnPreviewSceneChanged()
 		const OBSSourceAutoRelease scene = obs_frontend_get_current_preview_scene();
 		if (!scene)
 			return;
-		obs_data_t *idata = obs_data_create_from_json(Utils::GetSceneItems(scene).toStdString().c_str());
+		obs_data_t *idata = obs_data_create_from_json(Utils::GetSceneItems(scene).qtocs());
 		const OBSDataArrayAutoRelease sceneItems = obs_data_get_array(idata, "array");
 		obs_data_release(idata);
 		obs_data_t *data = obs_data_create();
@@ -1619,11 +1619,4 @@ obs_data_t *Events::GetStats()
 	obs_data_set_double(stats, "free-disk-space", freeDiskSpace);
 	return stats;
 }
-void Events::initialiseHotkeysHooks()
-{
-	for (auto midiAgent : GetDeviceManager()->get_active_midi_devices()) {
-		for (auto midiHook : midiAgent->GetMidiHooks()) {
-			midiHook->initHotkey();
-		}
-	}
-}
+ 

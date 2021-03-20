@@ -22,8 +22,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include <obs-module.h>
 #include <QObject>
-#include "ui_settings-dialog.h"
 #include "settings-dialog.h"
+#include "ui_settings-dialog.h"
 #include "../device-manager.h"
 #include "../config.h"
 #include "Macros.h"
@@ -35,24 +35,17 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	// Set Window Title
 	setup_actions();
 	set_title_window();
-	configure_table();
+	// configure_table();
 	hide_all_pairs();
 	connect_ui_signals();
-	reset_to_defaults();
-
 	starting = false;
 }
-void PluginWindow::configure_table() const
-{
-	ui->table_mapping->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
-	ui->table_mapping->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
-	ui->table_mapping->setSortingEnabled(true);
-}
+
 void PluginWindow::set_title_window()
 {
 	QString title;
 	title.append(GIT_TAG);
-	blog(LOG_DEBUG, "OBS-MIDI Version: %s", title.toStdString().c_str());
+	blog(LOG_DEBUG, "OBS-MIDI Version: %s", title.qtocs());
 	title.prepend("OBS MIDI Settings:  ");
 	this->setWindowTitle(title);
 }
@@ -66,7 +59,7 @@ void PluginWindow::connect_ui_signals() const
 	connect(ui->cb_obs_output_action, SIGNAL(currentTextChanged(QString)), this, SLOT(obs_actions_select(QString)));
 	connect(ui->cb_obs_output_source, SIGNAL(currentTextChanged(QString)), this, SLOT(on_source_change(QString)));
 	connect(ui->cb_obs_output_scene, SIGNAL(currentTextChanged(QString)), this, SLOT(on_scene_change(QString)));
-	connect(ui->table_mapping, SIGNAL(cellClicked(int, int)), this, SLOT(edit_mapping()));
+	// connect(ui->table_mapping, SIGNAL(cellClicked(int, int)), this, SLOT(edit_mapping()));
 	/**************Connections to mappper****************/
 	connect(ui->btn_add, SIGNAL(clicked()), this, SLOT(add_new_mapping()));
 	connect(ui->btn_reset, SIGNAL(clicked()), this, SLOT(reset_to_defaults()));
@@ -180,7 +173,7 @@ void PluginWindow::connect_midi_message_handler() const
 void PluginWindow::on_device_select(const QString &curitem) const
 {
 	if (!starting) {
-		blog(LOG_DEBUG, "on_device_select %s", curitem.toStdString().c_str());
+		blog(LOG_DEBUG, "on_device_select %s", curitem.qtocs());
 		auto devicemanager = GetDeviceManager();
 		auto config = GetConfig();
 		MidiAgent *MAdevice = devicemanager->get_midi_device(curitem);
@@ -218,8 +211,8 @@ void PluginWindow::handle_midi_message(const MidiMessage &mess) const
 		return;
 
 	if (ui->btn_Listen_one->isChecked() || ui->btn_Listen_many->isChecked()) {
-		blog(1, "got midi message via gui, \n Device = %s \n MType = %s \n NORC : %i \n Channel: %i \n Value: %i",
-		     mess.device_name.toStdString().c_str(), mess.message_type.toStdString().c_str(), mess.NORC, mess.channel, mess.value);
+		blog(1, "got midi message via gui, \n Device = %s \n MType = %s \n NORC : %i \n Channel: %i \n Value: %i", mess.device_name.qtocs(),
+		     mess.message_type.qtocs(), mess.NORC, mess.channel, mess.value);
 		ui->mapping_lbl_device_name->setText(mess.device_name);
 		ui->sb_channel->setValue(mess.channel);
 		ui->sb_norc->setValue(mess.NORC);
@@ -228,12 +221,12 @@ void PluginWindow::handle_midi_message(const MidiMessage &mess) const
 		ui->btn_Listen_one->setChecked(false);
 	}
 	if (find_mapping_location(mess) != -1) {
-		ui->table_mapping->selectRow(find_mapping_location(mess));
+		// ui->table_mapping->selectRow(find_mapping_location(mess));
 	}
 }
 void PluginWindow::on_bid_enabled_state_changed(int state) const
 {
-	auto device = GetDeviceManager()->get_midi_device(ui->list_midi_dev->currentItem()->text().toStdString().c_str());
+	auto device = GetDeviceManager()->get_midi_device(ui->list_midi_dev->currentItem()->text().qtocs());
 	ui->outbox->setEnabled(state);
 	device->set_bidirectional(state);
 }
@@ -241,44 +234,7 @@ PluginWindow::~PluginWindow()
 {
 	delete ui;
 }
-void PluginWindow::add_midi_device(const QString &name) const
-{
-	blog(LOG_DEBUG, "Adding Midi Device %s", name.toStdString().c_str());
 
-	// don't delete it, because the table takes ownership of the items
-	auto *device_name = new QTableWidgetItem();
-	auto *device_enabled = new QTableWidgetItem();
-	auto *device_status = new QTableWidgetItem();
-	auto *feedback_enabled = new QTableWidgetItem();
-	auto *feedback_name = new QTableWidgetItem();
-	auto *feedback_status = new QTableWidgetItem();
-	const int rowcount = this->ui->table_mapping->rowCount();
-	this->ui->table_mapping->insertRow(rowcount);
-	device_name->setText(name);
-	device_enabled->setCheckState(Qt::Unchecked);
-	device_status->setText(QString("Disconnected"));
-	// device_status->setForeground("grey");
-	feedback_name->setText("");
-	feedback_enabled->setCheckState(Qt::Unchecked);
-	feedback_status->setText(QString("unset"));
-	this->ui->table_mapping->setItem(rowcount, 0, device_name);
-	this->ui->table_mapping->setItem(rowcount, 1, device_enabled);
-	this->ui->table_mapping->setItem(rowcount, 2, device_status);
-	this->ui->table_mapping->setItem(rowcount, 3, feedback_enabled);
-	this->ui->table_mapping->setItem(rowcount, 4, feedback_name);
-	this->ui->table_mapping->setItem(rowcount, 5, feedback_status);
-}
-void PluginWindow::set_headers() const
-{
-	ui->table_mapping->setHorizontalHeaderLabels({"Channel", "Message Type", "Note or Control", "Action", "Scene", "Source", "Filter", "Transition", "Item",
-						      "Audio Source", "Media Source", "Duration"});
-	const QColor midicolor("#00aaff");
-	const QColor actioncolor("#aa00ff");
-	for (int i = 0; i <= 11; i++) {
-		(i <= 2) ? ui->table_mapping->horizontalHeaderItem(i)->setForeground(midicolor)
-			 : ui->table_mapping->horizontalHeaderItem(i)->setForeground(actioncolor);
-	}
-}
 void PluginWindow::show_pair(Pairs Pair) const
 {
 	switch (Pair) {
@@ -458,13 +414,13 @@ void PluginWindow::reset_to_defaults() const
 	ui->btn_add->setText("Add Mapping");
 	ui->btn_delete->setEnabled(false);
 	ui->btn_reset->setEnabled(false);
-	ui->table_mapping->clearSelection();
+	// ui->table_mapping->clearSelection();
 	ui->sb_max->clear();
 	ui->sb_min->clear();
 	ui->sb_int_override->clear();
 	clear_table();
 	load_table();
-	this->ui->table_mapping->resizeColumnsToContents();
+	// this->ui->table_mapping->resizeColumnsToContents();
 }
 void PluginWindow::obs_actions_select(const QString &action) const
 {
@@ -717,7 +673,7 @@ void PluginWindow::add_new_mapping()
 		if (ui->cb_obs_output_hotkey->isVisible()) {
 			new_midi_hook->hotkey = Utils::get_hotkey_key(ui->cb_obs_output_hotkey->currentText());
 		}
-		new_midi_hook->setAction();
+		new_midi_hook->set_obs_action();
 		if (editmode) {
 			GetDeviceManager().get()->get_midi_device(ui->mapping_lbl_device_name->text())->edit_midi_hook(edithook, new_midi_hook);
 		} else {
@@ -751,63 +707,56 @@ void PluginWindow::add_new_mapping()
 }
 void PluginWindow::add_row_from_hook(const MidiHook *hook) const
 {
-	const auto row = ui->table_mapping->rowCount();
-	ui->table_mapping->insertRow(row);
+	if (hook == nullptr)
+		return;
+	ui->list_mapping->addItem(hook->actions->get_action_string());
+	// const auto row = ui->table_mapping->rowCount();
+	// ui->table_mapping->insertRow(row);
 
-	// don't delete it, because the table takes ownership of the items
-	auto *channel_item = new QTableWidgetItem(QString::number(hook->channel));
-	auto *message_type_item = new QTableWidgetItem(hook->message_type);
-	auto *norc_item = new QTableWidgetItem(QString::number(hook->norc));
-	auto *action_item = new QTableWidgetItem(hook->action);
-	auto *scene_item = new QTableWidgetItem(hook->scene);
-	auto *source_item = new QTableWidgetItem(hook->source);
-	auto *filter_item = new QTableWidgetItem(hook->filter);
-	auto *transition_item = new QTableWidgetItem(hook->transition);
-	auto *item_item = new QTableWidgetItem(hook->item);
-	auto *audio_item = new QTableWidgetItem(hook->audio_source);
-	auto *media_item = new QTableWidgetItem(hook->media_source);
-	auto *hotkey_item = new QTableWidgetItem(Utils::get_hotkey_value(hook->hotkey));
-	QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
-	QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
-	QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
-	ui->table_mapping->setItem(row, 0, channel_item);
-	ui->table_mapping->setItem(row, 1, message_type_item);
-	ui->table_mapping->setItem(row, 2, norc_item);
-	ui->table_mapping->setItem(row, 3, action_item);
-	ui->table_mapping->setItem(row, 4, scene_item);
-	ui->table_mapping->setItem(row, 5, source_item);
-	ui->table_mapping->setItem(row, 6, filter_item);
-	ui->table_mapping->setItem(row, 7, transition_item);
-	ui->table_mapping->setItem(row, 8, item_item);
-	ui->table_mapping->setItem(row, 9, audio_item);
-	ui->table_mapping->setItem(row, 10, media_item);
-	ui->table_mapping->setItem(row, 11, ioveritem);
-	ui->table_mapping->setItem(row, 12, min);
-	ui->table_mapping->setItem(row, 13, max);
-	ui->table_mapping->setItem(row, 14, hotkey_item);
-	set_all_cell_colors(row);
+	//// don't delete it, because the table takes ownership of the items
+	// auto *channel_item = new QTableWidgetItem(QString::number(hook->channel));
+	// auto *message_type_item = new QTableWidgetItem(hook->message_type);
+	// auto *norc_item = new QTableWidgetItem(QString::number(hook->norc));
+	// auto *action_item = new QTableWidgetItem(hook->action);
+	// auto *scene_item = new QTableWidgetItem(hook->scene);
+	// auto *source_item = new QTableWidgetItem(hook->source);
+	// auto *filter_item = new QTableWidgetItem(hook->filter);
+	// auto *transition_item = new QTableWidgetItem(hook->transition);
+	// auto *item_item = new QTableWidgetItem(hook->item);
+	// auto *audio_item = new QTableWidgetItem(hook->audio_source);
+	// auto *media_item = new QTableWidgetItem(hook->media_source);
+	// auto *hotkey_item = new QTableWidgetItem(Utils::get_hotkey_value(hook->hotkey));
+	// QTableWidgetItem *ioveritem = (hook->int_override) ? new QTableWidgetItem(QString::number(*hook->int_override)) : new QTableWidgetItem();
+	// QTableWidgetItem *min = (hook->range_min) ? new QTableWidgetItem(QString::number(*hook->range_min)) : new QTableWidgetItem();
+	// QTableWidgetItem *max = (hook->range_max) ? new QTableWidgetItem(QString::number(*hook->range_max)) : new QTableWidgetItem();
+	// ui->table_mapping->setItem(row, 0, channel_item);
+	// ui->table_mapping->setItem(row, 1, message_type_item);
+	// ui->table_mapping->setItem(row, 2, norc_item);
+	// ui->table_mapping->setItem(row, 3, action_item);
+	// ui->table_mapping->setItem(row, 4, scene_item);
+	// ui->table_mapping->setItem(row, 5, source_item);
+	// ui->table_mapping->setItem(row, 6, filter_item);
+	// ui->table_mapping->setItem(row, 7, transition_item);
+	// ui->table_mapping->setItem(row, 8, item_item);
+	// ui->table_mapping->setItem(row, 9, audio_item);
+	// ui->table_mapping->setItem(row, 10, media_item);
+	// ui->table_mapping->setItem(row, 11, ioveritem);
+	// ui->table_mapping->setItem(row, 12, min);
+	// ui->table_mapping->setItem(row, 13, max);
+	// ui->table_mapping->setItem(row, 14, hotkey_item);
+	// set_all_cell_colors(row);
 }
 void PluginWindow::set_all_cell_colors(const int row) const
 {
 	const QColor midi_color(0, 170, 255);
 	const QColor action_color(170, 0, 255);
 
-	for (auto col = 0; col <= ui->table_mapping->columnCount(); col++) {
+	/*for (auto col = 0; col <= ui->table_mapping->columnCount(); col++) {
 		auto *const rc = ui->table_mapping->item(row, col);
 		(col < 3) ? set_cell_colors(midi_color, rc) : set_cell_colors(action_color, rc);
-	}
+	}*/
 }
 
-void PluginWindow::set_cell_colors(const QColor &color, QTableWidgetItem *item)
-{
-	if (item == NULL)
-		return;
-	const QColor background_color;
-	background_color.black();
-	item->setBackground(background_color);
-	item->setForeground(color);
-	item->setTextAlignment(Qt::AlignCenter);
-}
 void PluginWindow::tab_changed(const int tab) const
 {
 	reset_to_defaults();
@@ -819,14 +768,27 @@ void PluginWindow::tab_changed(const int tab) const
 	}
 	clear_table();
 	load_table();
-	this->ui->table_mapping->resizeColumnsToContents();
+	// this->ui->table_mapping->resizeColumnsToContents();
 }
 void PluginWindow::clear_table() const
 {
-	ui->table_mapping->clearContents();
-	set_headers();
-	ui->table_mapping->setRowCount(0);
+	// ui->table_mapping->clearContents();
+	// set_headers();
+	// ui->table_mapping->setRowCount(0);
+	ui->list_mapping->clear();
 }
+void PluginWindow::insert_mapping_table_help_text() const{
+	ui->list_mapping->clear();
+
+	ui->list_mapping->addItem("No Current Actions, To Add an action:");
+	ui->list_mapping->addItem("");
+	ui->list_mapping->addItem("1.) Click Listen one or Listen Many.");
+	ui->list_mapping->addItem("2.) Toggle a button, fader, or knob on your MIDI device.");
+	ui->list_mapping->addItem("3.) Choose an action.");
+	ui->list_mapping->addItem("4.) Select options");
+	ui->list_mapping->addItem("5.) Click  'Add Mapping'");
+}
+
 void PluginWindow::load_table() const
 {
 	const auto hooks = GetDeviceManager()->get_midi_hooks(ui->mapping_lbl_device_name->text());
@@ -835,6 +797,8 @@ void PluginWindow::load_table() const
 			add_row_from_hook(hook);
 		}
 	}
+	if (hooks.count() <= 0)
+		insert_mapping_table_help_text();
 }
 void PluginWindow::remove_hook(MidiHook *hook) const
 {
@@ -843,7 +807,7 @@ void PluginWindow::remove_hook(MidiHook *hook) const
 }
 void PluginWindow::delete_mapping() const
 {
-	if (ui->table_mapping->rowCount() <= 0)
+	/*if (ui->table_mapping->rowCount() <= 0)
 		return;
 
 	auto row = ui->table_mapping->selectedItems().at(0)->row();
@@ -863,18 +827,18 @@ void PluginWindow::delete_mapping() const
 				ui->table_mapping->clearSelection();
 			}
 		}
-	}
+	}*/
 	reset_to_defaults();
 }
 void PluginWindow::edit_mapping()
 {
-	if (ui->table_mapping->rowCount() != 0) {
+	/**if (ui->table_mapping->rowCount() != 0) {
 		editmode = true;
 
 		ui->btn_add->setText("Save Edits");
 		ui->btn_reset->setEnabled(true);
 		const auto dv = GetDeviceManager().get()->get_midi_hooks(ui->mapping_lbl_device_name->text());
-		blog(LOG_DEBUG, "hook numners: name %s = %i", ui->mapping_lbl_device_name->text().toStdString().c_str(), dv.count());
+		blog(LOG_DEBUG, "hook numners: name %s = %i", ui->mapping_lbl_device_name->text().qtocs(), dv.count());
 		const auto selected_items = ui->table_mapping->selectedItems();
 		const auto row = selected_items.at(0)->row();
 		editrow = row;
@@ -900,7 +864,7 @@ void PluginWindow::edit_mapping()
 		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->btn_delete->setEnabled(true);
 		edithook = find_existing_hook();
-	}
+	}*/
 }
 
 bool PluginWindow::verify_mapping() const

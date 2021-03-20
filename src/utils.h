@@ -22,6 +22,10 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <iostream>
 #include <obs.hpp>
 #include "obs-midi.h"
+/**
+* Macro to convert c string to c string
+*/
+#define qtocs() toStdString().c_str()
 
 typedef void (*PauseRecordingFunction)(bool);
 typedef bool (*RecordingPausedFunction)();
@@ -166,6 +170,7 @@ QStringList TranslateActions();
 QStringList get_scene_names();
 QStringList get_source_names(const QString &scene);
 QStringList get_filter_names(const QString &Source);
+QString translate_action_string(QString string);
 QStringList get_transition_names();
 QString untranslate(const QString &tstring);
 QStringList get_browser_sources();

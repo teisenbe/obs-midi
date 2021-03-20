@@ -374,7 +374,7 @@ obs_data_array_t *Utils::GetScenes()
 	obs_data_array_t *scenes = obs_data_array_create();
 	for (size_t i = 0; i < sceneList.sources.num; i++) {
 		obs_source_t *scene = sceneList.sources.array[i];
-		obs_data_t *sceneData = obs_data_create_from_json(GetSceneData(scene).toStdString().c_str());
+		obs_data_t *sceneData = obs_data_create_from_json(GetSceneData(scene).qtocs());
 		obs_data_array_push_back(scenes, sceneData);
 		obs_data_release(sceneData);
 		obs_source_release(scene);
@@ -389,7 +389,7 @@ QString Utils::GetSceneArray(const QString &name)
 		auto *scenewArray = (obs_data_array_t *)privateData;
 		obs_data_t *scdata = obs_data_create();
 		const auto x = obs_sceneitem_get_source(item);
-		obs_data_t *sdata = obs_data_create_from_json(GetSceneData(x).toStdString().c_str());
+		obs_data_t *sdata = obs_data_create_from_json(GetSceneData(x).qtocs());
 		obs_data_set_string(scdata, "name", obs_data_get_string(sdata, "name"));
 		obs_data_release(sdata);
 		obs_data_array_push_back(scenewArray, scdata);
@@ -446,7 +446,7 @@ QString Utils::GetSourceArray()
 }
 QString Utils::GetSceneData(obs_source_t *source)
 {
-	obs_data_t *data = obs_data_create_from_json(GetSceneItems(source).toStdString().c_str());
+	obs_data_t *data = obs_data_create_from_json(GetSceneItems(source).qtocs());
 	obs_data_array_t *sceneItems = obs_data_get_array(data, "array");
 	obs_data_release(data);
 	obs_data_t *sceneData = obs_data_create();
@@ -868,7 +868,7 @@ QStringList Utils::GetTransitionsList()
 QStringList Utils::GetSceneItemsList(const QString &scenename)
 {
 	QStringList SceneItemsList;
-	const OBSSourceAutoRelease sceneSource = obs_get_source_by_name(scenename.toStdString().c_str());
+	const OBSSourceAutoRelease sceneSource = obs_get_source_by_name(scenename.qtocs());
 	const OBSScene scene = obs_scene_from_source(sceneSource);
 	const OBSDataArrayAutoRelease sceneItemArray = obs_data_array_create();
 	auto sceneItemEnumProc = [](obs_scene_t *, obs_sceneitem_t *item, void *privateData) -> bool {
@@ -906,13 +906,13 @@ QStringList Utils::TranslateActions()
 {
 	QStringList temp;
 	for (auto i : AllActions_raw) {
-		temp.append(obs_module_text(ActionsClass::action_to_string(i).toStdString().c_str()));
+		temp.append(obs_module_text(ActionsClass::action_to_string(i).qtocs()));
 	}
 	return temp;
 }
 QString Utils::translate_action(ActionsClass::Actions action)
 {
-	return QString(obs_module_text(ActionsClass::action_to_string(action).toStdString().c_str()));
+	return QString(obs_module_text(ActionsClass::action_to_string(action).qtocs()));
 }
 
 void Utils::build_hotkey_map()
@@ -1001,7 +1001,7 @@ QStringList Utils::get_scene_names()
 QStringList Utils::get_source_names(const QString &scene)
 {
 	QStringList names;
-	obs_data_t *data = obs_data_create_from_json(Utils::GetSceneArray(scene).toStdString().c_str());
+	obs_data_t *data = obs_data_create_from_json(Utils::GetSceneArray(scene).qtocs());
 	obs_data_array_t *arrayref = obs_data_get_array(data, "array");
 	obs_data_release(data);
 	for (size_t i = 0; i < obs_data_array_count(arrayref); i++) {
@@ -1014,7 +1014,7 @@ QStringList Utils::get_source_names(const QString &scene)
 }
 QStringList Utils::get_filter_names(const QString &Source)
 {
-	obs_source *source = obs_get_source_by_name(Source.toStdString().c_str());
+	obs_source *source = obs_get_source_by_name(Source.qtocs());
 	struct enum_params {
 		QStringList names;
 	};
@@ -1029,4 +1029,7 @@ QStringList Utils::get_filter_names(const QString &Source)
 		&enumParams);
 	obs_source_release(source);
 	return enumParams.names;
+}
+QString Utils::translate_action_string(QString string) {
+	return Utils::translate_action(ActionsClass::string_to_action(string));
 }
