@@ -58,7 +58,7 @@ bool obs_module_load(void)
 
 void obs_module_unload()
 {
-    _eventsSystem.get()->shutdown();
+	_eventsSystem.get()->shutdown();
 	_eventsSystem.reset();
 	_deviceManager.reset();
 	_config.reset();

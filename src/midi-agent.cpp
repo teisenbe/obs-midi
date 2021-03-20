@@ -400,7 +400,7 @@ void MidiAgent::edit_midi_hook(MidiHook *old_hook, MidiHook *new_hook)
 	remove_MidiHook(old_hook);
 	add_MidiHook(new_hook);
 }
-	/// <summary>
+/// <summary>
 /// Clears all the MidiHooks for this device.
 /// *This does not delete hooks from config unless saved afterwards*
 /// </summary>
@@ -478,7 +478,6 @@ MidiHook *MidiAgent::get_midi_hook_if_exists(const RpcEvent &event) const
 		case ActionsClass::Actions::Disable_Source_Filter:
 
 			break;
-		
 
 		case ActionsClass::Actions::Enable_Preview:
 

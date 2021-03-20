@@ -1,8 +1,8 @@
 /**
  * obs-midi
- * 
+ *
  * 2020-2021	Chris Yarger <cpyarger@gmail.com>
- * 
+ *
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ Events::Events() : _streamStarttime(0), _lastBytesSent(0), _lastBytesSentTime(0)
 Events::~Events() {}
 void Events::startup()
 {
-	
 
 	// Connect to signals of all existing sources
 	obs_enum_sources(
@@ -389,10 +388,10 @@ void Events::OnSceneChange()
 }
 void Events::FinishedLoading()
 {
-    hookTransitionPlaybackEvents();
-    startup();
-    started=true;
-    Utils::build_hotkey_map();
+	hookTransitionPlaybackEvents();
+	startup();
+	started = true;
+	Utils::build_hotkey_map();
 	broadcastUpdate("LoadingFinished");
 }
 /**
@@ -878,13 +877,13 @@ void Events::OnTransitionEnd(void *param, calldata_t *data)
 	state::transitioning = false;
 	auto instance = reinterpret_cast<Events *>(param);
 	const OBSSource transition = calldata_get_pointer<obs_source_t>(data, "source");
-	
+
 	if (!transition) {
 		return;
 	}
 	if (state()._TransitionWasCalled) {
 		obs_frontend_set_transition_duration(state()._CurrentTransitionDuration);
-		const auto t =Utils::GetTransitionFromName(state()._CurrentTransition);
+		const auto t = Utils::GetTransitionFromName(state()._CurrentTransition);
 		obs_frontend_set_current_transition(t);
 		obs_source_release(t);
 		state()._TransitionWasCalled = false;
@@ -893,7 +892,6 @@ void Events::OnTransitionEnd(void *param, calldata_t *data)
 	blog(LOG_DEBUG, "transition %s ended - to scene %s", obs_data_get_string(fields, "name"), obs_data_get_string(fields, "to-scene"));
 	instance->broadcastUpdate("TransitionEnd", fields);
 	obs_data_release(fields);
-	
 }
 /**
  * A stinger transition has finished playing its video.
@@ -1180,7 +1178,8 @@ void Events::OnSourceFilterAdded(void *param, calldata_t *data)
  * @category sources
  * @since 4.6.0
  */
-void Events::OnSourceRemoved(void *param, calldata_t *data) {
+void Events::OnSourceRemoved(void *param, calldata_t *data)
+{
 	auto self = reinterpret_cast<Events *>(param);
 
 	auto *source = calldata_get_pointer<obs_source_t>(data, "source");

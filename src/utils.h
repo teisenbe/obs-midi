@@ -107,7 +107,7 @@ public:
 		Unpause_Recording
 	};
 	Q_ENUM(Actions)
-	
+
 	static QString action_to_string(const Actions &enumval);
 	static Actions string_to_action(const QString &string);
 	static float fade_value();
@@ -152,8 +152,6 @@ QString OBSVersionString();
 const char *GetRecordingFolder();
 bool SetRecordingFolder(const char *path);
 QString ParseDataToQueryString(obs_data_t *data);
-obs_hotkey_t *FindHotkeyByName(const QString &name);
-QStringList GetHotkeysList();
 bool ReplayBufferEnabled();
 void StartReplayBuffer();
 bool IsRPHotkeySet();
@@ -239,9 +237,8 @@ QString translate_action(ActionsClass::Actions action);
 static QMap<QString, obs_hotkey_t *> hotkey_name_map;
 static QMap<QString, QString> hotkey_map;
 void build_hotkey_map();
-void build_hotkey_name_map();
 QString get_hotkey_key(QString value);
 QString get_hotkey_value(QString key);
-
-
+obs_hotkey_t *get_obs_hotkey_by_name(const QString &name);
+QStringList get_hotkeys_list();
 };

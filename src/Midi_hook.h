@@ -11,8 +11,8 @@ class MidiHook : public QObject {
 	Q_OBJECT
 public:
 	MidiHook();
-	MidiHook(const QString& json_string);
-	MidiMessage* get_message_from_hook();
+	MidiHook(const QString &json_string);
+	MidiMessage *get_message_from_hook();
 	QString GetData();
 
 	int channel = -1;     // midi channel

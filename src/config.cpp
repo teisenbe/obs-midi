@@ -77,7 +77,8 @@ QString Config::GetConfigStore(std::optional<QString> prepend)
 	os_mkdirs(path);
 	bfree(path);
 
-	const auto filepath = (prepend) ? obs_module_config_path(get_file_name(prepend).toStdString().c_str()) :obs_module_config_path(get_file_name().toStdString().c_str());
+	const auto filepath = (prepend) ? obs_module_config_path(get_file_name(prepend).toStdString().c_str())
+					: obs_module_config_path(get_file_name().toStdString().c_str());
 	obs_data_t *midiConfig = os_file_exists(filepath) ? obs_data_create_from_json_file(filepath) : obs_data_create();
 	if (!os_file_exists(filepath)) {
 		obs_data_save_json_safe(midiConfig, filepath, ".tmp", ".bkp");

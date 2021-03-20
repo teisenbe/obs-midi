@@ -9,11 +9,9 @@ Macros::Macros(Ui::PluginWindow *parent)
 	setup_actions();
 	hide_all_pairs();
 	setup_connections();
-	
+
 	ui->tab_Macros->setEnabled(GetConfig().get()->DebugMode);
-
 }
-
 
 Macros::~Macros() {}
 void Macros::setup_connections() const

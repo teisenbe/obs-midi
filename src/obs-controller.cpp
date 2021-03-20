@@ -457,11 +457,12 @@ void ToggleSourceFilter::execute()
 }
 void TriggerHotkey::execute()
 {
-	obs_hotkey_t *hk = Utils::FindHotkeyByName(hook->hotkey);
-	if (!hk) {
-		throw("Hotkey not found");
+	obs_hotkey_t *obsHotkey = Utils::get_obs_hotkey_by_name(hook->hotkey);
+	if (!obsHotkey) {
+		blog(LOG_ERROR, "ERROR: Triggered hotkey <%s> was not found", hook->hotkey.toStdString().c_str());
+		return;
 	}
-	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(hk), true);
+	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(obsHotkey), true);
 }
 
 ////////////////

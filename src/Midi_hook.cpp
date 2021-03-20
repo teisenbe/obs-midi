@@ -14,7 +14,7 @@ MidiHook::MidiHook(const QString &json_string)
 	filter = obs_data_get_string(data, "filter");
 	transition = obs_data_get_string(data, "transition");
 	item = obs_data_get_string(data, "item");
-        hotkey = obs_data_get_string(data, "hotkey");
+	hotkey = obs_data_get_string(data, "hotkey");
 	audio_source = obs_data_get_string(data, "audio_source");
 	media_source = obs_data_get_string(data, "media_source");
 	duration.emplace(obs_data_get_int(data, "duration"));

@@ -608,16 +608,6 @@ QString Utils::ParseDataToQueryString(obs_data_t *data)
 	}
 	return query;
 }
-
-
-obs_hotkey_t *Utils::FindHotkeyByName(const QString &name)
-{
-	return hotkey_name_map.value(name);
-}
-QStringList Utils::GetHotkeysList()
-{
-	return QStringList(hotkey_map.values());
-}
 bool Utils::ReplayBufferEnabled()
 {
 	config_t *profile = obs_frontend_get_profile_config();
@@ -924,33 +914,38 @@ QString Utils::translate_action(ActionsClass::Actions action)
 {
 	return QString(obs_module_text(ActionsClass::action_to_string(action).toStdString().c_str()));
 }
-void Utils::build_hotkey_map() {
+
+void Utils::build_hotkey_map()
+{
 	hotkey_map.clear();
 	hotkey_name_map.clear();
 	obs_enum_hotkeys(
-		[](void *data, obs_hotkey_id id, obs_hotkey_t *hotkey) {
-			QString item(obs_hotkey_get_name(hotkey));
-			if (item.contains("libobs") || item.contains("MediaSource") || item.contains("OBSBasic"))
+		[](void *data, obs_hotkey_id id, obs_hotkey_t *obsHotkey) {
+			QString hotkey_name(obs_hotkey_get_name(obsHotkey));
+			if (hotkey_name.contains("libobs") || hotkey_name.contains("MediaSource") || hotkey_name.contains("OBSBasic"))
 				return true;
-			blog(LOG_DEBUG, "hotkey_map insert: <%s>,<%s>",obs_hotkey_get_name(hotkey) ,obs_hotkey_get_description(hotkey));
-			hotkey_map.insert(item, obs_hotkey_get_description(hotkey));
-			hotkey_name_map.insert(item, hotkey);
+			blog(LOG_DEBUG, "hotkey_map insert: <%s>,<%s>", obs_hotkey_get_name(obsHotkey), obs_hotkey_get_description(obsHotkey));
+			hotkey_map.insert(hotkey_name, obs_hotkey_get_description(obsHotkey));
+			hotkey_name_map.insert(hotkey_name, obsHotkey);
 			return true;
-			
 		},
 		NULL);
-	blog(LOG_DEBUG, "test_map_get_key %s ",hotkey_map.key("Deactivate capture").toStdString().c_str());
-
 }
 QString Utils::get_hotkey_key(QString value)
 {
-
 	return hotkey_map.key(value);
 }
 QString Utils::get_hotkey_value(QString key)
 {
-
 	return hotkey_map.value(key);
+}
+obs_hotkey_t *Utils::get_obs_hotkey_by_name(const QString &name)
+{
+	return hotkey_name_map.value(name);
+}
+QStringList Utils::get_hotkeys_list()
+{
+	return QStringList(hotkey_map.values());
 }
 
 QString Utils::untranslate(const QString &tstring)

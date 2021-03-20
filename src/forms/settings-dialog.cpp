@@ -315,7 +315,7 @@ void PluginWindow::show_pair(Pairs Pair) const
 	case Pairs::Hotkey:
 		ui->label_obs_output_hotkey->show();
 		ui->cb_obs_output_hotkey->show();
-		ui->cb_obs_output_hotkey->addItems(Utils::GetHotkeysList());
+		ui->cb_obs_output_hotkey->addItems(Utils::get_hotkeys_list());
 		ui->w_hotkey->show();
 		break;
 	case Pairs::Audio:
@@ -815,8 +815,8 @@ void PluginWindow::tab_changed(const int tab) const
 		ui->cb_obs_output_action->setCurrentIndex(1);
 		ui->cb_obs_output_action->setCurrentIndex(0);
 		ui->mapping_lbl_device_name->setText(ui->list_midi_dev->currentItem()->text());
+		Utils::build_hotkey_map();
 	}
-	Utils::build_hotkey_map();
 	clear_table();
 	load_table();
 	this->ui->table_mapping->resizeColumnsToContents();
@@ -895,9 +895,9 @@ void PluginWindow::edit_mapping()
 		ui->cb_obs_output_audio_source->setCurrentText(selected_items.at(9)->text());
 		ui->cb_obs_output_media_source->setCurrentText(selected_items.at(10)->text());
 		const bool check = (selected_items.at(11)->text().toInt() > 0) ? true : false;
-		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->check_int_override->setChecked(check);
 		ui->sb_int_override->setValue(selected_items.at(11)->text().toInt());
+		ui->cb_obs_output_hotkey->setCurrentText(selected_items.at(14)->text());
 		ui->btn_delete->setEnabled(true);
 		edithook = find_existing_hook();
 	}

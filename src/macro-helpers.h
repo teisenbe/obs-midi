@@ -16,8 +16,8 @@ public:
 	inline static int _CurrentTransitionDuration = -1;
 	inline static bool _TransitionWasCalled = false;
 	//** Scene button Values **//
-	inline static int previous_scene_norc=-1;
-	inline static int previous_preview_scene_norc=-1;
+	inline static int previous_scene_norc = -1;
+	inline static int previous_preview_scene_norc = -1;
 	//** **/
 	inline static bool swapping = false;
 	inline static bool closing = false;
@@ -27,7 +27,7 @@ namespace Macro {
 /**
  *Toggles a midi message between on and off states, should work on both notes and controls.
  */
-inline void Toggle(MidiAgent* agent,MidiMessage *message)
+inline void Toggle(MidiAgent *agent, MidiMessage *message)
 {
 	if (state::swapping)
 		return;
@@ -67,19 +67,21 @@ inline static void swap_buttons(MidiAgent *agent, MidiMessage *message, int butt
 	state::swapping = false;
 }
 /// <summary>
-/// 
+///
 /// </summary>
 /// <param name="agent">MidiAgent</param>
 /// <param name="message"></param>
 /// <param name="vol"></param>
-inline static void set_volume(MidiAgent* agent, MidiMessage *message, double vol) {
+inline static void set_volume(MidiAgent *agent, MidiMessage *message, double vol)
+{
 	const uint8_t newvol = Utils::mapper2(cbrt(vol));
 	message->value = newvol;
 	agent->send_message_to_midi_device((MidiMessage)*message);
 }
-inline static void reset_midi(MidiAgent* agent) {
+inline static void reset_midi(MidiAgent *agent)
+{
 	MidiMessage message;
-	for (int j = 0; j <= 16;j++) {
+	for (int j = 0; j <= 16; j++) {
 		message.channel = j;
 		for (int i = 0; i <= 127; i++) {
 			message.NORC = i;
@@ -89,7 +91,5 @@ inline static void reset_midi(MidiAgent* agent) {
 			agent->send_message_to_midi_device(message);
 		}
 	}
-
-
 }
 }; // End Macro

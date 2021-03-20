@@ -140,13 +140,12 @@ public:
 	void SetCurrentSceneCollection(const QString &sceneCollection);
 	void ResetSceneItem(const QString &sceneName, const QString &itemName);
 	void TransitionToProgram();
-	void TransitionToProgram(const QString &transitionName,
-				 int transitionDuration = 300);
+	void TransitionToProgram(const QString &transitionName, int transitionDuration = 300);
 	void SetCurrentTransition(const QString &name);
 	void SetTransitionDuration(int duration); // can also be used with cc
 
 	void SetSourceVisibility();    // doesn't exist??
-	void ToggleSourceVisibility(); //doesn't exist?
+	void ToggleSourceVisibility(); // doesn't exist?
 
 	void ToggleMute(const QString &sourceName);
 	void SetMute(const QString &sourceName, bool mute);
@@ -184,6 +183,5 @@ public:
 	void SetGainFilter();
 	void SetOpacity();
 
-	void do_obs_action(MidiHook *hook, int MidiVal,
-			   ActionsClass::Actions action);
+	void do_obs_action(MidiHook *hook, int MidiVal, ActionsClass::Actions action);
 };
