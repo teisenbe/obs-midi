@@ -256,6 +256,12 @@
       <layout class="QGridLayout" name="gridLayout_30">
        <item row="1" column="0" rowspan="3" colspan="3">
         <widget class="QListWidget" name="list_mapping">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="autoFillBackground">
           <bool>true</bool>
          </property>
@@ -1531,6 +1537,25 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QGroupBox" name="box_action">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="title">
+          <string>Actions</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignHCenter|Qt::AlignTop</set>
+         </property>
         </widget>
        </item>
       </layout>

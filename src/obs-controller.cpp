@@ -89,7 +89,13 @@ Actions *Actions::make_action(QString action, MidiHook *h)
 	act->set_hook(h);
 	return act;
 }
-QString Actions::get_action_string() {
+Actions *Actions::make_action(QString action)
+{
+	Actions *act = _action_map[action];
+	return act;
+}
+QString Actions::get_action_string()
+{
 	return QString(Utils::translate_action_string(hook->action))
 		.append(" using ")
 		.append(this->hook->message_type)
@@ -217,6 +223,37 @@ void TransitionToProgram::execute()
 
 	obs_source_release(transition);
 }
+
+QGridLayout *TransitionToProgram::set_widgets()
+{
+
+
+	auto scenelist = Utils::get_scene_names();
+	scenelist.prepend("Preview Scene");
+	scene = Utils::make_combo(scenelist);
+	auto transition_list = Utils::GetTransitionsList();
+	transition_list.prepend("Current Transition");
+	transition = Utils::make_combo(transition_list);
+	enable_duration = new QCheckBox("Enable");
+	duration = new QSpinBox();
+	duration->setValue(300);
+	duration->setMaximum(100000);
+	duration->setMinimum(0);
+	duration->setSuffix(" ms");
+	duration->setEnabled(false);
+
+	auto lay = new QGridLayout();
+	lay->addWidget(new QLabel("Scene *"), 0, 0);
+	lay->addWidget(scene, 0, 1);
+	lay->addWidget(new QLabel("Transition *"), 1, 0);
+	lay->addWidget(transition, 1, 1);
+	lay->addWidget(new QLabel("Duration *"), 2, 0);
+	lay->addWidget(enable_duration, 2, 1);
+	lay->addWidget(duration, 2, 2);
+	lay->setAlignment(Qt::AlignTop);
+
+	return lay;
+}
 /**
  * Set the active transition.
  */
@@ -250,7 +287,7 @@ void ToggleSourceVisibility::execute()
 		obs_sceneitem_set_visible(scene, true);
 	}
 }
-/**
+	/**
  * Inverts the mute status of a specified source.
  */
 void ToggleMute::execute()
@@ -701,4 +738,49 @@ void make_opacity_filter::execute()
 	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
 	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
 	(obs_sceneitem_visible(item)) ? fade_out_scene_item(hook) : fade_in_scene_item(hook);
+}
+
+QGridLayout *MediaActions::set_widgets()
+{
+	cb_media_source = Utils::make_combo(Utils::GetMediaSourceNames());
+	auto lay = new QGridLayout();
+	lay->addWidget(Utils::make_label("Media Source"),0,0,1,1);
+	lay->addWidget(cb_media_source,0,1,1,2);
+	lay->setAlignment(Qt::AlignTop);
+	return lay;
+}
+
+QGridLayout *SourceActions::set_widgets()
+{
+	cb_scene = Utils::make_combo(Utils::get_scene_names());
+	cb_source = Utils::make_combo(Utils::get_source_names(cb_scene->currentText()));
+	connect(cb_scene, &QComboBox::currentTextChanged, this, &SourceActions::onSceneTextChanged);
+	auto lay = new QGridLayout();
+	lay->addWidget(new QLabel("Scene"), 0, 0);
+	lay->addWidget(cb_scene, 0, 1);
+	lay->addWidget(new QLabel("Source"), 1, 0);
+	lay->addWidget(cb_source, 1, 1);
+	lay->setAlignment(Qt::AlignTop);
+	return lay;
+	
+}
+void SourceActions::onSceneTextChanged(QString _scene)
+{
+	cb_source->clear();
+	cb_source->addItems(Utils::get_source_names(_scene));
+}
+
+QGridLayout *ItemActions::set_widgets()
+{
+	return nullptr;
+}
+
+QGridLayout *AudioActions::set_widgets()
+{
+	cb_source = Utils::make_combo(Utils::GetAudioSourceNames());
+	auto lay = new QGridLayout();
+	lay->addWidget(Utils::make_label("Audio Source"), 0, 0, 1, 1);
+	lay->addWidget(cb_source, 0, 1, 1, 2);
+	lay->setAlignment(Qt::AlignTop);
+	return lay;
 }

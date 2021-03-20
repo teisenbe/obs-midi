@@ -12,7 +12,8 @@
 #include "utils.h"
 
 #include <QMessageBox>
-
+#include <QLabel>
+#include <QComboBox>
 #include "obs-module.h"
 #include "util/config-file.h"
 //***********************************UTILS*****************************************//
@@ -1032,4 +1033,23 @@ QStringList Utils::get_filter_names(const QString &Source)
 }
 QString Utils::translate_action_string(QString string) {
 	return Utils::translate_action(ActionsClass::string_to_action(string));
+}
+QComboBox* Utils::make_combo( QStringList items) {
+	QHBoxLayout *layout = new QHBoxLayout();
+	
+	auto w_cb = new QComboBox();
+	w_cb->setMaximumWidth(500);
+	QSizePolicy pol(QSizePolicy::Preferred,QSizePolicy::Fixed);
+
+	w_cb->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+	w_cb->setSizePolicy(pol);
+	w_cb->addItems(items);
+	return w_cb;
+}
+QLabel *Utils::make_label(QString label)
+{
+	QSizePolicy pol(QSizePolicy::Preferred, QSizePolicy::Fixed);
+	auto w_label = new QLabel(label);
+	w_label->setSizePolicy(pol);
+	return w_label;
 }

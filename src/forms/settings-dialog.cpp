@@ -38,6 +38,7 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	// configure_table();
 	hide_all_pairs();
 	connect_ui_signals();
+	ui->box_action->setAlignment((int)Alignment::Top_Center);
 	starting = false;
 }
 
@@ -422,15 +423,31 @@ void PluginWindow::reset_to_defaults() const
 	load_table();
 	// this->ui->table_mapping->resizeColumnsToContents();
 }
+void PluginWindow::clear_actions_box(QLayout *layout) const
+{
+	if (layout) {
+		QLayoutItem *item;
+		while ((item = layout->takeAt(0))) {
+			if (item->layout()) {
+				clear_actions_box(item->layout());
+				delete item->layout();
+			}
+			if (item->widget()) {
+				delete item->widget();
+			}
+		}
+		delete layout;
+	}
+}
 void PluginWindow::obs_actions_select(const QString &action) const
 {
+	clear_actions_box(ui->box_action->layout());
+	Actions *AC = Actions::make_action(Utils::untranslate(action));
+	ui->box_action->setLayout(AC->set_widgets());
 	ui->btn_reset->setEnabled(true);
 	if (!switching) {
 		hide_all_pairs();
 		switch (ActionsClass::string_to_action(Utils::untranslate(action))) {
-		case ActionsClass::Actions::Set_Current_Scene:
-			show_pair(Pairs::Scene);
-			break;
 		case ActionsClass::Actions::Set_Preview_Scene:
 			show_pair(Pairs::Scene);
 			break;
@@ -482,15 +499,6 @@ void PluginWindow::obs_actions_select(const QString &action) const
 		case ActionsClass::Actions::Set_Current_Transition:
 			show_pair(Pairs::Transition);
 			break;
-		case ActionsClass::Actions::Set_Volume:
-			show_pair(Pairs::Audio);
-			break;
-		case ActionsClass::Actions::Set_Mute:
-			show_pair(Pairs::Audio);
-			break;
-		case ActionsClass::Actions::Toggle_Mute:
-			show_pair(Pairs::Audio);
-			break;
 		case ActionsClass::Actions::Set_Source_Filter_Visibility:
 			show_pair(Pairs::Scene);
 			show_pair(Pairs::Source);
@@ -499,27 +507,7 @@ void PluginWindow::obs_actions_select(const QString &action) const
 		case ActionsClass::Actions::Take_Source_Screenshot:
 			show_pair(Pairs::Scene);
 			break;
-		case ActionsClass::Actions::Play_Pause_Media:
-			show_pair(Pairs::Media);
-			break;
-		case ActionsClass::Actions::Restart_Media:
-			show_pair(Pairs::Media);
-			break;
-		case ActionsClass::Actions::Stop_Media:
-			show_pair(Pairs::Media);
-			break;
-		case ActionsClass::Actions::Next_Media:
-			show_pair(Pairs::Media);
-			break;
-		case ActionsClass::Actions::Previous_Media:
-			show_pair(Pairs::Media);
-			break;
-		case ActionsClass::Actions::Set_Media_Time:
-			show_pair(Pairs::Media);
-			break;
-		case ActionsClass::Actions::Scrub_Media:
-			show_pair(Pairs::Media);
-			break;
+
 		case ActionsClass::Actions::Toggle_Source_Visibility:
 			show_pair(Pairs::Scene);
 			show_pair(Pairs::Source);
@@ -528,24 +516,6 @@ void PluginWindow::obs_actions_select(const QString &action) const
 			show_pair(Pairs::Source);
 			ui->cb_obs_output_source->clear();
 			ui->cb_obs_output_source->addItems(Utils::get_browser_sources());
-			break;
-		case ActionsClass::Actions::Do_Transition:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Integer);
-			show_pair(Pairs::Transition);
-			ui->cb_obs_output_scene->insertItem(0, "Preview Scene");
-			ui->cb_obs_output_scene->setCurrentIndex(0);
-			ui->cb_obs_output_transition->insertItem(0, "Current Transition");
-			ui->cb_obs_output_transition->setCurrentIndex(0);
-			ui->label_Int_override->setText("Duration * ");
-			ui->label_obs_output_scene->setText("Scene*");
-			ui->label_obs_output_transition->setText("Transition*");
-			ui->sb_int_override->setValue(300);
-			ui->sb_int_override->setMaximum(100000);
-			ui->sb_int_override->setMinimum(0);
-			ui->sb_int_override->setSuffix(" ms");
-			ui->sb_int_override->setEnabled(false);
-
 			break;
 		case ActionsClass::Actions::Set_Source_Rotation:
 			show_pair(Pairs::Scene);
@@ -777,7 +747,8 @@ void PluginWindow::clear_table() const
 	// ui->table_mapping->setRowCount(0);
 	ui->list_mapping->clear();
 }
-void PluginWindow::insert_mapping_table_help_text() const{
+void PluginWindow::insert_mapping_table_help_text() const
+{
 	ui->list_mapping->clear();
 
 	ui->list_mapping->addItem("No Current Actions, To Add an action:");

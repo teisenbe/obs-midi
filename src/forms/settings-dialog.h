@@ -38,6 +38,7 @@ private slots:
 	void set_min_max_range_defaults(int min, int max) const;
 	void set_range_text(QString left, QString right) const;
 	void reset_to_defaults() const;
+	void clear_actions_box(QLayout *layout)const;
 	void on_scene_change(const QString &new_scene) const;
 	void on_source_change(const QString &new_source) const;
 	void add_new_mapping();

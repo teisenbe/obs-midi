@@ -18,7 +18,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QLayout>
 #include <QtWidgets/QListWidget>
-
+#include <QComboBox>
+#include <QLabel>
 #include <iostream>
 #include <obs.hpp>
 #include "obs-midi.h"
@@ -171,6 +172,8 @@ QStringList get_scene_names();
 QStringList get_source_names(const QString &scene);
 QStringList get_filter_names(const QString &Source);
 QString translate_action_string(QString string);
+QComboBox *make_combo(QStringList items);
+QLabel *make_label(QString label);
 QStringList get_transition_names();
 QString untranslate(const QString &tstring);
 QStringList get_browser_sources();

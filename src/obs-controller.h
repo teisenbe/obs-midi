@@ -20,6 +20,13 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <qpropertyanimation.h>
 #include <QTime>
 #include <QObject>
+#include <QWidget>
+#include <QGroupBox>
+#include <QLabel>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QLayout>
+#include <QCheckBox>
 
 class Actions : public QObject {
 	Q_OBJECT
@@ -29,9 +36,17 @@ public:
 	void set_hook(MidiHook *_hook) { hook = _hook; }
 	virtual void execute(){};
 	static Actions *make_action(QString action, MidiHook *h);
+	static Actions *make_action(QString action);
 	virtual QString get_action_string();
 	virtual void set_data(obs_data_t *data){};
 	virtual void set_data(QString datastring){};
+	virtual QGridLayout *set_widgets()
+	{
+		QLabel *label = new QLabel("Nothing to configure");
+		auto lay = new QGridLayout();
+		lay->addWidget(label, 0, 0);
+		return lay;
+	};
 
 protected:
 	MidiHook *hook;
@@ -39,6 +54,28 @@ protected:
 private:
 	static void make_map();
 	inline static QMap<QString, Actions *> _action_map;
+};
+class AudioActions : public Actions {
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_source;
+};
+class MediaActions : public Actions {
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_media_source;
+};
+class SourceActions : public Actions {
+	Q_OBJECT
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_scene;
+	QComboBox *cb_source;
+public slots:
+	void onSceneTextChanged(QString);
+};
+class ItemActions : public Actions {
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_scene;
+	QComboBox *cb_source;
+	QComboBox *cb_item;
 };
 class SetCurrentScene : public Actions {
 
@@ -85,6 +122,11 @@ class TransitionToProgram : public Actions {
 public:
 	TransitionToProgram(){};
 	void execute() override;
+	QGridLayout *set_widgets() override;
+	QComboBox *scene;
+	QComboBox *transition;
+	QSpinBox *duration;
+	QCheckBox *enable_duration;
 };
 class SetCurrentTransition : public Actions {
 public:
@@ -96,27 +138,31 @@ public:
 	SetTransitionDuration(){};
 	void execute() override;
 }; // can also be used with cc
-class SetSourceVisibility : public Actions {
+class SetSourceVisibility : public SourceActions {
 public:
 	SetSourceVisibility(){};
 	void execute() override;
 }; // doesn't exist??
-class ToggleSourceVisibility : public Actions {
+class ToggleSourceVisibility : public SourceActions {
+	Q_OBJECT
 public:
 	ToggleSourceVisibility(){};
 	void execute() override;
+	QComboBox *scene;
+	QComboBox *source;
 }; // doesn't exist?
-class ToggleMute : public Actions {
+class ToggleMute : public AudioActions {
 public:
 	ToggleMute(){};
 	void execute() override;
+	QComboBox *combo;
+	QLabel *label;
 };
 class SetMute : public Actions {
 public:
 	SetMute(){};
 	void execute() override;
 	QString get_action_string() override;
-	
 };
 class StartStopStreaming : public Actions {
 public:
@@ -231,7 +277,7 @@ public:
 };
 
 // CC ACTIONS
-class SetVolume : public Actions {
+class SetVolume : public AudioActions {
 public:
 	SetVolume(){};
 	void execute() override;
@@ -241,7 +287,6 @@ class SetSyncOffset : public Actions {
 public:
 	SetSyncOffset(){};
 	void execute() override;
-	
 };
 class SetSourcePosition : public Actions {
 public:
@@ -273,7 +318,7 @@ public:
 	move_t_bar(){};
 	void execute() override;
 };
-class play_pause_media_source : public Actions {
+class play_pause_media_source : public MediaActions {
 public:
 	play_pause_media_source(){};
 	void execute() override;
@@ -288,27 +333,27 @@ public:
 	reset_stats(){};
 	void execute() override;
 };
-class restart_media : public Actions {
+class restart_media : public MediaActions {
 public:
 	restart_media(){};
 	void execute() override;
 };
-class stop_media : public Actions {
+class stop_media : public MediaActions {
 public:
 	stop_media(){};
 	void execute() override;
 };
-class play_media : public Actions {
+class play_media : public MediaActions {
 public:
 	play_media(){};
 	void execute() override;
 };
-class next_media : public Actions {
+class next_media : public MediaActions {
 public:
 	next_media(){};
 	void execute() override;
 };
-class prev_media : public Actions {
+class prev_media : public MediaActions {
 public:
 	prev_media(){};
 	void execute() override;
