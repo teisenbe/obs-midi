@@ -41,7 +41,7 @@ void DeviceManager::Unload()
 	blog(LOG_INFO, "UNLOADING DEVICE MANAGER");
 	for (auto &midiAgent : midiAgents) {
 		blog(LOG_DEBUG, "Unloading Midi Device %s", midiAgent->get_midi_input_name().qtocs());
-		midiAgent->clear_MidiHooks();
+		midiAgent->clear_MidiMappings();
 		delete midiAgent;
 	}
 	midiAgents.clear();
@@ -119,12 +119,12 @@ MidiAgent *DeviceManager::get_midi_device(const QString &deviceName)
 	}
 	return returndevice;
 }
-QVector<MidiHook *> DeviceManager::get_midi_hooks(const QString &deviceName)
+QVector<MidiMapping *> DeviceManager::get_midi_hooks(const QString &deviceName)
 {
 	if (deviceName != QString("No Devices Available")) {
 		auto device = get_midi_device(deviceName);
 		if (device != nullptr) {
-			return device->GetMidiHooks();
+			return device->GetMidiMappings();
 		} else {
 			return {};
 		}

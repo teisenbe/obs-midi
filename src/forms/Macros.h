@@ -4,7 +4,7 @@
 #include "ui_settings-dialog.h"
 #include "../utils.h"
 #include "src/Midi_hook.h"
-typedef void (*Macro_Action)(MidiHook *, int);
+typedef void (*Macro_Action)(MidiMapping *, int);
 enum class repeat { none, one, many, infinite };
 class Macro : public QObject {
 	Q_OBJECT

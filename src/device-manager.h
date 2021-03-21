@@ -55,14 +55,13 @@ public:
 
 	QVector<MidiAgent *> get_active_midi_devices() const;
 	MidiAgent *get_midi_device(const QString &deviceName);
-	QVector<MidiHook *> get_midi_hooks(const QString &deviceName);
+	QVector<MidiMapping *> get_midi_hooks(const QString &deviceName);
 	MidiAgent *register_midi_device(const int &port, std::optional<int> outport = std::nullopt);
 
 	QString GetData();
 	void reload();
 signals:
 	void reload_config();
-	void obsEvent(const RpcEvent &event);
 
 private:
 	QVector<MidiAgent *> midiAgents;

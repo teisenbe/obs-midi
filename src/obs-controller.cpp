@@ -23,7 +23,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #endif
 #include <util/platform.h>
 
-Actions::Actions(MidiHook *_hook) : hook{_hook}
+Actions::Actions(MidiMapping *_hook) : hook{_hook}
 {
 	if (_action_map.isEmpty())
 		make_map();
@@ -83,7 +83,7 @@ void Actions::make_map()
 	_action_map.insert(QString("Trigger Hotkey"), new TriggerHotkey());
 }
 
-Actions *Actions::make_action(QString action, MidiHook *h)
+Actions *Actions::make_action(QString action, MidiMapping *h)
 {
 	Actions *act = _action_map[action];
 	act->set_hook(h);
@@ -96,11 +96,7 @@ Actions *Actions::make_action(QString action)
 }
 QString Actions::get_action_string()
 {
-	return QString(Utils::translate_action_string(hook->action))
-		.append(" using ")
-		.append(this->hook->message_type)
-		.append(" ")
-		.append(QString::number(this->hook->norc));
+	return QString(Utils::translate_action_string(_action));
 }
 ////////////////////
 // BUTTON ACTIONS //
@@ -110,7 +106,7 @@ QString Actions::get_action_string()
  */
 void SetCurrentScene::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_scene.toUtf8());
 	obs_frontend_set_current_scene(source);
 }
 /**
@@ -121,7 +117,7 @@ void SetPreviewScene::execute()
 	if (!obs_frontend_preview_program_mode_active()) {
 		blog(LOG_INFO, "Can Not Set Preview scene -- studio mode not enabled");
 	}
-	const OBSScene scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	const OBSScene scene = Utils::GetSceneFromNameOrCurrent(_scene);
 	if (!scene) {
 		blog(LOG_DEBUG, "specified scene doesn't exist");
 	}
@@ -130,11 +126,7 @@ void SetPreviewScene::execute()
 }
 QString SetPreviewScene::get_action_string()
 {
-	return QString(Utils::translate_action_string(hook->action))
-		.append(" using ")
-		.append(this->hook->message_type)
-		.append(" ")
-		.append(QString::number(this->hook->norc));
+	return QString(Utils::translate_action_string(_action));
 }
 void DisablePreview::execute()
 {
@@ -164,18 +156,18 @@ void EnablePreview::execute()
 void SetCurrentSceneCollection::execute()
 {
 	// TODO : Check if specified profile exists and if changing is allowed
-	obs_frontend_set_current_scene_collection(hook->scene_collection.toUtf8());
+	obs_frontend_set_current_scene_collection(_scene_collection.toUtf8());
 }
 /**
  * Reset a scene item.
  */
 void ResetSceneItem::execute()
 {
-	const OBSScene scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
+	const OBSScene scene = Utils::GetSceneFromNameOrCurrent(_scene);
 	if (!scene) {
 		throw("requested scene doesn't exist");
 	}
-	const OBSSceneItemAutoRelease sceneItem = Utils::GetSceneItemFromName(scene, hook->source);
+	const OBSSceneItemAutoRelease sceneItem = Utils::GetSceneItemFromName(scene, _source);
 	if (!sceneItem) {
 		throw("specified scene item doesn't exist");
 	}
@@ -201,20 +193,20 @@ void TransitionToProgram::execute()
 	/**
 	 * If Transition from hook is not Current Transition, and if it is not an empty Value, then set current transition
 	 */
-	if ((hook->transition != "Current Transition") && !hook->transition.isEmpty() && !hook->transition.isNull()) {
-		Utils::SetTransitionByName(hook->transition);
+	if ((_transition != "Current Transition") && !_transition.isEmpty() && !_transition.isNull()) {
+		Utils::SetTransitionByName(_transition);
 		state()._TransitionWasCalled = true;
 	}
-	if ((hook->scene != "Preview Scene") && !hook->scene.isEmpty() && !hook->scene.isNull()) {
+	if ((_scene != "Preview Scene") && !_scene.isEmpty() && !_scene.isNull()) {
 		state()._TransitionWasCalled = true;
 	}
-	if (hook->scene == "Preview Scene") {
+	if (_scene == "Preview Scene") {
 		obs_source_t *source = obs_frontend_get_current_scene();
-		hook->scene = QString(obs_source_get_name(source));
+		_scene = QString(obs_source_get_name(source));
 		state()._TransitionWasCalled = true;
 	}
-	if (hook->int_override && *hook->int_override > 0) {
-		obs_frontend_set_transition_duration(*hook->int_override);
+	if (_duration && *_duration> 0) {
+		obs_frontend_set_transition_duration(*_duration);
 		state()._TransitionWasCalled = true;
 	}
 	(obs_frontend_preview_program_mode_active()) ? obs_frontend_preview_program_trigger_transition() : SetCurrentScene().execute();
@@ -230,10 +222,10 @@ QGridLayout *TransitionToProgram::set_widgets()
 
 	auto scenelist = Utils::get_scene_names();
 	scenelist.prepend("Preview Scene");
-	scene = Utils::make_combo(scenelist);
+	cb_scene = Utils::make_combo(scenelist);
 	auto transition_list = Utils::GetTransitionsList();
 	transition_list.prepend("Current Transition");
-	transition = Utils::make_combo(transition_list);
+	cb_transition = Utils::make_combo(transition_list);
 	enable_duration = new QCheckBox("Enable");
 	duration = new QSpinBox();
 	duration->setValue(300);
@@ -244,9 +236,9 @@ QGridLayout *TransitionToProgram::set_widgets()
 
 	auto lay = new QGridLayout();
 	lay->addWidget(new QLabel("Scene *"), 0, 0);
-	lay->addWidget(scene, 0, 1);
+	lay->addWidget(cb_scene, 0, 1);
 	lay->addWidget(new QLabel("Transition *"), 1, 0);
-	lay->addWidget(transition, 1, 1);
+	lay->addWidget(cb_transition, 1, 1);
 	lay->addWidget(new QLabel("Duration *"), 2, 0);
 	lay->addWidget(enable_duration, 2, 1);
 	lay->addWidget(duration, 2, 2);
@@ -259,18 +251,18 @@ QGridLayout *TransitionToProgram::set_widgets()
  */
 void SetCurrentTransition::execute()
 {
-	Utils::SetTransitionByName(hook->transition);
+	Utils::SetTransitionByName(_transition);
 }
 /**
  * Set the duration of the currently active transition
  */
 void SetTransitionDuration::execute()
 {
-	obs_frontend_set_transition_duration(*hook->duration);
+	obs_frontend_set_transition_duration(*_duration);
 }
 void SetSourceVisibility::execute()
 {
-	obs_sceneitem_set_visible(Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source), *hook->value);
+	obs_sceneitem_set_visible(Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(_scene), _source), *_value);
 }
 /**
  *
@@ -280,7 +272,7 @@ void SetSourceVisibility::execute()
  */
 void ToggleSourceVisibility::execute()
 {
-	const auto scene = Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(hook->scene), hook->source);
+	const auto scene = Utils::GetSceneItemFromName(Utils::GetSceneFromNameOrCurrent(_scene), _source);
 	if (obs_sceneitem_visible(scene)) {
 		obs_sceneitem_set_visible(scene, false);
 	} else {
@@ -292,10 +284,10 @@ void ToggleSourceVisibility::execute()
  */
 void ToggleMute::execute()
 {
-	if (hook->audio_source.isEmpty()) {
+	if (_source.isEmpty()) {
 		throw("sourceName is empty");
 	}
-	obs_source *source = obs_get_source_by_name(hook->audio_source.qtocs());
+	obs_source *source = obs_get_source_by_name(_source.qtocs());
 	if (!source) {
 		throw("sourceName not found");
 	}
@@ -306,23 +298,16 @@ void ToggleMute::execute()
  */
 void SetMute::execute()
 {
-	if (hook->source.isEmpty()) {
+	if (_source.isEmpty()) {
 		throw("sourceName is empty");
 	}
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	if (!source) {
 		throw("specified source doesn't exist");
 	}
-	obs_source_set_muted(source, *hook->value);
+	obs_source_set_muted(source, *_value);
 }
-QString SetMute::get_action_string()
-{
-	return QString(Utils::translate_action_string(hook->action))
-		.append(" with ")
-		.append(this->hook->message_type)
-		.append(" ")
-		.append(QString::number(this->hook->norc));
-}
+
 /**
  * Toggle streaming on or off.
  */
@@ -461,27 +446,27 @@ void SaveReplayBuffer::execute()
 }
 void SetCurrentProfile::execute()
 {
-	if (hook->profile.isEmpty()) {
+	if (_profile.isEmpty()) {
 		throw("profile name is empty");
 	}
 	// TODO : check if profile exists
-	obs_frontend_set_current_profile(hook->profile.toUtf8());
+	obs_frontend_set_current_profile(_profile.toUtf8());
 }
 void SetTextGDIPlusText::execute() {}
 void SetBrowserSourceURL::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	const QString sourceId = obs_source_get_id(source);
 	if (sourceId != "browser_source" && sourceId != "linuxbrowser-source") {
 		return blog(LOG_DEBUG, "Not a browser Source");
 	}
 	const OBSDataAutoRelease settings = obs_source_get_settings(source);
-	obs_data_set_string(settings, "url", hook->string_override.toUtf8());
+	obs_data_set_string(settings, "url", _url.toUtf8());
 	obs_source_update(source, settings);
 }
 void ReloadBrowserSource::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	obs_properties_t *sourceProperties = obs_source_properties(source);
 	obs_property_t *property = obs_properties_get(sourceProperties, "refreshnocache");
 	obs_property_button_clicked(property, source); // This returns a boolean but we ignore it because the browser plugin always returns `false`.
@@ -493,25 +478,25 @@ void TakeScreenshot::execute()
 }
 void TakeSourceScreenshot::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->scene.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_scene.toUtf8());
 	obs_frontend_take_source_screenshot(source);
 }
 void EnableSourceFilter::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
+	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, _filter.toUtf8());
 	obs_source_set_enabled(filter, true);
 }
 void DisableSourceFilter::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
+	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, _filter.toUtf8());
 	obs_source_set_enabled(filter, false);
 }
 void ToggleSourceFilter::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, hook->filter.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
+	const OBSSourceAutoRelease filter = obs_source_get_filter_by_name(source, _filter.toUtf8());
 	if (obs_source_enabled(filter)) {
 		obs_source_set_enabled(filter, false);
 	} else {
@@ -520,9 +505,9 @@ void ToggleSourceFilter::execute()
 }
 void TriggerHotkey::execute()
 {
-	obs_hotkey_t *obsHotkey = Utils::get_obs_hotkey_by_name(hook->hotkey);
+	obs_hotkey_t *obsHotkey = Utils::get_obs_hotkey_by_name(_hotkey);
 	if (!obsHotkey) {
-		blog(LOG_ERROR, "ERROR: Triggered hotkey <%s> was not found", hook->hotkey.qtocs());
+		blog(LOG_ERROR, "ERROR: Triggered hotkey <%s> was not found", _hotkey.qtocs());
 		return;
 	}
 	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(obsHotkey), true);
@@ -530,13 +515,7 @@ void TriggerHotkey::execute()
 
 QString TriggerHotkey::get_action_string()
 {
-	return QString("Trigger Hotkey")
-		.append(" ")
-		.append(obs_hotkey_get_description(Utils::get_obs_hotkey_by_name(hook->hotkey)))
-		.append(" using ")
-		.append(hook->message_type)
-		.append(" ")
-		.append(QString::number(this->hook->norc));
+	return QString("Trigger Hotkey").append(" ").append(obs_hotkey_get_description(Utils::get_obs_hotkey_by_name(_hotkey)));
 }
 
 ////////////////
@@ -544,41 +523,38 @@ QString TriggerHotkey::get_action_string()
 ////////////////
 void SetVolume::execute()
 {
-	const OBSSourceAutoRelease obsSource = obs_get_source_by_name(hook->audio_source.toUtf8());
-	obs_source_set_volume(obsSource, pow(Utils::mapper(*hook->value), 3.0));
+	const OBSSourceAutoRelease obsSource = obs_get_source_by_name(_source.toUtf8());
+	obs_source_set_volume(obsSource, pow(Utils::mapper(*_value), 3.0));
 }
-QString SetVolume::get_action_string()
-{
-	return QString(Utils::translate_action_string(hook->action)).append(" of ").append(hook->audio_source);
-}
+
 /**
  * Set the audio sync offset of a specified source.
  */
 void SetSyncOffset::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->source.toUtf8());
-	obs_source_set_sync_offset(source, *hook->value);
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
+	obs_source_set_sync_offset(source, *_value);
 }
 void SetSourcePosition::execute() {}
 void SetSourceRotation::execute()
 {
-	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
-	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(_scene);
+	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, _source);
 	uint32_t current = obs_sceneitem_get_alignment(item);
 	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
-	const float rotation = Utils::map_to_range((hook->range_min) ? *hook->range_min : 0, (hook->range_max) ? *hook->range_max : 360, *hook->value);
+	const float rotation = Utils::map_to_range((_range_min) ? *_range_min : 0, (_range_max) ? *_range_max : 360, *_value);
 	obs_sceneitem_set_rot(item, rotation);
 }
 void SetSourceScale::execute()
 {
-	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
-	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(_scene);
+	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, _source);
 	uint32_t current = obs_sceneitem_get_alignment(item);
 	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
 	obs_sceneitem_set_bounds_type(item, obs_bounds_type::OBS_BOUNDS_NONE);
 	vec2 *scale = new vec2();
-	vec2_set(scale, Utils::map_to_range(0, (hook->range_min) ? *hook->range_min : 1, *hook->value),
-		 Utils::map_to_range(0, (hook->range_max) ? *hook->range_max : 1, *hook->value));
+	vec2_set(scale, Utils::map_to_range(0, (_range_min) ? *_range_min : 1, *_value),
+		 Utils::map_to_range(0, (_range_max) ? *_range_max : 1, *_value));
 	obs_sceneitem_set_scale(item, scale);
 	delete (scale);
 }
@@ -587,13 +563,13 @@ void SetOpacity::execute() {}
 void move_t_bar::execute()
 {
 	if (obs_frontend_preview_program_mode_active()) {
-		obs_frontend_set_tbar_position(Utils::t_bar_mapper(*hook->value));
+		obs_frontend_set_tbar_position(Utils::t_bar_mapper(*_value));
 		obs_frontend_release_tbar();
 	}
 }
 void play_pause_media_source::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	switch (obs_source_media_get_state(source)) {
 	case obs_media_state::OBS_MEDIA_STATE_PAUSED:
 		obs_source_media_play_pause(source, false);
@@ -631,27 +607,27 @@ void toggle_studio_mode::execute()
 void reset_stats::execute() {}
 void restart_media::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	obs_source_media_restart(source);
 }
 void play_media::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	obs_source_media_play_pause(source, false);
 }
 void stop_media::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	obs_source_media_stop(source);
 }
 void next_media::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	obs_source_media_next(source);
 }
 void prev_media::execute()
 {
-	const OBSSourceAutoRelease source = obs_get_source_by_name(hook->media_source.toUtf8());
+	const OBSSourceAutoRelease source = obs_get_source_by_name(_source.toUtf8());
 	obs_source_media_previous(source);
 }
 
@@ -660,7 +636,7 @@ float time_to_sleep(float duration)
 	return duration / 2000;
 }
 
-void fade_in_scene_item(MidiHook *hook)
+void make_opacity_filter::fade_in_scene_items()
 {
 	try {
 		std::thread th{[=]() {
@@ -668,11 +644,11 @@ void fade_in_scene_item(MidiHook *hook)
 			obs_data_set_double(data, "opacity", 0);
 			OBSSourceAutoRelease filter = obs_source_create_private("color_filter", "ColorFilter", data);
 
-			obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
-			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+			obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(_scene);
+			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, _source);
 			obs_source_t *source = obs_sceneitem_get_source(item);
 			float i = 0;
-			float tts = time_to_sleep((hook->int_override) ? (float)*hook->int_override : 500.0f);
+			float tts = time_to_sleep((_int_override) ? (float)*_int_override : 500.0f);
 			obs_source_filter_add(source, filter);
 			obs_sceneitem_set_visible(item, true);
 
@@ -695,7 +671,7 @@ void fade_in_scene_item(MidiHook *hook)
 	}
 }
 
-void fade_out_scene_item(MidiHook *hook)
+void make_opacity_filter::fade_out_scene_items()
 {
 	try {
 
@@ -704,11 +680,11 @@ void fade_out_scene_item(MidiHook *hook)
 			obs_data_set_double(data, "opacity", 100);
 			OBSSourceAutoRelease filter = obs_source_create_private("color_filter", "ColorFilter", data);
 
-			obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
-			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
+			obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(_scene);
+			obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, _source);
 			obs_source_t *source = obs_sceneitem_get_source(item);
 			float i = 100;
-			float tts = time_to_sleep((hook->int_override) ? (float)*hook->int_override : 500.0f);
+			float tts = time_to_sleep((_int_override) ? (float)*_int_override : 500.0f);
 			obs_source_filter_add(source, filter);
 			while (i >= 0) {
 				obs_data_set_double(data, "opacity", i);
@@ -729,17 +705,17 @@ void fade_out_scene_item(MidiHook *hook)
 }
 void make_opacity_filter::execute()
 {
-	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(hook->scene);
-	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, hook->source);
-	(obs_sceneitem_visible(item)) ? fade_out_scene_item(hook) : fade_in_scene_item(hook);
+	obs_scene_t *scene = Utils::GetSceneFromNameOrCurrent(_scene);
+	obs_sceneitem_t *item = Utils::GetSceneItemFromName(scene, _source);
+	(obs_sceneitem_visible(item)) ? fade_out_scene_items() : fade_in_scene_items();
 }
 
 QGridLayout *MediaActions::set_widgets()
 {
-	cb_media_source = Utils::make_combo(Utils::GetMediaSourceNames());
+	cb_source = Utils::make_combo(Utils::GetMediaSourceNames());
 	auto lay = new QGridLayout();
 	lay->addWidget(Utils::make_label("Media Source"),0,0,1,1);
-	lay->addWidget(cb_media_source,0,1,1,2);
+	lay->addWidget(cb_source,0,1,1,2);
 	lay->setAlignment(Qt::AlignTop);
 	return lay;
 }

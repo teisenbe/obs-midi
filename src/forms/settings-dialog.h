@@ -40,7 +40,7 @@ private slots:
 	void set_all_cell_colors(int row) const;
 	void tab_changed(int tab) const;
 	void clear_table() const;
-	void remove_hook(MidiHook *hook) const;
+	void remove_hook(MidiMapping *hook) const;
 	void delete_mapping() const;
 	void edit_mapping();
 	//static void set_cell_colors(const QColor &color, QTableWidgetItem *item);
@@ -72,5 +72,5 @@ private:
 	int editrow = -1;
 	bool editmode = false;
 	bool switching = false;
-	MidiHook *edithook;
+	MidiMapping *edithook;
 };

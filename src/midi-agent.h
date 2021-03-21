@@ -65,13 +65,13 @@ public:
 	static void HandleError(const libremidi::midi_error &error, const std::string_view &error_message, void *userData);
 	static void HandleError(const libremidi::driver_error &error_type, const std::string_view &error_message, void *userData);
 	void set_callbacks();
-	QVector<MidiHook *> GetMidiHooks() const;
-	void set_midi_hooks(QVector<MidiHook *>);
+	QVector<MidiMapping *> GetMidiMappings() const;
+	void set_midi_hooks(QVector<MidiMapping *>);
 	void exe_midi_hook_if_exists(MidiMessage *message);
-	void add_MidiHook(MidiHook *hook);
-	void remove_MidiHook(MidiHook *hook);
-	void edit_midi_hook(MidiHook *old_hook, MidiHook *new_hook);
-	void clear_MidiHooks();
+	void add_MidiMapping(MidiMapping *hook);
+	void remove_MidiMapping(MidiMapping *hook);
+	void edit_midi_hook(MidiMapping *old_hook, MidiMapping *new_hook);
+	void clear_MidiMappings();
 	QString GetData();
 	void remove_source(const RpcEvent &event);
 	void rename_source(const RpcEvent &event);
@@ -79,12 +79,10 @@ public:
 	void send_bytes(unsigned char bytes);
 	void set_current_volumes();
 	void startup();
-	QVector<MidiHook *> midiHooks;
-public slots:
-	void handle_obs_event(const RpcEvent &event);
+	QVector<MidiMapping *> midiHooks;
 signals:
 	void broadcast_midi_message(const MidiMessage &);
-	void do_obs_action(MidiHook *, int);
+	void do_obs_action(MidiMapping *, int);
 
 private:
 	bool loading = true;
@@ -98,8 +96,6 @@ private:
 	bool enabled = false;
 	bool connected = false;
 	bool bidirectional = false;
-	MidiHook *get_midi_hook_if_exists(MidiMessage *message);
-	MidiHook *get_midi_hook_if_exists(const RpcEvent &event) const;
 	bool closing = false;
 	
 };

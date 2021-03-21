@@ -420,9 +420,9 @@ void PluginWindow::insert_mapping_table_help_text() const
 	ui->list_mapping->addItem("5.) Click  'Add Mapping'");
 }
 */
-void PluginWindow::remove_hook(MidiHook *hook) const
+void PluginWindow::remove_hook(MidiMapping *hook) const
 {
-	GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->remove_MidiHook(hook);
+	GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->remove_MidiMapping(hook);
 	GetConfig()->Save();
 }
 void PluginWindow::delete_mapping() const
@@ -432,7 +432,7 @@ void PluginWindow::delete_mapping() const
 
 	auto row = ui->table_mapping->selectedItems().at(0)->row();
 	blog(LOG_DEBUG, "selected row to delete %i", row);
-	const auto hooks = GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->GetMidiHooks();
+	const auto hooks = GetDeviceManager()->get_midi_device(ui->mapping_lbl_device_name->text())->GetMidiMappings();
 	for (auto *hook : hooks) {
 		if ((hook->channel == ui->sb_channel->value()) && (hook->norc == ui->sb_norc->value()) && (hook->message_type == ui->cb_mtype->currentText())) {
 			if (hook->value_as_filter) {

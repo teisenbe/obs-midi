@@ -32,10 +32,10 @@ class Actions : public QObject {
 	Q_OBJECT
 public:
 	Actions(){};
-	Actions(MidiHook *_hook);
-	void set_hook(MidiHook *_hook) { hook = _hook; }
+	Actions(MidiMapping *_hook);
+	void set_hook(MidiMapping *_hook) { hook = _hook; }
 	virtual void execute(){};
-	static Actions *make_action(QString action, MidiHook *h);
+	static Actions *make_action(QString action, MidiMapping *h);
 	static Actions *make_action(QString action);
 	virtual QString get_action_string();
 	virtual void set_data(obs_data_t *data){};
@@ -47,52 +47,105 @@ public:
 		lay->addWidget(label, 0, 0);
 		return lay;
 	};
+	QString _action;
+	std::optional<int> _value;
+
 
 protected:
-	MidiHook *hook;
+	MidiMapping *hook;
 
 private:
 	static void make_map();
 	inline static QMap<QString, Actions *> _action_map;
 };
+
+class SceneActions :public Actions {
+public:
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_scene;
+	QString _scene;
+	QString get_action_string() override { return _action.append(" ").append(_scene); };
+};
+class TransitionActions : public SceneActions {
+public:
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_transition;
+	QString _transition;
+	std::optional<int> _duration;
+};
 class AudioActions : public Actions {
+public:
 	QGridLayout *set_widgets() override;
 	QComboBox *cb_source;
+	QString _source;
+	QString get_action_string() override { return _action.append(" ").append(_source); };
 };
 class MediaActions : public Actions {
+public:
 	QGridLayout *set_widgets() override;
-	QComboBox *cb_media_source;
+	QComboBox *cb_source;
+	QString _source;
+	QString get_action_string() override { return _action.append(" ").append(_source); };
 };
 class SourceActions : public Actions {
 	Q_OBJECT
+public:
 	QGridLayout *set_widgets() override;
 	QComboBox *cb_scene;
 	QComboBox *cb_source;
+	QString _scene;
+	QString _source;
+	QString get_action_string() override { return _action.append(" ").append(_source); };
+
+public slots:
+	virtual void onSceneTextChanged(QString);
+};
+class FilterActions : public Actions {
+	Q_OBJECT
+public:
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_scene;
+	QComboBox *cb_source;
+	QString _scene;
+	QString _source;
+	QComboBox *filter;
+	QString _filter;
 public slots:
 	void onSceneTextChanged(QString);
+	void onSourceTextChanged(QString);
 };
 class ItemActions : public Actions {
+	Q_OBJECT
+public:
 	QGridLayout *set_widgets() override;
 	QComboBox *cb_scene;
 	QComboBox *cb_source;
+	QString _scene;
+	QString _source;
 	QComboBox *cb_item;
+	QString _item;
+public slots:
+	void onSceneTextChanged(QString);
+	void onSourceTextChanged(QString);
 };
-class SetCurrentScene : public Actions {
+class RangeActions : public SourceActions {
+public:
+	QSpinBox *range_min;
+	QSpinBox *range_max;
+	std::optional<int> _range_min;
+	std::optional<int> _range_max;
+};
+class SetCurrentScene : public SceneActions {
 
 public:
 	SetCurrentScene(){};
 	void execute() override;
-
-	QString get_action_string() override { return QString("Set Current Scene to ").append(scene); }
-
-private:
-	QString scene;
 };
 /**
  * Actions
  */
 
-class SetPreviewScene : public Actions {
+class SetPreviewScene : public SceneActions {
 public:
 	SetPreviewScene(){};
 	void execute() override;
@@ -112,28 +165,27 @@ class SetCurrentSceneCollection : public Actions {
 public:
 	SetCurrentSceneCollection(){};
 	void execute() override;
+	QString _scene_collection;
 };
-class ResetSceneItem : public Actions {
+class ResetSceneItem : public ItemActions {
 public:
 	ResetSceneItem(){};
 	void execute() override;
 };
-class TransitionToProgram : public Actions {
+class TransitionToProgram : public TransitionActions {
 public:
 	TransitionToProgram(){};
 	void execute() override;
 	QGridLayout *set_widgets() override;
-	QComboBox *scene;
-	QComboBox *transition;
 	QSpinBox *duration;
 	QCheckBox *enable_duration;
 };
-class SetCurrentTransition : public Actions {
+class SetCurrentTransition : public TransitionActions {
 public:
 	SetCurrentTransition(){};
 	void execute() override;
 };
-class SetTransitionDuration : public Actions {
+class SetTransitionDuration : public TransitionActions {
 public:
 	SetTransitionDuration(){};
 	void execute() override;
@@ -158,11 +210,10 @@ public:
 	QComboBox *combo;
 	QLabel *label;
 };
-class SetMute : public Actions {
+class SetMute : public AudioActions {
 public:
 	SetMute(){};
 	void execute() override;
-	QString get_action_string() override;
 };
 class StartStopStreaming : public Actions {
 public:
@@ -228,6 +279,7 @@ class SetCurrentProfile : public Actions {
 public:
 	SetCurrentProfile(){};
 	void execute() override;
+	QString _profile;
 };
 class SetTextGDIPlusText : public Actions {
 public:
@@ -238,8 +290,10 @@ class SetBrowserSourceURL : public Actions {
 public:
 	SetBrowserSourceURL(){};
 	void execute() override;
+	QString _source;
+	QString _url;
 };
-class ReloadBrowserSource : public Actions {
+class ReloadBrowserSource : public SourceActions {
 public:
 	ReloadBrowserSource(){};
 	void execute() override;
@@ -249,22 +303,22 @@ public:
 	TakeScreenshot(){};
 	void execute() override;
 };
-class TakeSourceScreenshot : public Actions {
+class TakeSourceScreenshot : public SourceActions {
 public:
 	TakeSourceScreenshot(){};
 	void execute() override;
 };
-class EnableSourceFilter : public Actions {
+class EnableSourceFilter : public FilterActions {
 public:
 	EnableSourceFilter(){};
 	void execute() override;
 };
-class DisableSourceFilter : public Actions {
+class DisableSourceFilter : public FilterActions {
 public:
 	DisableSourceFilter(){};
 	void execute() override;
 };
-class ToggleSourceFilter : public Actions {
+class ToggleSourceFilter : public FilterActions {
 public:
 	ToggleSourceFilter(){};
 	void execute() override;
@@ -274,6 +328,7 @@ public:
 	TriggerHotkey(){};
 	void execute() override;
 	QString get_action_string() override;
+	QString _hotkey;
 };
 
 // CC ACTIONS
@@ -281,29 +336,28 @@ class SetVolume : public AudioActions {
 public:
 	SetVolume(){};
 	void execute() override;
-	QString get_action_string() override;
 };
-class SetSyncOffset : public Actions {
+class SetSyncOffset : public SourceActions {
 public:
 	SetSyncOffset(){};
 	void execute() override;
 };
-class SetSourcePosition : public Actions {
+class SetSourcePosition : public RangeActions {
 public:
 	SetSourcePosition(){};
 	void execute() override;
 };
-class SetSourceRotation : public Actions {
+class SetSourceRotation : public RangeActions {
 public:
 	SetSourceRotation(){};
 	void execute() override;
 };
-class SetSourceScale : public Actions {
+class SetSourceScale :  public RangeActions{
 public:
 	SetSourceScale(){};
 	void execute() override;
 };
-class SetGainFilter : public Actions {
+class SetGainFilter : public FilterActions {
 public:
 	SetGainFilter(){};
 	void execute() override;
@@ -358,9 +412,13 @@ public:
 	prev_media(){};
 	void execute() override;
 };
-class make_opacity_filter : public Actions {
+class make_opacity_filter : public SourceActions {
 public:
 	make_opacity_filter(){};
 	void execute() override;
+	void fade_in_scene_items();
+	void fade_out_scene_items();
+	std::optional<int> _int_override;
 };
 int time_to_sleep(int duration);
+
