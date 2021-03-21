@@ -7,11 +7,12 @@ class Actions;
 /*
  * Midi Hook Class
  */
-class MidiHook : public QObject {
+class MidiHook : public QObject{
 	Q_OBJECT
 public:
 	MidiHook();
 	MidiHook(const QString &json_string);
+
 	MidiMessage *get_message_from_hook();
 	QString GetData();
 	void set_obs_action();

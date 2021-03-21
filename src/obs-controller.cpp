@@ -549,13 +549,7 @@ void SetVolume::execute()
 }
 QString SetVolume::get_action_string()
 {
-	return QString(Utils::translate_action_string(hook->action))
-		.append(" of ")
-		.append(hook->audio_source)
-		.append(" using ")
-		.append(this->hook->message_type)
-		.append(" ")
-		.append(QString::number(this->hook->norc));
+	return QString(Utils::translate_action_string(hook->action)).append(" of ").append(hook->audio_source);
 }
 /**
  * Set the audio sync offset of a specified source.

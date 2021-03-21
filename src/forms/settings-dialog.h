@@ -12,7 +12,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 #pragma once
 #include <QtWidgets/QDialog>
-
 #include <vector>
 
 #include "ui_settings-dialog.h"
@@ -35,19 +34,12 @@ private slots:
 	void obs_actions_select(const QString &action) const;
 	void set_edit_mode();
 	void save_edit();
-	void set_min_max_range_defaults(int min, int max) const;
-	void set_range_text(QString left, QString right) const;
+
 	void reset_to_defaults() const;
 	void clear_actions_box(QLayout *layout)const;
-	void on_scene_change(const QString &new_scene) const;
-	void on_source_change(const QString &new_source) const;
-	void add_new_mapping();
-	void add_row_from_hook(const MidiHook *hook) const;
 	void set_all_cell_colors(int row) const;
 	void tab_changed(int tab) const;
 	void clear_table() const;
-	void insert_mapping_table_help_text() const;
-	void load_table() const;
 	void remove_hook(MidiHook *hook) const;
 	void delete_mapping() const;
 	void edit_mapping();
@@ -65,18 +57,15 @@ private:
 	void setup_actions() const;
 	//	void setCheck(bool check); // not implemented
 	void load_devices();
-	void show_pair(Pairs pair) const;
-	void hide_pair(Pairs pair) const;
+
 	//static QStringList translatelist(QStringList list);
-	void hide_all_pairs() const;
+	
 	void add_midi_device(const QString &Name) const;
 	//void set_headers() const;
 	void set_configure_title(const QString &title) const;
 	void disconnect_midi_message_handler() const;
 	void connect_midi_message_handler() const;
 	bool map_exists() const;
-	MidiHook *find_existing_hook() const;
-	int find_mapping_location(const MidiMessage &message) const;
 	bool verify_mapping() const;
 
 private:

@@ -58,6 +58,7 @@ MidiAgent::MidiAgent(const char *midiData)
 			open_midi_output_port();
 	}
 }
+
 /// <summary>
 ///  Sets the callbacks for
 /// * Events
@@ -99,6 +100,7 @@ bool MidiAgent::is_device_attached(const char *incoming_data)
 /// <param name="incoming_data"></param>
 void MidiAgent::Load(const char *incoming_data)
 {
+	
 	obs_data_t *data = obs_data_create_from_json(incoming_data);
 	obs_data_set_default_bool(data, "enabled", false);
 	obs_data_set_default_bool(data, "bidirectional", false);
@@ -113,7 +115,6 @@ void MidiAgent::Load(const char *incoming_data)
 	for (size_t i = 0; i < hooksCount; i++) {
 		obs_data_t *hookData = obs_data_array_item(hooksData, i);
 		auto *mh = new MidiHook(obs_data_get_json(hookData));
-
 		add_MidiHook(std::move(mh));
 		obs_data_release(hookData);
 	}

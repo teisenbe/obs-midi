@@ -84,7 +84,8 @@ qt5_wrap_ui(obs_midi_UI_HEADERS src/forms/settings-dialog.ui)
 add_library(obs-midi MODULE
 	${obs-midi_SOURCES}
 	${obs_midi_UI_HEADERS}
-	${obs-midi_HEADERS})
+	${obs-midi_HEADERS}
+	src/forms/settings-dialog.ui)
 include_directories(
 	"${LIBOBS_INCLUDE_DIR}/../UI/obs-frontend-api"
 	${obs_midi_UI_HEADERS}

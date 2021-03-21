@@ -31,12 +31,15 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "rpc/RpcEvent.h"
 #include "utils.h"
 #include "obs-controller.h"
+#include <qabstractitemmodel.h>
 
-class MidiAgent : public QObject {
+class MidiAgent : public QObject
+{
 	Q_OBJECT
 public:
 	MidiAgent(const int &in_port, std::optional<int> out_port = std::nullopt);
 	MidiAgent(const char *data);
+	
 	~MidiAgent();
 	bool is_device_attached(const char *idata);
 	void Load(const char *data);
@@ -60,7 +63,7 @@ public:
 	void set_enabled(const bool &state);
 	static void HandleInput(const libremidi::message &message, void *userData);
 	static void HandleError(const libremidi::midi_error &error, const std::string_view &error_message, void *userData);
-	void HandleError(const libremidi::driver_error &error_type, const std::string_view &error_message, void *userData);
+	static void HandleError(const libremidi::driver_error &error_type, const std::string_view &error_message, void *userData);
 	void set_callbacks();
 	QVector<MidiHook *> GetMidiHooks() const;
 	void set_midi_hooks(QVector<MidiHook *>);
@@ -74,9 +77,9 @@ public:
 	void rename_source(const RpcEvent &event);
 	void send_message_to_midi_device(const MidiMessage &message);
 	void send_bytes(unsigned char bytes);
-	void set_current_scene();
 	void set_current_volumes();
 	void startup();
+	QVector<MidiHook *> midiHooks;
 public slots:
 	void handle_obs_event(const RpcEvent &event);
 signals:
@@ -98,5 +101,5 @@ private:
 	MidiHook *get_midi_hook_if_exists(MidiMessage *message);
 	MidiHook *get_midi_hook_if_exists(const RpcEvent &event) const;
 	bool closing = false;
-	QVector<MidiHook *> midiHooks;
+	
 };

@@ -23,7 +23,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <util/platform.h>
 #include <qobject.h>
 #include "device-manager.h"
-
 class Config : QObject {
 	Q_OBJECT
 public:
