@@ -45,21 +45,13 @@ public:
 	void Load(const char *data);
 	// Open Actions
 	void open_midi_input_port();
-	void open_midi_output_port();
 	// Close Actions
-	void close_both_midi_ports();
-	void close_midi_output_port();
 	void close_midi_input_port();
 	const QString &get_midi_input_name() const;
-	const QString &get_midi_output_name() const;
 	void set_input_port(int port);
-	void set_output_port(int port);
-	void set_midi_output_name(const QString &oname);
 	int GetPort() const;
 	bool isEnabled() const;
 	bool isConnected() const;
-	bool isBidirectional() const;
-	bool set_bidirectional(const bool &state);
 	void set_enabled(const bool &state);
 	static void HandleInput(const libremidi::message &message, void *userData);
 	static void HandleError(const libremidi::midi_error &error, const std::string_view &error_message, void *userData);
@@ -73,10 +65,6 @@ public:
 	void edit_midi_hook(MidiMapping *old_hook, MidiMapping *new_hook);
 	void clear_MidiMappings();
 	QString GetData();
-	void remove_source(const RpcEvent &event);
-	void rename_source(const RpcEvent &event);
-	void send_message_to_midi_device(const MidiMessage &message);
-	void send_bytes(unsigned char bytes);
 	void set_current_volumes();
 	void startup();
 	QVector<MidiMapping *> midiHooks;
@@ -87,15 +75,11 @@ signals:
 private:
 	bool loading = true;
 	libremidi::midi_in midiin;
-	libremidi::midi_out midiout;
 	QString midi_input_name;
-	QString midi_output_name;
 	bool sending{};
 	int input_port = -1;
-	int output_port = -1;
 	bool enabled = false;
 	bool connected = false;
-	bool bidirectional = false;
 	bool closing = false;
 	
 };

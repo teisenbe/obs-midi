@@ -35,8 +35,6 @@ using namespace std;
 MidiAgent::MidiAgent(const int &in_port, std::optional<int> out_port)
 {
 	set_input_port(in_port);
-	if (out_port)
-		set_output_port(out_port.value());
 	this->setParent(GetDeviceManager().get());
 	set_callbacks();
 }
@@ -54,8 +52,6 @@ MidiAgent::MidiAgent(const char *midiData)
 		set_callbacks();
 		if (enabled)
 			open_midi_input_port();
-		if (bidirectional)
-			open_midi_output_port();
 	}
 }
 
@@ -69,7 +65,6 @@ void MidiAgent::set_callbacks()
 {
 	midiin.set_callback([this](const auto &message) { HandleInput(message, this); });
 	midiin.set_error_callback([this](const auto &error_type, const auto &error_message) { HandleError(error_type, error_message, this); });
-	midiout.set_error_callback([this](const auto &error_type, const auto &error_message) { HandleError(error_type, error_message, this); });
 }
 /// <summary>
 /// MidiAgent Deconstructor
@@ -103,11 +98,8 @@ void MidiAgent::Load(const char *incoming_data)
 	obs_data_set_default_bool(data, "enabled", false);
 	obs_data_set_default_bool(data, "bidirectional", false);
 	midi_input_name = QString(obs_data_get_string(data, "name"));
-	midi_output_name = QString(obs_data_get_string(data, "outname"));
 	input_port = DeviceManager().get_input_port_number(midi_input_name);
-	output_port = DeviceManager().get_output_port_number(midi_output_name);
 	enabled = obs_data_get_bool(data, "enabled");
-	bidirectional = obs_data_get_bool(data, "bidirectional");
 	obs_data_array_t *hooksData = obs_data_get_array(data, "hooks");
 	const size_t hooksCount = obs_data_array_count(hooksData);
 	for (size_t i = 0; i < hooksCount; i++) {
@@ -129,15 +121,6 @@ void MidiAgent::set_input_port(const int port)
 	midi_input_name = QString::fromStdString(midiin.get_port_name(port));
 }
 /// <summary>
-/// Sets the output port number and name
-/// </summary>
-/// <param name="port"></param>
-void MidiAgent::set_output_port(const int port)
-{
-	output_port = port;
-	midi_output_name = QString::fromStdString(midiout.get_port_name(port));
-}
-/// <summary>
 /// Opens MIDI input port
 /// </summary>
 void MidiAgent::open_midi_input_port()
@@ -155,31 +138,7 @@ void MidiAgent::open_midi_input_port()
 		blog(LOG_INFO, "MIDI device connected In: [%d] %s", input_port, midi_input_name.toStdString().c_str());
 	}
 }
-/// <summary>
-/// Opens MIDI output port
-/// </summary>
-void MidiAgent::open_midi_output_port()
-{
-	if (!midiout.is_port_open()) {
-		try {
-			midiout.open_port(output_port);
-		} catch (const libremidi::midi_exception &error) {
-			blog(LOG_DEBUG, "Midi Error %s", error.what());
-		} catch (const libremidi::driver_error &error) {
-			blog(LOG_DEBUG, "Midi Driver Error %s", error.what());
-		} catch (const libremidi::system_error &error) {
-			blog(LOG_DEBUG, "Midi system Error %s", error.what());
-		}
-	}
-}
-/// <summary>
-/// Closes both MIDI input and MIDI output ports
-/// </summary>
-void MidiAgent::close_both_midi_ports()
-{
-	close_midi_input_port();
-	close_midi_output_port();
-}
+
 /// <summary>
 /// Closes the connection to the Midi Input Port
 /// *Does not cancel callback*
@@ -190,15 +149,7 @@ void MidiAgent::close_midi_input_port()
 		midiin.close_port();
 	}
 }
-/// <summary>
-/// Closes the connection to the MIDI output port
-/// </summary>
-void MidiAgent::close_midi_output_port()
-{
-	if (midiout.is_port_open()) {
-		midiout.close_port();
-	}
-}
+
 /// <summary>
 ///
 /// </summary>
@@ -206,40 +157,6 @@ void MidiAgent::close_midi_output_port()
 const QString &MidiAgent::get_midi_input_name() const
 {
 	return midi_input_name;
-}
-/// <summary>
-///
-/// </summary>
-/// <returns></returns>
-const QString &MidiAgent::get_midi_output_name() const
-{
-	return midi_output_name;
-}
-/// <summary>
-///
-/// </summary>
-/// <param name="oname"></param>
-void MidiAgent::set_midi_output_name(const QString &oname)
-{
-	midi_output_name = oname;
-}
-/// <summary>
-///
-/// </summary>
-/// <param name="state"></param>
-/// <returns></returns>
-bool MidiAgent::set_bidirectional(const bool &state)
-{
-	this->bidirectional = state;
-	if (!state) {
-		if (midiout.is_port_open()) {
-			midiout.close_port();
-		}
-	} else {
-		open_midi_output_port();
-	}
-	GetConfig().get()->Save();
-	return state;
 }
 /// <summary>
 ///
@@ -256,14 +173,6 @@ int MidiAgent::GetPort() const
 bool MidiAgent::isEnabled() const
 {
 	return enabled;
-}
-/// <summary>
-///
-/// </summary>
-/// <returns></returns>
-bool MidiAgent::isBidirectional() const
-{
-	return bidirectional;
 }
 /// <summary>
 ///
@@ -403,9 +312,7 @@ QString MidiAgent::GetData()
 	blog(LOG_DEBUG, "MA::GetData");
 	obs_data_t *data = obs_data_create();
 	obs_data_set_string(data, "name", midi_input_name.toStdString().c_str());
-	obs_data_set_string(data, "outname", midi_output_name.toStdString().c_str());
 	obs_data_set_bool(data, "enabled", enabled);
-	obs_data_set_bool(data, "bidirectional", bidirectional);
 	obs_data_array_t *arrayData = obs_data_array_create();
 	for (auto midiHook : midiHooks) {
 		obs_data_t *hookData = obs_data_create_from_json(midiHook->GetData().toStdString().c_str());
@@ -418,20 +325,4 @@ QString MidiAgent::GetData()
 	obs_data_release(data);
 	return return_data;
 }
-/// <summary>
-/// Sends message to midi Devices
-/// </summary>
-/// <param name="message">MidiMessage to send</param>
-void MidiAgent::send_message_to_midi_device(const MidiMessage &message)
-{
-	if (message.message_type != "none") {
-		std::unique_ptr<libremidi::message> hello = std::make_unique<libremidi::message>();
-		if (message.message_type == "Control Change") {
-			this->midiout.send_message(hello->control_change(message.channel, message.NORC, message.value));
-		} else if (message.message_type == "Note On") {
-			this->midiout.send_message(hello->note_on(message.channel, message.NORC, message.value));
-		} else if (message.message_type == "Note Off") {
-			this->midiout.send_message(hello->note_off(message.channel, message.NORC, message.value));
-		}
-	}
-}
+

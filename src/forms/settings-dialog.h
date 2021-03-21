@@ -27,9 +27,7 @@ public slots:
 	void ToggleShowHide();
 private slots:
 	void on_check_enabled_state_changed(int state) const;
-	void on_bid_enabled_state_changed(int state) const;
 	void on_device_select(const QString &curitem) const;
-	void select_output_device(const QString &item) const;
 	void handle_midi_message(const MidiMessage &mess) const;
 	void obs_actions_select(const QString &action) const;
 	void set_edit_mode();

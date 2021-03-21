@@ -58,7 +58,6 @@ void PluginWindow::connect_ui_signals() const
 {
 	connect(ui->list_midi_dev, SIGNAL(currentTextChanged(QString)), this, SLOT(on_device_select(QString)));
 	connect(ui->check_enabled, SIGNAL(stateChanged(int)), this, SLOT(on_check_enabled_state_changed(int)));
-	connect(ui->bidirectional, SIGNAL(stateChanged(int)), this, SLOT(on_bid_enabled_state_changed(int)));
 	// Connections for Configure Tab
 	connect(ui->cb_obs_output_action, SIGNAL(currentTextChanged(QString)), this, SLOT(obs_actions_select(QString)));
 	// connect(ui->table_mapping, SIGNAL(cellClicked(int, int)), this, SLOT(edit_mapping()));
@@ -67,7 +66,6 @@ void PluginWindow::connect_ui_signals() const
 	connect(ui->btn_reset, SIGNAL(clicked()), this, SLOT(reset_to_defaults()));
 	connect(ui->btn_delete, SIGNAL(clicked()), this, SLOT(delete_mapping()));
 	connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_changed(int)));
-	connect(ui->outbox, SIGNAL(currentTextChanged(QString)), this, SLOT(select_output_device(QString)));
 }
 void PluginWindow::setup_actions() const
 {
@@ -100,51 +98,30 @@ void PluginWindow::load_devices()
 	if (midiDevices.size() == 0) {
 		this->ui->list_midi_dev->addItem("No Devices Available");
 		ui->tab_configure->setEnabled(false);
-		ui->bidirectional->setEnabled(false);
 		ui->check_enabled->setEnabled(false);
-		this->ui->outbox->setEnabled(false);
 		ui->tabWidget->setEnabled(false);
 	} else if (midiDevices.size() > 0) {
 		for (int i = 0; i < midiDevices.size(); i++) {
 			this->ui->list_midi_dev->addItem(midiDevices.at(i));
 		}
 		ui->tab_configure->setEnabled(true);
-		ui->bidirectional->setEnabled(true);
 		ui->check_enabled->setEnabled(true);
 		ui->tabWidget->setEnabled(true);
-		this->ui->outbox->clear();
-		this->ui->outbox->insertItems(0, midiOutDevices);
 	}
 	loadingdevices = false;
-}
-void PluginWindow::select_output_device(const QString &selectedDeviceName) const
-{
-	if (!loadingdevices) {
-		const auto selectedDevice = ui->list_midi_dev->currentItem()->text().toStdString();
-		auto device = GetDeviceManager()->get_midi_device(selectedDevice.c_str());
-		device->set_midi_output_name(selectedDeviceName);
-		GetConfig()->Save();
-	}
 }
 void PluginWindow::on_check_enabled_state_changed(int state) const
 {
 	if (state == Qt::CheckState::Checked) {
 		const auto selectedDeviceName = ui->list_midi_dev->currentItem()->text().toStdString();
-		const auto selectedOutDeviceName = ui->outbox->currentText().toStdString();
 		auto device = GetDeviceManager()->get_midi_device(selectedDeviceName.c_str());
 		blog(LOG_INFO, "Item enabled: %s", selectedDeviceName.c_str());
 		const int devicePort = GetDeviceManager()->get_input_port_number(selectedDeviceName.c_str());
-		int deviceOutPort = GetDeviceManager()->get_output_port_number(selectedOutDeviceName.c_str());
 		if (device == NULL) {
-			device = (ui->bidirectional->isChecked()) ? GetDeviceManager()->register_midi_device(devicePort, deviceOutPort)
-								  : GetDeviceManager()->register_midi_device(devicePort);
+			GetDeviceManager()->register_midi_device(devicePort);
 		}
 		device->open_midi_input_port();
-		device->open_midi_output_port();
 		device->set_enabled(true);
-		ui->bidirectional->setEnabled(true);
-		ui->bidirectional->setChecked(device->isBidirectional());
-		ui->outbox->setEnabled(device->isBidirectional());
 		set_configure_title(QString::fromStdString(selectedDeviceName));
 		connect_midi_message_handler();
 	}
@@ -183,18 +160,9 @@ void PluginWindow::on_device_select(const QString &curitem) const
 		try {
 			if (MAdevice != NULL && MAdevice->isEnabled()) {
 				ui->check_enabled->setChecked(true);
-				ui->outbox->setEnabled(true);
-				ui->bidirectional->setEnabled(true);
-				ui->bidirectional->setChecked(MAdevice->isBidirectional());
-
-				if (MAdevice->isBidirectional()) {
-					ui->outbox->setCurrentText(MAdevice->get_midi_output_name());
-				}
 				connect_midi_message_handler();
 			} else {
 				ui->check_enabled->setChecked(false);
-				ui->outbox->setEnabled(false);
-				ui->bidirectional->setEnabled(false);
 			}
 			/// HOOK up the Message Handler
 			ui->mapping_lbl_device_name->setText(curitem);
@@ -223,13 +191,7 @@ void PluginWindow::handle_midi_message(const MidiMessage &mess) const
 	}
 
 }
-void PluginWindow::on_bid_enabled_state_changed(int state) const
-{
-	auto device = GetDeviceManager()->get_midi_device(ui->list_midi_dev->currentItem()->text().qtocs());
-	ui->outbox->setEnabled(state);
-	device->set_bidirectional(state);
-	Config().Save();
-}
+
 PluginWindow::~PluginWindow()
 {
 	delete ui;

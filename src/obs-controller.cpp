@@ -754,3 +754,24 @@ QGridLayout *AudioActions::set_widgets()
 	lay->setAlignment(Qt::AlignTop);
 	return lay;
 }
+
+void FilterActions::onSceneTextChanged(QString) {}
+
+void FilterActions::onSourceTextChanged(QString) {}
+
+void ItemActions::onSceneTextChanged(QString) {}
+
+void ItemActions::onSourceTextChanged(QString) {}
+
+QGridLayout *SceneActions::set_widgets()
+{
+	return nullptr;
+}
+QGridLayout *FilterActions::set_widgets()
+{
+	return nullptr;
+}
+QGridLayout *TransitionActions::set_widgets()
+{
+	return nullptr;
+}

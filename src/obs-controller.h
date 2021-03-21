@@ -110,6 +110,7 @@ public:
 	QString _source;
 	QComboBox *filter;
 	QString _filter;
+
 public slots:
 	void onSceneTextChanged(QString);
 	void onSourceTextChanged(QString);
@@ -124,6 +125,7 @@ public:
 	QString _source;
 	QComboBox *cb_item;
 	QString _item;
+
 public slots:
 	void onSceneTextChanged(QString);
 	void onSourceTextChanged(QString);
