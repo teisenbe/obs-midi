@@ -27,7 +27,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "../device-manager.h"
 #include "../config.h"
 #include "Macros.h"
-#include <QListView>
+#include <QListWidget>
 
 PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(new Ui::PluginWindow)
 {
@@ -42,7 +42,8 @@ PluginWindow::PluginWindow(QWidget *parent) : QDialog(parent, Qt::Dialog), ui(ne
 	ui->box_action->setAlignment((int)Alignment::Top_Center);
 	ui->box_action->setFlat(true);
 	ui->box_action->setPalette(ui->list_mapping->palette());
-	//connect(ui->search_mapping, &QLineEdit::textChanged, devmodel, &QSortFilterProxyModel::setFilterWildcard);
+
+	// connect(ui->search_mapping, &QLineEdit::textChanged, devmodel, &QSortFilterProxyModel::setFilterWildcard);
 	starting = false;
 }
 
@@ -66,6 +67,7 @@ void PluginWindow::connect_ui_signals() const
 	connect(ui->btn_reset, SIGNAL(clicked()), this, SLOT(reset_to_defaults()));
 	connect(ui->btn_delete, SIGNAL(clicked()), this, SLOT(delete_mapping()));
 	connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_changed(int)));
+	connect(ui->list_mapping, &QListWidget::currentRowChanged, this, &PluginWindow::table_select);
 }
 void PluginWindow::setup_actions() const
 {
@@ -189,7 +191,6 @@ void PluginWindow::handle_midi_message(const MidiMessage &mess) const
 		ui->cb_mtype->setCurrentText(mess.message_type);
 		ui->btn_Listen_one->setChecked(false);
 	}
-
 }
 
 PluginWindow::~PluginWindow()
@@ -199,6 +200,7 @@ PluginWindow::~PluginWindow()
 
 void PluginWindow::reset_to_defaults() const
 {
+	load_table();
 }
 void PluginWindow::clear_actions_box(QLayout *layout) const
 {
@@ -223,110 +225,110 @@ void PluginWindow::obs_actions_select(const QString &action) const
 	Actions *AC = Actions::make_action(Utils::untranslate(action));
 	ui->box_action->setLayout(AC->set_widgets());
 	ui->btn_reset->setEnabled(true);
-	}/*
-	if (!switching) {
-		hide_all_pairs();
-		switch (ActionsClass::string_to_action(Utils::untranslate(action))) {
-		case ActionsClass::Actions::Set_Preview_Scene:
-			show_pair(Pairs::Scene);
-			break;
-		case ActionsClass::Actions::Enable_Source_Filter:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Filter);
-			break;
-		case ActionsClass::Actions::Disable_Source_Filter:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Filter);
-			break;
-		case ActionsClass::Actions::Set_Gain_Filter:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Filter);
-			break;
-		case ActionsClass::Actions::Toggle_Source_Filter:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Filter);
-			break;
-		case ActionsClass::Actions::Reset_Scene_Item:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			break;
-		case ActionsClass::Actions::Set_Scene_Item_Render:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Item);
-			break;
-		case ActionsClass::Actions::Set_Scene_Item_Position:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Item);
-			break;
-		case ActionsClass::Actions::Set_Scene_Item_Transform:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Item);
-			break;
-		case ActionsClass::Actions::Set_Scene_Item_Crop:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Item);
-			break;
-		case ActionsClass::Actions::Set_Scene_Transition_Override:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Transition);
-			break;
-		case ActionsClass::Actions::Set_Current_Transition:
-			show_pair(Pairs::Transition);
-			break;
-		case ActionsClass::Actions::Set_Source_Filter_Visibility:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Filter);
-			break;
-		case ActionsClass::Actions::Take_Source_Screenshot:
-			show_pair(Pairs::Scene);
-			break;
+} /*
+ if (!switching) {
+	 hide_all_pairs();
+	 switch (ActionsClass::string_to_action(Utils::untranslate(action))) {
+	 case ActionsClass::Actions::Set_Preview_Scene:
+		 show_pair(Pairs::Scene);
+		 break;
+	 case ActionsClass::Actions::Enable_Source_Filter:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Filter);
+		 break;
+	 case ActionsClass::Actions::Disable_Source_Filter:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Filter);
+		 break;
+	 case ActionsClass::Actions::Set_Gain_Filter:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Filter);
+		 break;
+	 case ActionsClass::Actions::Toggle_Source_Filter:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Filter);
+		 break;
+	 case ActionsClass::Actions::Reset_Scene_Item:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 break;
+	 case ActionsClass::Actions::Set_Scene_Item_Render:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Item);
+		 break;
+	 case ActionsClass::Actions::Set_Scene_Item_Position:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Item);
+		 break;
+	 case ActionsClass::Actions::Set_Scene_Item_Transform:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Item);
+		 break;
+	 case ActionsClass::Actions::Set_Scene_Item_Crop:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Item);
+		 break;
+	 case ActionsClass::Actions::Set_Scene_Transition_Override:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Transition);
+		 break;
+	 case ActionsClass::Actions::Set_Current_Transition:
+		 show_pair(Pairs::Transition);
+		 break;
+	 case ActionsClass::Actions::Set_Source_Filter_Visibility:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Filter);
+		 break;
+	 case ActionsClass::Actions::Take_Source_Screenshot:
+		 show_pair(Pairs::Scene);
+		 break;
 
-		case ActionsClass::Actions::Toggle_Source_Visibility:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			break;
-		case ActionsClass::Actions::Reload_Browser_Source:
-			show_pair(Pairs::Source);
-			ui->cb_obs_output_source->clear();
-			ui->cb_obs_output_source->addItems(Utils::get_browser_sources());
-			break;
-		case ActionsClass::Actions::Set_Source_Rotation:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Range);
-			set_min_max_range_defaults(0, 360);
-			set_range_text("Min", "Max");
-			break;
-		case ActionsClass::Actions::Set_Source_Scale:
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Range);
-			set_min_max_range_defaults(10, 10);
-			set_range_text("Max X", "Max Y");
-			break;
-		case ActionsClass::Actions::Toggle_Fade_Source:
-			show_pair(Pairs::Source);
-			show_pair(Pairs::Scene);
-			show_pair(Pairs::Integer);
-			ui->check_int_override->setChecked(true);
-			ui->sb_int_override->setValue(500);
-			ui->label_Int_override->setText("Duration * ");
-			ui->sb_int_override->setSuffix(" ms");
-			break;
-		case ActionsClass::Actions::Trigger_Hotkey_By_Name:
-			show_pair(Pairs::Hotkey);
-			break;
-		default:
-			hide_all_pairs();
-			break;
-		}
-	}
+	 case ActionsClass::Actions::Toggle_Source_Visibility:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 break;
+	 case ActionsClass::Actions::Reload_Browser_Source:
+		 show_pair(Pairs::Source);
+		 ui->cb_obs_output_source->clear();
+		 ui->cb_obs_output_source->addItems(Utils::get_browser_sources());
+		 break;
+	 case ActionsClass::Actions::Set_Source_Rotation:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Range);
+		 set_min_max_range_defaults(0, 360);
+		 set_range_text("Min", "Max");
+		 break;
+	 case ActionsClass::Actions::Set_Source_Scale:
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Range);
+		 set_min_max_range_defaults(10, 10);
+		 set_range_text("Max X", "Max Y");
+		 break;
+	 case ActionsClass::Actions::Toggle_Fade_Source:
+		 show_pair(Pairs::Source);
+		 show_pair(Pairs::Scene);
+		 show_pair(Pairs::Integer);
+		 ui->check_int_override->setChecked(true);
+		 ui->sb_int_override->setValue(500);
+		 ui->label_Int_override->setText("Duration * ");
+		 ui->sb_int_override->setSuffix(" ms");
+		 break;
+	 case ActionsClass::Actions::Trigger_Hotkey_By_Name:
+		 show_pair(Pairs::Hotkey);
+		 break;
+	 default:
+		 hide_all_pairs();
+		 break;
+	 }
+ }
 }
 */
 void PluginWindow::set_edit_mode() {}
@@ -339,7 +341,6 @@ bool PluginWindow::map_exists() const
 	return false;
 }
 
-
 void PluginWindow::set_all_cell_colors(const int row) const
 {
 	const QColor midi_color(0, 170, 255);
@@ -350,19 +351,51 @@ void PluginWindow::set_all_cell_colors(const int row) const
 		(col < 3) ? set_cell_colors(midi_color, rc) : set_cell_colors(action_color, rc);
 	}*/
 }
-
+void PluginWindow::add_row_from_hook(const MidiMapping *hook) const
+{
+	if (hook == nullptr)
+		return;
+	ui->list_mapping->addItem(hook->actions->get_action_string());
+}
+void PluginWindow::load_table() const
+{
+	ui->list_mapping->clear();
+	const auto hooks = GetDeviceManager()->get_midi_hooks(ui->mapping_lbl_device_name->text());
+	if (hooks.count() > 0) {
+		for (auto *hook : hooks) {
+			add_row_from_hook(hook);
+		}
+	}
+}
 void PluginWindow::tab_changed(const int tab) const
 {
-	reset_to_defaults();
+	
 	if (tab == 1) {
 		ui->cb_obs_output_action->setCurrentIndex(1);
 		ui->cb_obs_output_action->setCurrentIndex(0);
 		ui->mapping_lbl_device_name->setText(ui->list_midi_dev->currentItem()->text());
 		Utils::build_hotkey_map();
 	}
+	reset_to_defaults();
 
 	// this->ui->table_mapping->resizeColumnsToContents();
 }
+void PluginWindow::table_select(int selection) {
+	const auto hooks = GetDeviceManager()->get_midi_hooks(ui->mapping_lbl_device_name->text());
+	auto hook = hooks.at(selection);
+	midi_message_select(hook);
+	clear_actions_box(ui->box_action->layout());
+	ui->box_action->setLayout(hook->actions->set_widgets());
+	ui->btn_reset->setEnabled(true);
+}
+
+void PluginWindow::midi_message_select(MidiMapping *hook)
+{
+	ui->sb_channel->setValue(hook->channel);
+	ui->sb_norc->setValue(hook->norc);
+	ui->cb_mtype->setCurrentText(hook->message_type);
+}
+
 void PluginWindow::clear_table() const
 {
 	// ui->table_mapping->clearContents();

@@ -17,7 +17,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "ui_settings-dialog.h"
 #include "../midi-agent.h"
 #include "../version.h"
-
+#include "../Midi_hook.h"
 class PluginWindow : public QDialog {
 	Q_OBJECT
 public:
@@ -65,7 +65,10 @@ private:
 	void connect_midi_message_handler() const;
 	bool map_exists() const;
 	bool verify_mapping() const;
-
+	void add_row_from_hook(const MidiMapping *hook) const;
+	void load_table() const;
+	void table_select(int selection);
+	void midi_message_select(MidiMapping *hook);
 private:
 	int editrow = -1;
 	bool editmode = false;

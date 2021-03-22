@@ -80,13 +80,14 @@ void Actions::make_map()
 	_action_map.insert(QString("Enable_Preview"), new EnablePreview());
 	_action_map.insert(QString("Toggle_Fade_Source"), new make_opacity_filter());
 	_action_map.insert(QString("Trigger_Hotkey_By_Name"), new TriggerHotkey());
-	_action_map.insert(QString("Trigger Hotkey"), new TriggerHotkey());
+	_action_map.insert(QString("Trigger_Hotkey"), new TriggerHotkey());
 }
 
-Actions *Actions::make_action(QString action, MidiMapping *h)
+Actions *Actions::make_action(QString action, MidiMapping *h, obs_data_t *data)
 {
 	Actions *act = _action_map[action];
 	act->set_hook(h);
+	act->parse_data(data);
 	return act;
 }
 Actions *Actions::make_action(QString action)
@@ -205,7 +206,7 @@ void TransitionToProgram::execute()
 		_scene = QString(obs_source_get_name(source));
 		state()._TransitionWasCalled = true;
 	}
-	if (_duration && *_duration> 0) {
+	if (_duration && *_duration > 0) {
 		obs_frontend_set_transition_duration(*_duration);
 		state()._TransitionWasCalled = true;
 	}
@@ -218,7 +219,6 @@ void TransitionToProgram::execute()
 
 QGridLayout *TransitionToProgram::set_widgets()
 {
-
 
 	auto scenelist = Utils::get_scene_names();
 	scenelist.prepend("Preview Scene");
@@ -279,7 +279,7 @@ void ToggleSourceVisibility::execute()
 		obs_sceneitem_set_visible(scene, true);
 	}
 }
-	/**
+/**
  * Inverts the mute status of a specified source.
  */
 void ToggleMute::execute()
@@ -512,10 +512,27 @@ void TriggerHotkey::execute()
 	}
 	obs_hotkey_trigger_routed_callback(obs_hotkey_get_id(obsHotkey), true);
 }
-
+QGridLayout *TriggerHotkey::set_widgets()
+{
+	cb_hotkey = Utils::make_combo(Utils::get_hotkeys_list());
+	auto lay = new QGridLayout();
+	lay->addWidget(Utils::make_label("Hotkey"), 0, 0, 1, 1);
+	lay->addWidget(cb_hotkey, 0, 1, 1, 2);
+	lay->setAlignment(Qt::AlignTop);
+	if (!(_hotkey.isEmpty() || _hotkey.isNull())) {
+		obs_hotkey_t *obsHotkey = Utils::get_obs_hotkey_by_name(_hotkey);
+		cb_hotkey->setCurrentText(obs_hotkey_get_description(obsHotkey));
+	}
+	return lay;
+}
 QString TriggerHotkey::get_action_string()
 {
-	return QString("Trigger Hotkey").append(" ").append(obs_hotkey_get_description(Utils::get_obs_hotkey_by_name(_hotkey)));
+	obs_hotkey_t *obsHotkey = Utils::get_obs_hotkey_by_name(_hotkey);
+	if (!obsHotkey) {
+		blog(LOG_ERROR, "ERROR: Triggered hotkey <%s> was not found", _hotkey.qtocs());
+		return "error";
+	}
+	return QString("Trigger Hotkey").append(" ").append(obs_hotkey_get_description(obsHotkey));
 }
 
 ////////////////
@@ -553,8 +570,7 @@ void SetSourceScale::execute()
 	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
 	obs_sceneitem_set_bounds_type(item, obs_bounds_type::OBS_BOUNDS_NONE);
 	vec2 *scale = new vec2();
-	vec2_set(scale, Utils::map_to_range(0, (_range_min) ? *_range_min : 1, *_value),
-		 Utils::map_to_range(0, (_range_max) ? *_range_max : 1, *_value));
+	vec2_set(scale, Utils::map_to_range(0, (_range_min) ? *_range_min : 1, *_value), Utils::map_to_range(0, (_range_max) ? *_range_max : 1, *_value));
 	obs_sceneitem_set_scale(item, scale);
 	delete (scale);
 }
@@ -714,8 +730,8 @@ QGridLayout *MediaActions::set_widgets()
 {
 	cb_source = Utils::make_combo(Utils::GetMediaSourceNames());
 	auto lay = new QGridLayout();
-	lay->addWidget(Utils::make_label("Media Source"),0,0,1,1);
-	lay->addWidget(cb_source,0,1,1,2);
+	lay->addWidget(Utils::make_label("Media Source"), 0, 0, 1, 1);
+	lay->addWidget(cb_source, 0, 1, 1, 2);
 	lay->setAlignment(Qt::AlignTop);
 	return lay;
 }
@@ -732,7 +748,6 @@ QGridLayout *SourceActions::set_widgets()
 	lay->addWidget(cb_source, 1, 1);
 	lay->setAlignment(Qt::AlignTop);
 	return lay;
-	
 }
 void SourceActions::onSceneTextChanged(QString _scene)
 {
@@ -752,6 +767,9 @@ QGridLayout *AudioActions::set_widgets()
 	lay->addWidget(Utils::make_label("Audio Source"), 0, 0, 1, 1);
 	lay->addWidget(cb_source, 0, 1, 1, 2);
 	lay->setAlignment(Qt::AlignTop);
+	if (!(_source.isEmpty() || _source.isNull())) {
+		cb_source->setCurrentText(_source);
+	}
 	return lay;
 }
 

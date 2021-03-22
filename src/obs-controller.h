@@ -35,11 +35,17 @@ public:
 	Actions(MidiMapping *_hook);
 	void set_hook(MidiMapping *_hook) { hook = _hook; }
 	virtual void execute(){};
-	static Actions *make_action(QString action, MidiMapping *h);
+	static Actions *make_action(QString action, MidiMapping *h, obs_data_t *data);
 	static Actions *make_action(QString action);
 	virtual QString get_action_string();
 	virtual void set_data(obs_data_t *data){};
 	virtual void set_data(QString datastring){};
+	QString _action;
+	std::optional<int> _value;
+	virtual void parse_data(obs_data_t *data) { _action = QString(obs_data_get_string(data, "action"));
+		_value.emplace(obs_data_get_int(data, "value"));
+	};
+
 	virtual QGridLayout *set_widgets()
 	{
 		QLabel *label = new QLabel("Nothing to configure");
@@ -47,8 +53,6 @@ public:
 		lay->addWidget(label, 0, 0);
 		return lay;
 	};
-	QString _action;
-	std::optional<int> _value;
 
 
 protected:
@@ -59,15 +63,23 @@ private:
 	inline static QMap<QString, Actions *> _action_map;
 };
 
-class SceneActions :public Actions {
+class SceneActions : public Actions {
 public:
 	QGridLayout *set_widgets() override;
+	void parse_data(obs_data_t *data) override { _scene = QString(obs_data_get_string(data, "scene")); }
 	QComboBox *cb_scene;
 	QString _scene;
 	QString get_action_string() override { return _action.append(" ").append(_scene); };
 };
 class TransitionActions : public SceneActions {
 public:
+	void parse_data(obs_data_t *data) override
+	{
+		_scene = QString(obs_data_get_string(data, "scene"));
+		_transition = QString(obs_data_get_string(data, "transition"));
+		_duration = obs_data_get_int(data, "duration");
+	}
+
 	QGridLayout *set_widgets() override;
 	QComboBox *cb_transition;
 	QString _transition;
@@ -79,6 +91,12 @@ public:
 	QComboBox *cb_source;
 	QString _source;
 	QString get_action_string() override { return _action.append(" ").append(_source); };
+	void parse_data(obs_data_t *data) override
+	{
+		_source = (QString(obs_data_get_string(data, "source")).isEmpty()) ? QString(obs_data_get_string(data, "audio_source")):
+											     QString(obs_data_get_string(data, "source"));
+		_action = Utils::translate_action_string(QString(obs_data_get_string(data, "action")));
+	}
 };
 class MediaActions : public Actions {
 public:
@@ -86,6 +104,7 @@ public:
 	QComboBox *cb_source;
 	QString _source;
 	QString get_action_string() override { return _action.append(" ").append(_source); };
+	void parse_data(obs_data_t *data) override { _source = QString(obs_data_get_string(data, "source")); }
 };
 class SourceActions : public Actions {
 	Q_OBJECT
@@ -96,6 +115,11 @@ public:
 	QString _scene;
 	QString _source;
 	QString get_action_string() override { return _action.append(" ").append(_source); };
+	void parse_data(obs_data_t *data) override
+	{
+		_scene = QString(obs_data_get_string(data, "scene"));
+		_source = QString(obs_data_get_string(data, "source"));
+	}
 
 public slots:
 	virtual void onSceneTextChanged(QString);
@@ -110,7 +134,12 @@ public:
 	QString _source;
 	QComboBox *filter;
 	QString _filter;
-
+	void parse_data(obs_data_t *data) override
+	{
+		_scene = QString(obs_data_get_string(data, "scene"));
+		_source = QString(obs_data_get_string(data, "source"));
+		_filter = QString(obs_data_get_string(data, "filter"));
+	}
 public slots:
 	void onSceneTextChanged(QString);
 	void onSourceTextChanged(QString);
@@ -125,7 +154,12 @@ public:
 	QString _source;
 	QComboBox *cb_item;
 	QString _item;
-
+	void parse_data(obs_data_t *data) override
+	{
+		_scene = QString(obs_data_get_string(data, "scene"));
+		_source = QString(obs_data_get_string(data, "source"));
+		_item = QString(obs_data_get_string(data, "item"));
+	}
 public slots:
 	void onSceneTextChanged(QString);
 	void onSourceTextChanged(QString);
@@ -330,7 +364,10 @@ public:
 	TriggerHotkey(){};
 	void execute() override;
 	QString get_action_string() override;
+	QGridLayout *set_widgets() override;
+	QComboBox *cb_hotkey;
 	QString _hotkey;
+	void parse_data(obs_data_t *data) override { _hotkey = QString(obs_data_get_string(data, "hotkey")); };
 };
 
 // CC ACTIONS
@@ -354,7 +391,7 @@ public:
 	SetSourceRotation(){};
 	void execute() override;
 };
-class SetSourceScale :  public RangeActions{
+class SetSourceScale : public RangeActions {
 public:
 	SetSourceScale(){};
 	void execute() override;
@@ -423,4 +460,3 @@ public:
 	std::optional<int> _int_override;
 };
 int time_to_sleep(int duration);
-
