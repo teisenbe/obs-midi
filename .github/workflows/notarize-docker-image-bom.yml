@@ -2,7 +2,7 @@ name: notarize-docker-image-bom
 
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   notarize-docker-image:
