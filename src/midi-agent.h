@@ -22,7 +22,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <QtCore/QString>
 #include <QtCore/QSharedPointer>
 
-#include <libremidi/libremidi.hpp>
+#include "libremidi/include/libremidi/libremidi.hpp"
 #if __has_include(<obs-frontend-api.h>)
 #include <obs-frontend-api.h>
 #else

@@ -1,70 +1,41 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
+
+# Change obs-plugintemplate to your plugin's name in a machine-readable format
+# (e.g.: obs-myawesomeplugin) and set 
 project(obs-midi VERSION 0.9.0)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}" external)
-set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
+add_library(${CMAKE_PROJECT_NAME} MODULE)
 
-set(CMAKE_PREFIX_PATH "${QTDIR}")
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_definitions(-DASIO_STANDALONE)
+# Replace `Your Name Here` with the name (yours or your organization's) you want
+# to see as the author of the plugin (in the plugin's metadata itself and in the installers)
+set(PLUGIN_AUTHOR "Chris Yarger <cpyarger@gmail.com>")
 
-if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
-    set(CMAKE_CXX_FLAGS "-mfpu=neon")
-endif()
-##################
-# THE GOOD STUFF #
-##################
-# RTMIDI
+# Replace `com.example.obs-plugin-template` with a unique Bundle ID for macOS releases
+# (used both in the installer and when submitting the installer for notarization)
+set(MACOS_BUNDLEID "com.example.obs-midi")
+
+# Replace `me@contoso.com` with the maintainer email address you want to put in Linux packages
+set(LINUX_MAINTAINER_EMAIL "cpyarger@gmail.com")
+
+# Add your custom source files here - header files are optional and only required for visibility
+# e.g. in Xcode or Visual Studio
 add_subdirectory(src/libremidi)
-set(obs-midi_DEPS libremidi)
 include_directories(src/libremidi)
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
-include_directories(${CMAKE_PACKAGE_PREFIX})
-
-if (((WIN32) AND (NOT COMMAND install_obs_plugin_with_data)) OR APPLE)
-	include(external/FindLibObs.cmake)
-	find_package(LibObs REQUIRED)
-else()
-	find_package(LibObs)
-endif()
-
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
-# Version bits
-execute_process(
-  COMMAND git describe --abbrev=0 --tags 
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_TAG
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/version.h
-)
-
-include_directories(
-	"${LIBOBS_INCLUDE_DIR}/../UI/obs-frontend-api"
-        SYSTEM
-	${Qt5Core_INCLUDES}
-	${Qt5Widgets_INCLUDES}
-        "${CMAKE_SOURCE_DIR}/UI")
-set(obs-midi_SOURCES
-	src/utils.cpp
-	src/config.cpp
-	src/midi-agent.cpp
-	src/device-manager.cpp
-	src/obs-controller.cpp
-	src/forms/settings-dialog.cpp
-	src/obs-midi.cpp
-	src/events.cpp
-	src/rpc/RpcEvent.cpp
-	src/forms/Macros.cpp
-	src/Midi_hook.cpp
-	src/Midi_message.cpp)
-
-list(APPEND obs-midi_HEADERS
+target_sources(${CMAKE_PROJECT_NAME}
+	PRIVATE
+		src/utils.cpp
+		src/config.cpp
+		src/midi-agent.cpp
+		src/device-manager.cpp
+		src/obs-controller.cpp
+		src/forms/settings-dialog.cpp
+		src/obs-midi.cpp
+		src/events.cpp
+		src/rpc/RpcEvent.cpp
+		src/forms/Macros.cpp
+		src/Midi_hook.cpp
+		src/Midi_message.cpp)
+target_sources(${CMAKE_PROJECT_NAME}
+	PRIVATE
 	src/utils.h
 	src/config.h
 	src/midi-agent.h
@@ -79,159 +50,100 @@ list(APPEND obs-midi_HEADERS
 	src/Midi_hook.h
 	src/Midi_message.h)
 
-qt5_wrap_ui(obs_midi_UI_HEADERS src/forms/settings-dialog.ui)
+# /!\ TAKE NOTE: No need to edit things past this point /!\
 
-add_library(obs-midi MODULE
-	${obs-midi_SOURCES}
-	${obs_midi_UI_HEADERS}
-	${obs-midi_HEADERS}
-	src/forms/settings-dialog.ui)
-include_directories(
-	"${LIBOBS_INCLUDE_DIR}/../UI/obs-frontend-api"
-	${obs_midi_UI_HEADERS}
-	${Qt5Core_INCLUDES}
-	${Qt5Widgets_INCLUDES}
-	"${CMAKE_SOURCE_DIR}/deps/asio/asio/include")
-if(LINUX)
-	include_directories(/usr/include/obs)
-	target_link_libraries(obs-midi
-		obs-frontend-api
-		${obs-midi_DEPS}
+find_package(libobs REQUIRED)
+find_package(obs-frontend-api REQUIRED)
+include(external/ObsPluginHelpers.cmake)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+
+
+
+
+# --- Platform-independent build settings ---
+
+target_include_directories(${CMAKE_PROJECT_NAME}
+	PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+target_link_libraries(${CMAKE_PROJECT_NAME}
+	PRIVATE
+		libremidi
+		OBS::libobs
+		OBS::obs-frontend-api
 		Qt5::Core
-		Qt5::Widgets
-		libobs.so)
-elseif(NOT DEFINED OBS_FRONTEND_LIB)
-	target_link_libraries(obs-midi
-		obs-frontend-api
-		${obs-midi_DEPS}
-		Qt5::Core
-		Qt5::Widgets
-		libobs)
-else()
-target_link_libraries(obs-midi
-		"${OBS_FRONTEND_LIB}"
-		${obs-midi_DEPS}
-		Qt5::Core
-		Qt5::Widgets
-		libobs)
-endif()
+		Qt5::Widgets)
+
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+	AUTOMOC ON
+	AUTOUIC ON
+	AUTORCC ON)
+
+target_compile_features(${CMAKE_PROJECT_NAME}
+	PRIVATE
+		cxx_std_17)
+
+# --- End of section ---
+
 # --- Windows-specific build settings and tasks ---
-if(WIN32)
+if(OS_WINDOWS)
+	configure_file(
+		installer/installer-Windows.iss.in
+		${CMAKE_SOURCE_DIR}/installer/installer-Windows.generated.iss)
 
-    if(MSVC)
-        # Enable Multicore Builds and disable FH4 (to not depend on VCRUNTIME140_1.DLL)
-	    add_definitions(/MP /d2FH4-)
-    endif()
-	add_definitions(-D_WEBSOCKETPP_CPP11_STL_)
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-		set(ARCH_NAME "64bit")
-		set(OBS_BUILDDIR_ARCH "build64")
-	else()
-		set(ARCH_NAME "32bit")
-		set(OBS_BUILDDIR_ARCH "build32")
-	endif()
-	include_directories(
-		"${LIBOBS_INCLUDE_DIR}/../${OBS_BUILDDIR_ARCH}/UI"
-	)
-	if(NOT DEFINED OBS_FRONTEND_LIB)
-		target_link_libraries(obs-midi
-		obs-frontend-api)
-	else()
-		target_link_libraries(obs-midi
-		"${OBS_FRONTEND_LIB}")
-	endif()
+	configure_file(
+		CI/include/build_environment.ps1.in
+		${CMAKE_SOURCE_DIR}/CI/include/build_environment.ps1)
 
-	# --- Release package helper ---
-	# The "release" folder has a structure similar OBS' one on Windows
-	set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/release")
-	add_custom_command(TARGET obs-midi POST_BUILD
-		# If config is Release, package release files
-		COMMAND if $<CONFIG:Release>==1 (
-			"${CMAKE_COMMAND}" -E make_directory
-			"${RELEASE_DIR}/data/obs-plugins/obs-midi"
-			"${RELEASE_DIR}/obs-plugins/${ARCH_NAME}")
-		COMMAND if $<CONFIG:Release>==1 ("${CMAKE_COMMAND}" -E copy_directory
-			"${PROJECT_SOURCE_DIR}/data"
-			"${RELEASE_DIR}/data/obs-plugins/obs-midi")
-		COMMAND if $<CONFIG:Release>==1 ("${CMAKE_COMMAND}" -E copy
-			"$<TARGET_FILE:obs-midi>"
-			"${RELEASE_DIR}/obs-plugins/${ARCH_NAME}")
-		# If config is RelWithDebInfo, package release files
-		COMMAND if $<CONFIG:RelWithDebInfo>==1 (
-			"${CMAKE_COMMAND}" -E make_directory
-			"${RELEASE_DIR}/data/obs-plugins/obs-midi"
-			"${RELEASE_DIR}/obs-plugins/${ARCH_NAME}")
-		COMMAND if $<CONFIG:RelWithDebInfo>==1 ("${CMAKE_COMMAND}" -E copy_directory
-			"${PROJECT_SOURCE_DIR}/data"
-			"${RELEASE_DIR}/data/obs-plugins/obs-midi")
-		COMMAND if $<CONFIG:RelWithDebInfo>==1 ("${CMAKE_COMMAND}" -E copy
-			"$<TARGET_FILE:obs-midi>"
-			"${RELEASE_DIR}/obs-plugins/${ARCH_NAME}")
-		COMMAND if $<CONFIG:RelWithDebInfo>==1 ("${CMAKE_COMMAND}" -E copy
-			"$<TARGET_PDB_FILE:obs-midi>"
-			"${RELEASE_DIR}/obs-plugins/${ARCH_NAME}")
-		# Copy to obs-studio dev environment for immediate testing
-		COMMAND if $<CONFIG:Debug>==1 (
-			"${CMAKE_COMMAND}" -E copy
-				"$<TARGET_FILE:obs-midi>"
-				"${LibObs_DIR}/../rundir/$<CONFIG>/obs-plugins/${ARCH_NAME}")
-		COMMAND if $<CONFIG:Debug>==1 (
-			"${CMAKE_COMMAND}" -E copy
-				"$<TARGET_PDB_FILE:obs-midi>"
-				"${LibObs_DIR}/../rundir/$<CONFIG>/obs-plugins/${ARCH_NAME}")
-		COMMAND if $<CONFIG:Debug>==1 (
-			"${CMAKE_COMMAND}" -E copy_directory
-				"${PROJECT_SOURCE_DIR}/data"
-				"${LibObs_DIR}/../rundir/$<CONFIG>/data/obs-plugins/${ARCH_NAME}")
-	)
-	# --- End of sub-section ---
-endif()
+	if(MSVC)
+		target_compile_options(${CMAKE_PROJECT_NAME}
+			PRIVATE
+				/MP
+				/d2FH4-)
+	endif()
 # --- End of section ---
+
+# -- macOS specific build settings and tasks --
+elseif(OS_MACOS)
+	configure_file(
+		bundle/installer-macOS.pkgproj.in
+		${CMAKE_SOURCE_DIR}/bundle/installer-macOS.generated.pkgproj)
+
+	configure_file(
+		CI/include/build_environment.sh.in
+		${CMAKE_SOURCE_DIR}/CI/include/build_environment.sh
+	)
+
+	set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
+	set(MACOSX_PLUGIN_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}")
+	set(MACOSX_PLUGIN_SHORT_VERSION_STRING "1")
+
+	target_compile_options(${CMAKE_PROJECT_NAME}
+		PRIVATE
+			-Wall
+			-Wextra
+			-Werror-implicit-function-declaration
+			-stdlib=libc++
+			-fvisibility=default)
+
+	set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES PREFIX "")
+# --- End of section ---
+
 # --- Linux-specific build settings and tasks ---
-if(UNIX AND NOT APPLE)
-	include(GNUInstallDirs)
-	set_target_properties(obs-midi PROPERTIES PREFIX "")
-	target_link_libraries(obs-midi obs-frontend-api)
-
-	file(GLOB locale_files data/locale/*.ini)
-        set(CMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS
-		OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-	find_program(LSB_RELEASE_EXEC lsb_release)
-	execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
-	OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
-	OUTPUT_STRIP_TRAILING_WHITESPACE
+else()
+	configure_file(
+		CI/include/build_environment.sh.in
+		${CMAKE_SOURCE_DIR}/CI/include/build_environment.sh
 	)
-	if(COMMAND install_obs_plugin_with_data)
-	message(STATUS "in tree mode")
-	elseif(${LSB_RELEASE_ID_SHORT} STREQUAL "Ubuntu")
-		install(TARGETS obs-midi LIBRARY
-			DESTINATION "/usr/lib/obs-plugins"
-			PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-	endif()
-	install(TARGETS obs-midi LIBRARY
-		DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/obs-plugins"
-		PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-	install(FILES ${locale_files}
-		DESTINATION "${CMAKE_INSTALL_FULL_DATAROOTDIR}/obs/obs-plugins/obs-midi/locale")
+
+	target_compile_options(${CMAKE_PROJECT_NAME}
+		PRIVATE
+			-Wall
+			-Wextra)
+
+	set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES PREFIX "")
 endif()
 # --- End of section ---
-# -- OS X specific build settings and tasks --
-if(APPLE)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -fvisibility=default")
-	set(CMAKE_SKIP_RPATH TRUE)
-	set_target_properties(obs-midi PROPERTIES PREFIX "")
-	if(NOT DEFINED OBS_FRONTEND_LIB)
-		target_link_libraries(obs-midi
-		obs-frontend-api)
-	else()
-		target_link_libraries(obs-midi
-		"${OBS_FRONTEND_LIB}")
-	endif()
-endif()
-# -- End of section --
-if (COMMAND install_obs_plugin_with_data)
-install_obs_plugin_with_data(obs-midi data)
-endif()
-set_target_properties(obs-midi PROPERTIES FOLDER "plugins/obs-midi")
-#set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/external" ${CMAKE_MODULE_PATH})
+
+setup_plugin_target(${CMAKE_PROJECT_NAME})
 

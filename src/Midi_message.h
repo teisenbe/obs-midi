@@ -1,7 +1,7 @@
 #pragma once
 #include <QObject>
 #include "utils.h"
-#include "libremidi/message.hpp"
+#include "libremidi/include/libremidi/message.hpp"
 /*Midi Message Structure*/
 typedef struct MidiMessage {
 public:

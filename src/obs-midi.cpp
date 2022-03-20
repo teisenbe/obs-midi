@@ -8,13 +8,12 @@
 #else
 #include <obs-frontend-api/obs-frontend-api.h>
 #endif
-#include "libremidi/libremidi.hpp"
-#include <obs-data.h>
+#include "libremidi/include/libremidi/libremidi.hpp"#include <obs-data.h>
 #include <utility>
 
 #include "obs-midi.h"
 
-#include "src/forms/settings-dialog.h"
+#include "forms/settings-dialog.h"
 #include "config.h"
 #include "device-manager.h"
 
@@ -41,7 +40,6 @@ eventsPtr _eventsSystem;
 bool obs_module_load(void)
 {
 	blog(LOG_INFO, "MIDI LOADED! :)");
-	blog(LOG_INFO, "obs-midi version %s", GIT_TAG);
 	qRegisterMetaType<MidiMessage>();
 	_eventsSystem = eventsPtr(new Events());
 	_deviceManager = DeviceManagerPtr(new DeviceManager());
