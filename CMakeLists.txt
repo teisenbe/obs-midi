@@ -23,6 +23,7 @@ set(obs-midi_DEPS libremidi)
 include_directories(src/libremidi)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
 include_directories(${CMAKE_PACKAGE_PREFIX})
+add_compile_options(-Wno-error=unused-parameter -Wno-error=deprecated-declarations -Wno-error=exceptions)
 
 if (((WIN32) AND (NOT COMMAND install_obs_plugin_with_data)) OR APPLE)
 	include(external/FindLibObs.cmake)
@@ -31,7 +32,7 @@ else()
 	find_package(LibObs)
 endif()
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
+find_qt(COMPONENTS Core Widgets)
 # Version bits
 execute_process(
   COMMAND git describe --abbrev=0 --tags 
@@ -47,8 +48,8 @@ configure_file(
 include_directories(
 	"${LIBOBS_INCLUDE_DIR}/../UI/obs-frontend-api"
         SYSTEM
-	${Qt5Core_INCLUDES}
-	${Qt5Widgets_INCLUDES}
+	${QtCore_INCLUDES}
+	${QtWidgets_INCLUDES}
         "${CMAKE_SOURCE_DIR}/UI")
 set(obs-midi_SOURCES
 	src/utils.cpp
@@ -81,8 +82,6 @@ list(APPEND obs-midi_HEADERS
 set(obs_midi_UI
 	src/forms/settings-dialog.ui)
 
-qt5_wrap_ui(obs_midi_UI_HEADERS ${obs_midi_UI})
-
 add_library(obs-midi MODULE
 	${obs-midi_SOURCES}
 	${obs_midi_UI_HEADERS}
@@ -90,30 +89,30 @@ add_library(obs-midi MODULE
 include_directories(
 	"${LIBOBS_INCLUDE_DIR}/../UI/obs-frontend-api"
 	${obs_midi_UI_HEADERS}
-	${Qt5Core_INCLUDES}
-	${Qt5Widgets_INCLUDES}
+	${QtCore_INCLUDES}
+	${QtWidgets_INCLUDES}
 	"${CMAKE_SOURCE_DIR}/deps/asio/asio/include")
 if(LINUX)
 	include_directories(/usr/include/obs)
 	target_link_libraries(obs-midi
 		obs-frontend-api
 		${obs-midi_DEPS}
-		Qt5::Core
-		Qt5::Widgets
+		Qt::Core
+		Qt::Widgets
 		libobs.so)
 elseif(NOT DEFINED OBS_FRONTEND_LIB)
 	target_link_libraries(obs-midi
 		obs-frontend-api
 		${obs-midi_DEPS}
-		Qt5::Core
-		Qt5::Widgets
+		Qt::Core
+		Qt::Widgets
 		libobs)
 else()
 target_link_libraries(obs-midi
 		"${OBS_FRONTEND_LIB}"
 		${obs-midi_DEPS}
-		Qt5::Core
-		Qt5::Widgets
+		Qt::Core
+		Qt::Widgets
 		libobs)
 endif()
 # --- Windows-specific build settings and tasks ---

@@ -885,7 +885,7 @@ void PluginWindow::edit_mapping()
 		ui->btn_add->setText("Save Edits");
 		ui->btn_reset->setEnabled(true);
 		const auto dv = GetDeviceManager().get()->get_midi_hooks(ui->mapping_lbl_device_name->text());
-		blog(LOG_DEBUG, "hook numners: name %s = %i", ui->mapping_lbl_device_name->text().toStdString().c_str(), dv.count());
+		blog(LOG_DEBUG, "hook numners: name %s = %lli", ui->mapping_lbl_device_name->text().toStdString().c_str(), dv.count());
 		const auto selected_items = ui->table_mapping->selectedItems();
 		const auto row = selected_items.at(0)->row();
 		editrow = row;

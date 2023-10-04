@@ -1,4 +1,4 @@
-#include <QtWidgets/QAction>
+#include <QAction>
 #include <QtWidgets/QMainWindow>
 
 #include <iostream>

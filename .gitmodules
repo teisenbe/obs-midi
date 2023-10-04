@@ -1,4 +1,5 @@
 
 [submodule "src/libremidi"]
 	path = src/libremidi
-	url = git@github.com:jcelerier/libremidi.git
+	url = git@github.com:teisenbe/libremidi.git
+	branch = obs-29.1.3

@@ -780,7 +780,7 @@ void MidiAgent::send_message_to_midi_device(const MidiMessage &message)
 /// <param name="bytes">Midi Message in Bytes</param>
 void MidiAgent::send_bytes(unsigned char bytes)
 {
-	midiout.send_message((unsigned char *)bytes, sizeof(bytes));
+	midiout.send_message((unsigned char *)(size_t)bytes, sizeof(bytes));
 }
 /// <summary>
 /// Gets all audio sources, and iterates over them to set the volumes
